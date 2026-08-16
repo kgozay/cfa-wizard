@@ -7,6 +7,7 @@ import { CFA_VIGNETTES } from "@/data/vignettes";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { useCFAStore } from "@/store/useCFAStore";
 import { DiagnosticAutopsyView } from "@/components/diagnostic/DiagnosticAutopsyView";
+import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
 
 export const VignetteEngine: React.FC = () => {
@@ -211,9 +212,9 @@ export const VignetteEngine: React.FC = () => {
             <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
             <span>INSTITUTIONAL CASE SCENARIO:</span>
           </div>
-          <p className="text-sm sm:text-base text-editorial-white leading-relaxed font-sans bg-[#0E0E12] p-4 rounded-lg border border-[#1F1F23]">
-            {vignette.vignetteStem}
-          </p>
+          <div className="text-sm sm:text-base text-editorial-white leading-relaxed font-sans bg-[#0E0E12] p-4 rounded-lg border border-[#1F1F23]">
+            <FormattedMathText text={vignette.vignetteStem} />
+          </div>
         </div>
 
       </div>
@@ -262,7 +263,7 @@ export const VignetteEngine: React.FC = () => {
                     QUESTION 0{q.id} OF 02
                   </span>
                   <h3 className="text-sm sm:text-base font-semibold text-white leading-snug">
-                    {q.stem}
+                    <FormattedMathText text={q.stem} />
                   </h3>
                 </div>
 
@@ -299,7 +300,7 @@ export const VignetteEngine: React.FC = () => {
                             isSelected ? "text-white font-medium" : "text-editorial-steely group-hover:text-white"
                           }`}
                         >
-                          {q.options[optKey]}
+                          <FormattedMathText text={q.options[optKey]} />
                         </span>
                       </button>
                     );

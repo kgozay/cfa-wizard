@@ -5,6 +5,7 @@ import { X, AlertTriangle, ShieldCheck, Trash2, ArrowRight } from "lucide-react"
 import { useCFAStore } from "@/store/useCFAStore";
 import { TRAP_TAXONOMY } from "@/data/trapTaxonomy";
 import { sound } from "@/components/common/SoundEffects";
+import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 
 export const TrapLogModal: React.FC = () => {
   const { isTrapLogOpen, setTrapLogOpen, trapLogs, startVignetteDrill, selectTopic, soundEnabled } = useCFAStore();
@@ -80,9 +81,9 @@ export const TrapLogModal: React.FC = () => {
                     </div>
 
                     <div>
-                      <span className="text-white font-medium block mb-1">
-                        &quot;{entry.questionStem}&quot;
-                      </span>
+                      <div className="text-white font-medium block mb-1">
+                        &quot;<FormattedMathText text={entry.questionStem} />&quot;
+                      </div>
                       <div className="flex items-center gap-3 font-mono text-[11px] mt-1">
                         <span className="text-red-400">
                           Selected: <strong>Option {entry.selectedOption}</strong>
@@ -98,12 +99,12 @@ export const TrapLogModal: React.FC = () => {
                       <span className="font-mono text-[10px] text-amber-400 font-semibold block mb-0.5">
                         DISTRACTOR AUTOPSY:
                       </span>
-                      {entry.autopsyExplanation}
+                      <FormattedMathText text={entry.autopsyExplanation} />
                     </div>
 
                     {taxonomy && (
                       <div className="text-[11px] text-editorial-muted font-mono">
-                        💡 <strong>Remediation:</strong> {taxonomy.recommendedRemediation}
+                        💡 <strong>Remediation:</strong> <FormattedMathText text={taxonomy.recommendedRemediation} />
                       </div>
                     )}
                   </div>

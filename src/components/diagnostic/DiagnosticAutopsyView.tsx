@@ -5,7 +5,7 @@ import confetti from "canvas-confetti";
 import { CheckCircle2, XCircle, AlertTriangle, Play, BookOpen, RotateCcw, ArrowRight, Calculator } from "lucide-react";
 import { OptionKey, VignetteSessionResult, VignetteSet } from "@/types/cfa";
 import { TRAP_TAXONOMY } from "@/data/trapTaxonomy";
-import { KaTeXRenderer } from "@/components/common/KaTeXRenderer";
+import { KaTeXRenderer, FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { KeystrokeSequence } from "@/components/calculator/KeystrokeBadge";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
@@ -135,7 +135,7 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
                   </span>
                 </div>
                 <h4 className="text-sm sm:text-base font-semibold text-white leading-snug">
-                  {q.stem}
+                  <FormattedMathText text={q.stem} />
                 </h4>
               </div>
 
@@ -179,7 +179,9 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
                     className={`p-3 rounded-lg border flex items-start gap-2 ${optStyle}`}
                   >
                     <span className="font-bold text-xs">{optKey}.</span>
-                    <span className="text-xs">{q.options[optKey]}</span>
+                    <span className="text-xs">
+                      <FormattedMathText text={q.options[optKey]} />
+                    </span>
                   </div>
                 );
               })}
@@ -236,9 +238,9 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
                             <span className="text-red-400 text-[10px] uppercase">TRAP</span>
                           )}
                         </div>
-                        <p className="text-xs text-editorial-steely leading-relaxed">
-                          {explanation}
-                        </p>
+                        <div className="text-xs text-editorial-steely leading-relaxed">
+                          <FormattedMathText text={explanation} />
+                        </div>
                       </div>
                     </div>
                   );
@@ -255,7 +257,7 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
                     HISTORICAL CANDIDATE PITFALL: <span className="text-amber-400">{trapInfo.name}</span> ({trapInfo.historicalErrorRate})
                   </div>
                   <p className="text-editorial-steely text-xs mt-1">
-                    {trapInfo.recommendedRemediation}
+                    <FormattedMathText text={trapInfo.recommendedRemediation} />
                   </p>
                 </div>
               </div>

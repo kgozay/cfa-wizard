@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { X, Search, BookOpen, Calculator, Copy, Check } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
-import { KaTeXRenderer } from "@/components/common/KaTeXRenderer";
+import { KaTeXRenderer, FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { KeystrokeSequence } from "@/components/calculator/KeystrokeBadge";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
@@ -133,9 +133,9 @@ export const FormulaSheetModal: React.FC = () => {
 
               <KaTeXRenderer math={f.latex} block />
 
-              <p className="text-xs text-editorial-steely">
-                {f.description}
-              </p>
+              <div className="text-xs text-editorial-steely">
+                <FormattedMathText text={f.description} />
+              </div>
 
               {f.calculatorKeystrokes && (
                 <div className="pt-2 border-t border-[#18181B]">

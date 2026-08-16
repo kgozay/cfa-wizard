@@ -5,7 +5,7 @@ import { X, Play, BookOpen, Calculator, Sparkles, CheckCircle2, ChevronRight } f
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { useCFAStore } from "@/store/useCFAStore";
-import { KaTeXRenderer } from "@/components/common/KaTeXRenderer";
+import { KaTeXRenderer, FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { KeystrokeSequence } from "@/components/calculator/KeystrokeBadge";
 import { sound } from "@/components/common/SoundEffects";
 
@@ -82,9 +82,9 @@ export const ExecutiveBriefingModal: React.FC = () => {
                   <div className="w-5 h-5 rounded bg-[#18181B] border border-[#27272A] flex items-center justify-center text-editorial-muted font-mono text-xs shrink-0 mt-0.5">
                     {idx + 1}
                   </div>
-                  <p className="text-xs sm:text-sm text-editorial-steely leading-relaxed">
-                    {bullet}
-                  </p>
+                  <div className="text-xs sm:text-sm text-editorial-steely leading-relaxed">
+                    <FormattedMathText text={bullet} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -128,9 +128,9 @@ export const ExecutiveBriefingModal: React.FC = () => {
                   <KaTeXRenderer math={f.latex} block />
 
                   {/* Description */}
-                  <p className="text-xs text-editorial-steely">
-                    {f.description}
-                  </p>
+                  <div className="text-xs text-editorial-steely">
+                    <FormattedMathText text={f.description} />
+                  </div>
 
                   {/* Calculator Keystroke Sequence */}
                   {f.calculatorKeystrokes && (

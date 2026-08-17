@@ -109,11 +109,11 @@ export default function DiagnosticCockpitPage() {
           </div>
 
           {/* Right Tools & Interleaved Quick Triggers */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             
             {/* Question Count Selector (2, 5, 10) */}
-            <div className="hidden lg:flex items-center bg-[#141418] border border-[#27272A] p-0.5 rounded-lg text-[10px]">
-              <span className="text-editorial-dim px-1.5">DRILL:</span>
+            <div className="flex items-center bg-[#141418] border border-[#27272A] p-0.5 rounded-lg text-[10px]">
+              <span className="text-editorial-dim px-1 hidden sm:inline">DRILL:</span>
               {([2, 5, 10] as const).map((cnt) => (
                 <button
                   key={cnt}
@@ -138,15 +138,15 @@ export default function DiagnosticCockpitPage() {
                 if (soundEnabled) sound.playKeyClick();
                 togglePacingTimer();
               }}
-              className={`hidden sm:flex items-center gap-1 px-2 py-1 rounded text-[11px] border transition-all ${
+              className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] sm:text-[11px] border transition-all ${
                 isPacingTimerEnabled
                   ? "bg-brand-lime/10 text-brand-lime border-brand-lime/40"
                   : "bg-[#141418] text-editorial-dim border-[#27272A] hover:text-white"
               }`}
               title="Toggle 90-second per question exam timer"
             >
-              <Clock className="w-3 h-3" />
-              <span>{isPacingTimerEnabled ? "90s PACER" : "UNTIMED"}</span>
+              <Clock className="w-3 h-3 shrink-0" />
+              <span>{isPacingTimerEnabled ? "90s" : "OFF"}</span>
             </button>
 
             {/* 10-Q Interleaved Sprint Trigger */}
@@ -155,9 +155,9 @@ export default function DiagnosticCockpitPage() {
                 if (soundEnabled) sound.playNodeSwitch();
                 setSprintModalOpen(true);
               }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[11px] font-bold transition-all"
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] sm:text-[11px] font-bold transition-all"
             >
-              <Zap className="w-3 h-3" />
+              <Zap className="w-3 h-3 shrink-0" />
               <span className="hidden sm:inline">CROSS SPRINT</span>
             </button>
 
@@ -167,9 +167,9 @@ export default function DiagnosticCockpitPage() {
                 if (soundEnabled) sound.playNodeSwitch();
                 setLeitnerDeckOpen(true);
               }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-brand-lime border border-[#27272A] text-[11px] font-bold transition-all"
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-brand-lime border border-[#27272A] text-[10px] sm:text-[11px] font-bold transition-all"
             >
-              <Layers className="w-3 h-3" />
+              <Layers className="w-3 h-3 shrink-0" />
               <span className="hidden sm:inline">TRAP DECK</span>
             </button>
           </div>

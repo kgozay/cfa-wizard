@@ -38,6 +38,7 @@ interface CFAState {
   isBriefingModalOpen: boolean;
   isSprintModalOpen: boolean;
   isLeitnerDeckOpen: boolean;
+  isShortcutsOpen: boolean;
   
   // Actions
   selectTopic: (id: string) => void;
@@ -65,6 +66,7 @@ interface CFAState {
   setBriefingModalOpen: (open: boolean) => void;
   setSprintModalOpen: (open: boolean) => void;
   setLeitnerDeckOpen: (open: boolean) => void;
+  setShortcutsOpen: (open: boolean) => void;
   
   // Reset
   resetProgress: () => void;
@@ -94,6 +96,7 @@ export const useCFAStore = create<CFAState>()(
       isBriefingModalOpen: false,
       isSprintModalOpen: false,
       isLeitnerDeckOpen: false,
+      isShortcutsOpen: false,
 
       selectTopic: (id: string) => {
         set({ activeTopicId: id, inProgressTopicId: id });
@@ -261,6 +264,7 @@ export const useCFAStore = create<CFAState>()(
       setBriefingModalOpen: (open: boolean) => set({ isBriefingModalOpen: open }),
       setSprintModalOpen: (open: boolean) => set({ isSprintModalOpen: open }),
       setLeitnerDeckOpen: (open: boolean) => set({ isLeitnerDeckOpen: open }),
+      setShortcutsOpen: (open: boolean) => set({ isShortcutsOpen: open }),
 
       resetProgress: () => {
         set({

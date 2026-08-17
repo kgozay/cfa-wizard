@@ -69,6 +69,27 @@ export const InterleavedSprintModal: React.FC = () => {
     return () => clearInterval(interval);
   }, [isSprintModalOpen, isFinished, currentIndex, sprintQuestions]);
 
+  // Keyboard shortcut listener for rapid sprint answering (1/2/3, A/B/C, Esc)
+  useEffect(() => {
+    if (!isSprintModalOpen || isFinished) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      const key = e.key.toUpperCase();
+      if (key === "1" || key === "A") {
+        handleAdvance("A");
+      } else if (key === "2" || key === "B") {
+        handleAdvance("B");
+      } else if (key === "3" || key === "C") {
+        handleAdvance("C");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSprintModalOpen, isFinished, currentIndex, sprintQuestions]);
+
   if (!isSprintModalOpen || sprintQuestions.length === 0) return null;
 
   const currentItem = sprintQuestions[currentIndex];

@@ -85,48 +85,52 @@ export default function DiagnosticCockpitPage() {
   return (
     <main className="min-h-screen flex flex-col bg-[#09090B] text-white selection:bg-brand-lime selection:text-black font-sans">
       
-      {/* 48px Slim Diagnostic HUD Header Strip */}
-      <div className="w-full bg-[#0B0B0E] border-b border-[#1F1F23] sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between font-mono text-xs">
+      {/* 56px Clean Institutional HUD Header Bar */}
+      <div className="w-full bg-[#0B0B0E]/95 backdrop-blur-md border-b border-[#1F1F23] sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between font-mono text-xs gap-4">
           
-          {/* Brand & Mode */}
-          <div className="flex items-center gap-3">
+          {/* Left: Brand & Cockpit Tag */}
+          <div className="flex items-center gap-2.5 shrink-0">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <span className="w-2.5 h-2.5 rounded-full bg-brand-lime animate-pulse shadow-lime-sm" />
-              <span className="font-bold tracking-tight text-white">CFA WIZARD</span>
+              <span className="font-extrabold tracking-tight text-white text-sm">CFA WIZARD</span>
             </Link>
             <span className="text-editorial-dim select-none hidden sm:inline">//</span>
-            <span className="text-[11px] text-editorial-muted tracking-wider uppercase hidden sm:inline">
+            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded bg-[#141418] border border-[#27272A] text-[10px] text-editorial-muted uppercase tracking-wider font-bold">
               STUDY COCKPIT
             </span>
           </div>
 
-          {/* Center Telemetry: Progress, MPS, Trap Immunity */}
-          <div className="hidden lg:flex items-center gap-6 text-[11px]">
+          {/* Center: Clean Telemetry Metrics (Single line, strictly non-wrapping) */}
+          <div className="hidden xl:flex items-center gap-5 text-[11px] whitespace-nowrap px-3 py-1.5 rounded-lg bg-[#0E0E12] border border-[#1F1F23]">
             <div className="flex items-center gap-1.5">
               <span className="text-editorial-dim">PROGRESS:</span>
-              <span className="text-brand-lime font-bold">{totalCompleted}/10 TRACKS</span>
+              <span className="text-brand-lime font-bold">{totalCompleted}/10</span>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <span className="text-editorial-dim">MPS ACCURACY:</span>
+            <span className="text-[#27272A]">|</span>
+
+            <div className="flex items-center gap-1.5" title="Target Benchmark: 70%">
+              <span className="text-editorial-dim">ACCURACY:</span>
               <span className={`font-bold ${accuracy >= 70 ? "text-brand-lime" : "text-amber-400"}`}>
-                {accuracy}% (Benchmark: 70%)
+                {accuracy}%
               </span>
             </div>
 
+            <span className="text-[#27272A]">|</span>
+
             <div className="flex items-center gap-1.5">
-              <span className="text-editorial-dim">TRAP IMMUNITY:</span>
+              <span className="text-editorial-dim">RETENTION:</span>
               <span className="text-brand-lime font-bold">{trapImmunityPct}%</span>
             </div>
           </div>
 
-          {/* Right Tools & Interleaved Quick Triggers */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Right: Grouped Controls & Tools */}
+          <div className="flex items-center gap-2 shrink-0">
             
-            {/* Question Count Selector (2, 5, 10, 15) */}
-            <div className="flex items-center bg-[#141418] border border-[#27272A] p-0.5 rounded-lg text-[10px]">
-              <span className="text-editorial-dim px-1 hidden sm:inline">DRILL:</span>
+            {/* Group 1: Drill Pacing Config */}
+            <div className="flex items-center bg-[#141418] border border-[#27272A] p-0.5 rounded-lg text-[10px] whitespace-nowrap">
+              <span className="text-editorial-dim px-1.5 hidden md:inline">DRILL:</span>
               {([2, 5, 10, 15] as const).map((cnt) => (
                 <button
                   key={cnt}
@@ -151,109 +155,123 @@ export default function DiagnosticCockpitPage() {
                 if (soundEnabled) sound.playKeyClick();
                 togglePacingTimer();
               }}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] sm:text-[11px] border transition-all ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border font-bold transition-all whitespace-nowrap ${
                 isPacingTimerEnabled
                   ? "bg-brand-lime/10 text-brand-lime border-brand-lime/40"
                   : "bg-[#141418] text-editorial-dim border-[#27272A] hover:text-white"
               }`}
-              title="Toggle 90-second per question exam timer"
+              title="Toggle 90-second exam timer per question"
             >
               <Clock className="w-3 h-3 shrink-0" />
               <span>{isPacingTimerEnabled ? "90s" : "OFF"}</span>
             </button>
 
-            {/* AI Generator Modal Trigger */}
-            <button
-              onClick={() => {
-                if (soundEnabled) sound.playNodeSwitch();
-                setAIGeneratorOpen(true);
-              }}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 border border-[#27272A] text-[10px] sm:text-[11px] font-bold transition-all"
-              title="Generate Dynamic Custom Vignettes"
-            >
-              <Sparkles className="w-3 h-3 text-brand-lime shrink-0" />
-              <span className="hidden xl:inline">AI SCENARIOS</span>
-            </button>
+            {/* Group 2: Core Workspace Tools */}
+            <div className="hidden sm:flex items-center gap-1.5 pl-1 border-l border-[#1F1F23]">
+              
+              {/* BA II+ Calculator */}
+              <button
+                onClick={() => {
+                  if (soundEnabled) sound.playNodeSwitch();
+                  setCalculatorOpen(true);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-amber-300 border border-[#27272A] hover:border-amber-400/40 text-[11px] font-bold transition-all whitespace-nowrap"
+                title="Texas Instruments BA II Plus Emulator (Hotkey: K)"
+              >
+                <Calculator className="w-3 h-3 shrink-0" />
+                <span>BA II+</span>
+              </button>
 
-            {/* Formula Sheet Trigger */}
-            <button
-              onClick={() => {
-                if (soundEnabled) sound.playNodeSwitch();
-                setFormulaSheetOpen(true);
-              }}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 border border-[#27272A] text-[10px] sm:text-[11px] font-bold transition-all"
-              title="Open LaTeX Formula Sheet & Sandboxes"
-            >
-              <FileText className="w-3 h-3 text-cyan-400 shrink-0" />
-              <span className="hidden xl:inline">FORMULAS</span>
-            </button>
+              {/* Formulas Sheet */}
+              <button
+                onClick={() => {
+                  if (soundEnabled) sound.playNodeSwitch();
+                  setFormulaSheetOpen(true);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-cyan-300 border border-[#27272A] hover:border-cyan-400/40 text-[11px] font-bold transition-all whitespace-nowrap"
+                title="LaTeX Formula Reference & Sandboxes"
+              >
+                <FileText className="w-3 h-3 shrink-0" />
+                <span>FORMULAS</span>
+              </button>
 
-            {/* BA II+ Calculator Trigger */}
-            <button
-              onClick={() => {
-                if (soundEnabled) sound.playNodeSwitch();
-                setCalculatorOpen(true);
-              }}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 border border-[#27272A] text-[10px] sm:text-[11px] font-bold transition-all"
-              title="Open TI BA II Plus Emulator (Hotkey: K)"
-            >
-              <Calculator className="w-3 h-3 text-amber-400 shrink-0" />
-              <span className="hidden xl:inline">BA II+</span>
-            </button>
+              {/* Leitner Recall Deck */}
+              <button
+                onClick={() => {
+                  if (soundEnabled) sound.playNodeSwitch();
+                  setLeitnerDeckOpen(true);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-brand-lime border border-[#27272A] hover:border-brand-lime/40 text-[11px] font-bold transition-all whitespace-nowrap"
+                title="Adaptive Spaced Repetition Flashcards"
+              >
+                <Layers className="w-3 h-3 shrink-0" />
+                <span>RECALL</span>
+              </button>
 
-            {/* 10-Q Interleaved Sprint Trigger */}
-            <button
-              onClick={() => {
-                if (soundEnabled) sound.playNodeSwitch();
-                setSprintModalOpen(true);
-              }}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] sm:text-[11px] font-bold transition-all"
-            >
-              <Zap className="w-3 h-3 shrink-0" />
-              <span className="hidden sm:inline">CROSS SPRINT</span>
-            </button>
+              {/* Interleaved Sprint */}
+              <button
+                onClick={() => {
+                  if (soundEnabled) sound.playNodeSwitch();
+                  setSprintModalOpen(true);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[11px] font-bold transition-all whitespace-nowrap"
+                title="10-Question Interleaved Multi-Track Sprint"
+              >
+                <Zap className="w-3 h-3 shrink-0" />
+                <span>SPRINT</span>
+              </button>
 
-            {/* Leitner Trap Deck Trigger */}
-            <button
-              onClick={() => {
-                if (soundEnabled) sound.playNodeSwitch();
-                setLeitnerDeckOpen(true);
-              }}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-brand-lime border border-[#27272A] text-[10px] sm:text-[11px] font-bold transition-all"
-            >
-              <Layers className="w-3 h-3 shrink-0" />
-              <span className="hidden sm:inline">TRAP DECK</span>
-            </button>
+              {/* AI Scenario Generator */}
+              <button
+                onClick={() => {
+                  if (soundEnabled) sound.playNodeSwitch();
+                  setAIGeneratorOpen(true);
+                }}
+                className="p-1.5 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 border border-[#27272A] hover:border-brand-lime/40"
+                title="Generate Dynamic Custom Vignettes with AI"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-brand-lime" />
+              </button>
+            </div>
 
-            {/* Trap Radar Trigger */}
-            <button
-              onClick={() => {
-                if (soundEnabled) sound.playNodeSwitch();
-                setTrapLogOpen(true);
-              }}
-              className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-amber-400 border border-[#27272A]"
-              title="Trap Radar Log"
-            >
-              <AlertTriangle className="w-3.5 h-3.5" />
-            </button>
+            {/* Group 3: Utility Cluster */}
+            <div className="flex items-center gap-1 pl-1 border-l border-[#1F1F23]">
+              
+              {/* Trap Radar Log */}
+              <button
+                onClick={() => {
+                  if (soundEnabled) sound.playNodeSwitch();
+                  setTrapLogOpen(true);
+                }}
+                className={`p-1.5 rounded-lg border transition-all ${
+                  trapLogs.length > 0
+                    ? "bg-amber-400/10 text-amber-400 border-amber-400/30 hover:bg-amber-400/20"
+                    : "bg-[#141418] text-editorial-dim border-[#27272A] hover:text-white"
+                }`}
+                title={`Diagnostic Error Log (${trapLogs.length} logged)`}
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+              </button>
 
-            {/* Audio Toggle */}
-            <button
-              onClick={toggleSound}
-              className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A]"
-              title={soundEnabled ? "Mute Sound Effects" : "Enable Sound Effects"}
-            >
-              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-brand-lime" /> : <VolumeX className="w-3.5 h-3.5" />}
-            </button>
+              {/* Audio Toggle */}
+              <button
+                onClick={toggleSound}
+                className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A]"
+                title={soundEnabled ? "Mute Sound Effects" : "Enable Sound Effects"}
+              >
+                {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-brand-lime" /> : <VolumeX className="w-3.5 h-3.5" />}
+              </button>
 
-            {/* Reset Session Trigger */}
-            <button
-              onClick={() => setIsResetConfirmOpen(true)}
-              className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-red-400 border border-[#27272A]"
-              title="Reset Study Progress"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
+              {/* Reset Session Trigger */}
+              <button
+                onClick={() => setIsResetConfirmOpen(true)}
+                className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-red-400 border border-[#27272A]"
+                title="Reset Study Progress"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+
+            </div>
 
           </div>
 

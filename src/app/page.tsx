@@ -461,12 +461,12 @@ export default function LandingPage() {
             <table className="w-full text-left font-mono text-xs">
               <thead className="bg-[#141418] border-b border-[#1F1F23] text-editorial-dim text-[11px] uppercase tracking-wider">
                 <tr>
-                  <th className="py-4 px-6 font-bold text-white">Track</th>
-                  <th className="py-4 px-6 font-bold text-white">Curriculum Volume</th>
-                  <th className="py-4 px-6">Modules</th>
-                  <th className="py-4 px-6">Weight</th>
-                  <th className="py-4 px-6">Core Focus Area</th>
-                  <th className="py-4 px-6 text-right">Action</th>
+                  <th className="py-4 px-5 font-bold text-white whitespace-nowrap">Track</th>
+                  <th className="py-4 px-5 font-bold text-white whitespace-nowrap">Curriculum Volume</th>
+                  <th className="py-4 px-5 whitespace-nowrap">Modules</th>
+                  <th className="py-4 px-5 whitespace-nowrap">Exam Weight</th>
+                  <th className="py-4 px-5 min-w-[320px]">Core Focus Area</th>
+                  <th className="py-4 px-5 text-right whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#18181B]">
@@ -474,24 +474,24 @@ export default function LandingPage() {
                   const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
                   return (
                     <tr key={topic.id} className="hover:bg-[#141418]/60 transition-colors">
-                      <td className="py-4 px-6 text-brand-lime font-bold">
+                      <td className="py-4 px-5 text-brand-lime font-bold whitespace-nowrap">
                         {romanNumerals[idx] || topic.id}
                       </td>
-                      <td className="py-4 px-6 font-sans font-bold text-white text-sm">
+                      <td className="py-4 px-5 font-sans font-bold text-white text-sm whitespace-nowrap">
                         {topic.name}
                       </td>
-                      <td className="py-4 px-6 text-editorial-steely">
+                      <td className="py-4 px-5 text-editorial-steely whitespace-nowrap">
                         {topic.subReadings.length} Modules
                       </td>
-                      <td className="py-4 px-6">
-                        <span className="px-2 py-0.5 rounded bg-[#18181B] border border-[#27272A] text-white">
+                      <td className="py-4 px-5 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded bg-[#141418] border border-[#27272A] text-zinc-200 font-mono text-xs font-bold whitespace-nowrap leading-none">
                           {topic.weight}
                         </span>
                       </td>
-                      <td className="py-4 px-6 font-sans text-editorial-dim text-xs">
+                      <td className="py-4 px-5 font-sans text-editorial-dim text-xs leading-relaxed">
                         {topic.highYieldTrapArea}
                       </td>
-                      <td className="py-4 px-6 text-right">
+                      <td className="py-4 px-5 text-right whitespace-nowrap">
                         <Link
                           href="/app"
                           className="inline-flex items-center gap-1 text-brand-lime hover:underline font-bold"

@@ -18,6 +18,11 @@ import {
   RotateCcw,
   Sliders,
   Award,
+  Volume2,
+  VolumeX,
+  FileText,
+  Radar,
+  RefreshCw,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -51,16 +56,24 @@ export default function DiagnosticCockpitPage() {
     togglePacingTimer,
     setSprintModalOpen,
     setLeitnerDeckOpen,
+    setCalculatorOpen,
+    setFormulaSheetOpen,
+    setTrapLogOpen,
+    setAIGeneratorOpen,
     soundEnabled,
+    toggleSound,
+    resetProgress,
   } = useCFAStore();
 
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
   const totalCompleted = completedTopicIds.length;
-  const totalSubmissions = Object.keys(vignetteResults).length;
-  const totalQuestionsSolved = Object.values(vignetteResults).reduce((acc, r) => acc + r.total, 0);
-  const totalCorrect = Object.values(vignetteResults).reduce((acc, r) => acc + r.score, 0);
+  const resultsList = Object.values(vignetteResults);
+  const totalQuestionsSolved = resultsList.reduce((acc, r) => acc + (r.total || 2), 0);
+  const totalCorrect = resultsList.reduce((acc, r) => acc + r.score, 0);
   const accuracy = totalQuestionsSolved > 0 ? Math.round((totalCorrect / totalQuestionsSolved) * 100) : 0;
   
-  // Calculate Trap Immunity Index: Percentage of non-missed trap variants
+  // Calculate Trap Immunity Index
   const trapImmunityPct =
     totalQuestionsSolved > 0
       ? Math.max(0, 100 - Math.round((trapLogs.length / totalQuestionsSolved) * 100))
@@ -70,7 +83,7 @@ export default function DiagnosticCockpitPage() {
     CFA_CURRICULUM.find((t) => t.id === (activeTopicId || inProgressTopicId)) || CFA_CURRICULUM[0];
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#09090B] text-white selection:bg-brand-lime selection:text-black">
+    <main className="min-h-screen flex flex-col bg-[#09090B] text-white selection:bg-brand-lime selection:text-black font-sans">
       
       {/* 48px Slim Diagnostic HUD Header Strip */}
       <div className="w-full bg-[#0B0B0E] border-b border-[#1F1F23] sticky top-0 z-40">
@@ -89,7 +102,7 @@ export default function DiagnosticCockpitPage() {
           </div>
 
           {/* Center Telemetry: Progress, MPS, Trap Immunity */}
-          <div className="hidden md:flex items-center gap-6 text-[11px]">
+          <div className="hidden lg:flex items-center gap-6 text-[11px]">
             <div className="flex items-center gap-1.5">
               <span className="text-editorial-dim">PROGRESS:</span>
               <span className="text-brand-lime font-bold">{totalCompleted}/10 TRACKS</span>
@@ -111,10 +124,10 @@ export default function DiagnosticCockpitPage() {
           {/* Right Tools & Interleaved Quick Triggers */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             
-            {/* Question Count Selector (2, 5, 10) */}
+            {/* Question Count Selector (2, 5, 10, 15) */}
             <div className="flex items-center bg-[#141418] border border-[#27272A] p-0.5 rounded-lg text-[10px]">
               <span className="text-editorial-dim px-1 hidden sm:inline">DRILL:</span>
-              {([2, 5, 10] as const).map((cnt) => (
+              {([2, 5, 10, 15] as const).map((cnt) => (
                 <button
                   key={cnt}
                   onClick={() => {
@@ -149,6 +162,45 @@ export default function DiagnosticCockpitPage() {
               <span>{isPacingTimerEnabled ? "90s" : "OFF"}</span>
             </button>
 
+            {/* AI Generator Modal Trigger */}
+            <button
+              onClick={() => {
+                if (soundEnabled) sound.playNodeSwitch();
+                setAIGeneratorOpen(true);
+              }}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 border border-[#27272A] text-[10px] sm:text-[11px] font-bold transition-all"
+              title="Generate Dynamic Custom Vignettes"
+            >
+              <Sparkles className="w-3 h-3 text-brand-lime shrink-0" />
+              <span className="hidden xl:inline">AI SCENARIOS</span>
+            </button>
+
+            {/* Formula Sheet Trigger */}
+            <button
+              onClick={() => {
+                if (soundEnabled) sound.playNodeSwitch();
+                setFormulaSheetOpen(true);
+              }}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 border border-[#27272A] text-[10px] sm:text-[11px] font-bold transition-all"
+              title="Open LaTeX Formula Sheet & Sandboxes"
+            >
+              <FileText className="w-3 h-3 text-cyan-400 shrink-0" />
+              <span className="hidden xl:inline">FORMULAS</span>
+            </button>
+
+            {/* BA II+ Calculator Trigger */}
+            <button
+              onClick={() => {
+                if (soundEnabled) sound.playNodeSwitch();
+                setCalculatorOpen(true);
+              }}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 border border-[#27272A] text-[10px] sm:text-[11px] font-bold transition-all"
+              title="Open TI BA II Plus Emulator (Hotkey: K)"
+            >
+              <Calculator className="w-3 h-3 text-amber-400 shrink-0" />
+              <span className="hidden xl:inline">BA II+</span>
+            </button>
+
             {/* 10-Q Interleaved Sprint Trigger */}
             <button
               onClick={() => {
@@ -172,6 +224,37 @@ export default function DiagnosticCockpitPage() {
               <Layers className="w-3 h-3 shrink-0" />
               <span className="hidden sm:inline">TRAP DECK</span>
             </button>
+
+            {/* Trap Radar Trigger */}
+            <button
+              onClick={() => {
+                if (soundEnabled) sound.playNodeSwitch();
+                setTrapLogOpen(true);
+              }}
+              className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-amber-400 border border-[#27272A]"
+              title="Trap Radar Log"
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Audio Toggle */}
+            <button
+              onClick={toggleSound}
+              className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A]"
+              title={soundEnabled ? "Mute Sound Effects" : "Enable Sound Effects"}
+            >
+              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-brand-lime" /> : <VolumeX className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Reset Session Trigger */}
+            <button
+              onClick={() => setIsResetConfirmOpen(true)}
+              className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-red-400 border border-[#27272A]"
+              title="Reset Study Progress"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+
           </div>
 
         </div>
@@ -189,7 +272,7 @@ export default function DiagnosticCockpitPage() {
             {/* Unified Horizontal 10-Track Stepper */}
             <div className="w-full bg-[#0B0B0E] border border-[#1F1F23] rounded-xl p-4 font-mono">
               <div className="flex items-center justify-between text-xs text-editorial-dim uppercase tracking-wider mb-3">
-                <span>OFFICIAL 10 CFA LEVEL 1 CURRICULUM TRACKS</span>
+                <span>OFFICIAL 10 CFA LEVEL 1 CURRICULUM TRACKS (15 UNIQUE QS PER TRACK)</span>
                 <span>SELECT TRACK TO INSPECT & DRILL</span>
               </div>
 
@@ -256,6 +339,38 @@ export default function DiagnosticCockpitPage() {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal for Reset Session */}
+      {isResetConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="bg-[#0E0E12] border border-[#27272A] rounded-xl p-6 max-w-md w-full space-y-4 font-sans shadow-2xl">
+            <div className="flex items-center gap-2 font-mono text-xs text-red-400 font-bold uppercase">
+              <AlertTriangle className="w-4 h-4" />
+              <span>RESET SESSION PROGRESS</span>
+            </div>
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              Are you sure you want to reset all completed tracks, diagnostic scores, trap logs, and Leitner flashcard boxes? This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-2 font-mono text-xs pt-2">
+              <button
+                onClick={() => setIsResetConfirmOpen(false)}
+                className="px-3 py-1.5 rounded-lg bg-[#18181B] text-zinc-300 border border-[#27272A] hover:text-white"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={() => {
+                  resetProgress();
+                  setIsResetConfirmOpen(false);
+                }}
+                className="px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold"
+              >
+                CONFIRM RESET
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Global Tool Modals */}
       <ExecutiveBriefingModal />

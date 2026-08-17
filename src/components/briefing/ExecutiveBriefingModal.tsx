@@ -16,6 +16,7 @@ export const ExecutiveBriefingModal: React.FC = () => {
     isBriefingModalOpen,
     startVignetteDrill,
     setCalculatorOpen,
+    drillQuestionCount,
     soundEnabled,
   } = useCFAStore();
 
@@ -59,7 +60,7 @@ export const ExecutiveBriefingModal: React.FC = () => {
             onClick={handleClose}
             className="p-1.5 rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -212,7 +213,7 @@ export const ExecutiveBriefingModal: React.FC = () => {
             className="px-5 py-2.5 rounded-lg bg-brand-lime text-black font-mono text-xs font-bold flex items-center gap-2 hover:bg-brand-neon active:scale-95 transition-all shadow-lime-sm"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>LAUNCH 2-QUESTION VIGNETTE DRILL</span>
+            <span>LAUNCH {drillQuestionCount}-QUESTION VIGNETTE DRILL</span>
           </button>
         </div>
 

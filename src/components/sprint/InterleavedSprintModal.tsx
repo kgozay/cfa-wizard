@@ -1,26 +1,27 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { X, Zap, Clock, CheckCircle, XCircle, ArrowRight, RotateCcw, Award } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, Zap, Clock, CheckCircle, XCircle, ArrowRight, RotateCcw, Award, ChevronDown, ChevronUp, Cpu, Sparkles } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { CFA_VIGNETTES } from "@/data/vignettes";
-import { CFA_CURRICULUM } from "@/data/curriculum";
-import { OptionKey, VignetteQuestion } from "@/types/cfa";
+import { OptionKey, VignetteQuestion, TrapLogEntry } from "@/types/cfa";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
 
 export const InterleavedSprintModal: React.FC = () => {
-  const { isSprintModalOpen, setSprintModalOpen, soundEnabled } = useCFAStore();
+  const { isSprintModalOpen, setSprintModalOpen, soundEnabled, recordVignetteSubmission } = useCFAStore();
 
+  const [sprintLength, setSprintLength] = useState<5 | 10 | 15>(10);
   const [sprintQuestions, setSprintQuestions] = useState<{ question: VignetteQuestion; topicId: string; topicName: string }[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, OptionKey>>({});
   const [questionTimes, setQuestionTimes] = useState<Record<number, number>>({});
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(90);
+  const [expandedAutopsyId, setExpandedAutopsyId] = useState<number | null>(null);
 
-  // Generate randomized interleaved set (up to 10 questions)
-  const initSprint = () => {
+  // Generate randomized interleaved set
+  const initSprint = (length: 5 | 10 | 15 = sprintLength) => {
     const pool: { question: VignetteQuestion; topicId: string; topicName: string }[] = [];
     CFA_VIGNETTES.forEach((v) => {
       v.questions.forEach((q) => {
@@ -34,7 +35,7 @@ export const InterleavedSprintModal: React.FC = () => {
 
     // Shuffle pool
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 10);
+    const selected = shuffled.slice(0, length);
 
     setSprintQuestions(selected);
     setCurrentIndex(0);
@@ -42,6 +43,7 @@ export const InterleavedSprintModal: React.FC = () => {
     setQuestionTimes({});
     setIsFinished(false);
     setSecondsRemaining(90);
+    setExpandedAutopsyId(null);
   };
 
   useEffect(() => {
@@ -57,7 +59,6 @@ export const InterleavedSprintModal: React.FC = () => {
     const interval = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
-          // Auto advance if time runs out
           handleAdvance(null);
           return 90;
         }
@@ -77,8 +78,10 @@ export const InterleavedSprintModal: React.FC = () => {
     if (soundEnabled) sound.playKeyClick();
     const qId = q.id;
 
+    const updatedAnswers = { ...selectedAnswers };
     if (chosenOption) {
-      setSelectedAnswers((prev) => ({ ...prev, [qId]: chosenOption }));
+      updatedAnswers[qId] = chosenOption;
+      setSelectedAnswers(updatedAnswers);
     }
     setQuestionTimes((prev) => ({ ...prev, [qId]: 90 - secondsRemaining }));
 
@@ -88,6 +91,47 @@ export const InterleavedSprintModal: React.FC = () => {
     } else {
       setIsFinished(true);
       if (soundEnabled) sound.playSuccessChime();
+
+      // Log missed sprint questions into trap logs
+      const trapEntries: TrapLogEntry[] = [];
+      sprintQuestions.forEach((item) => {
+        const userChoice = updatedAnswers[item.question.id];
+        if (userChoice && userChoice !== item.question.correctOption) {
+          trapEntries.push({
+            id: `sprint-trap-${item.question.id}-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            topicId: item.topicId,
+            topicName: item.topicName,
+            questionId: item.question.id,
+            questionStem: item.question.stem,
+            options: item.question.options,
+            userChoice,
+            correctOption: item.question.correctOption,
+            trapCategory: item.question.trapCategory,
+            trapName: item.question.trapCategory,
+            errorMode: item.question.errorModeDefault || "UNSPECIFIED",
+            autopsyExplanation: item.question.distractorAutopsy[userChoice] || item.question.algebraicSolution,
+            calculatorKeystrokes: item.question.calculatorKeystrokes,
+          });
+        }
+      });
+
+      if (trapEntries.length > 0) {
+        recordVignetteSubmission(
+          {
+            vignetteId: `sprint-${Date.now()}`,
+            topicId: "00",
+            score: sprintQuestions.length - trapEntries.length,
+            total: sprintQuestions.length,
+            submittedAt: new Date().toISOString(),
+            userAnswers: updatedAnswers,
+            submissions: [],
+            trapsTriggered: trapEntries.map((t) => t.trapName),
+            totalTimeSeconds: Object.values(questionTimes).reduce((a, b) => a + b, 0),
+          },
+          trapEntries
+        );
+      }
     }
   };
 
@@ -120,7 +164,7 @@ export const InterleavedSprintModal: React.FC = () => {
             </div>
             <div>
               <h2 className="text-sm font-mono font-bold text-white tracking-wide uppercase">
-                CROSS-TRACK INTERLEAVED SPRINT // 10 QUESTIONS
+                CROSS-TRACK INTERLEAVED SPRINT // {sprintLength} QUESTIONS
               </h2>
               <p className="text-[11px] font-mono text-editorial-dim">
                 Simulates real exam context switching under strict 90-second pace pressure
@@ -128,12 +172,34 @@ export const InterleavedSprintModal: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => setSprintModalOpen(false)}
-            className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A]"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {!isFinished && (
+              <div className="hidden sm:flex items-center gap-1 bg-[#141418] border border-[#27272A] p-0.5 rounded-lg text-[10px] font-mono text-editorial-dim">
+                {([5, 10, 15] as const).map((len) => (
+                  <button
+                    key={len}
+                    onClick={() => {
+                      setSprintLength(len);
+                      initSprint(len);
+                    }}
+                    className={`px-2 py-1 rounded transition-all ${
+                      sprintLength === len
+                        ? "bg-brand-lime text-black font-bold"
+                        : "hover:text-white"
+                    }`}
+                  >
+                    {len}Q
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              onClick={() => setSprintModalOpen(false)}
+              className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A]"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Body */}
@@ -167,7 +233,7 @@ export const InterleavedSprintModal: React.FC = () => {
               </div>
 
               {/* Question Stem */}
-              <div className="p-5 rounded-xl bg-[#0E0E12] border border-[#1F1F23] text-sm text-zinc-100 leading-relaxed font-sans">
+              <div className="p-5 rounded-xl bg-[#0E0E12] border border-[#1F1F23] text-sm text-zinc-100 leading-relaxed font-sans shadow-inner">
                 <FormattedMathText text={q.stem} />
               </div>
 
@@ -206,7 +272,7 @@ export const InterleavedSprintModal: React.FC = () => {
               {/* Topic-by-Topic Breakdown */}
               <div className="space-y-3 font-mono text-xs">
                 <span className="text-editorial-dim uppercase tracking-wider block">
-                  Track-by-Track Vulnerability Report:
+                  Track-by-Track Diagnostic Summary:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {Object.entries(topicStats).map(([topicId, stats]) => {
@@ -238,6 +304,73 @@ export const InterleavedSprintModal: React.FC = () => {
                   })}
                 </div>
               </div>
+
+              {/* Distractor Autopsy Review */}
+              <div className="space-y-3 font-mono text-xs">
+                <span className="text-editorial-dim uppercase tracking-wider block">
+                  Question Autopsy Review:
+                </span>
+                <div className="space-y-2">
+                  {sprintQuestions.map((item, idx) => {
+                    const userPick = selectedAnswers[item.question.id];
+                    const isCorrect = userPick === item.question.correctOption;
+                    const isExpanded = expandedAutopsyId === item.question.id;
+
+                    return (
+                      <div
+                        key={item.question.id}
+                        className={`rounded-lg border transition-all ${
+                          isCorrect
+                            ? "bg-[#0E0E12] border-[#1F1F23]"
+                            : "bg-red-950/10 border-red-900/30"
+                        }`}
+                      >
+                        <button
+                          onClick={() => setExpandedAutopsyId(isExpanded ? null : item.question.id)}
+                          className="w-full p-3 flex items-center justify-between text-left"
+                        >
+                          <div className="flex items-center gap-2">
+                            {isCorrect ? (
+                              <CheckCircle className="w-4 h-4 text-brand-lime shrink-0" />
+                            ) : (
+                              <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                            )}
+                            <span className="text-white font-medium">
+                              Q{idx + 1}: Topic {item.topicId} &bull; User [{userPick || "None"}] vs Key [{item.question.correctOption}]
+                            </span>
+                          </div>
+                          {isExpanded ? <ChevronUp className="w-4 h-4 text-editorial-dim" /> : <ChevronDown className="w-4 h-4 text-editorial-dim" />}
+                        </button>
+
+                        {isExpanded && (
+                          <div className="p-4 border-t border-[#1F1F23] bg-[#0A0A0D] space-y-3 font-sans text-xs">
+                            <div className="text-zinc-200">
+                              <FormattedMathText text={item.question.stem} />
+                            </div>
+                            <div className="p-3 rounded bg-brand-lime/5 border border-brand-lime/30 text-brand-lime space-y-1">
+                              <span className="font-mono font-bold block">Canonical Solution:</span>
+                              <FormattedMathText text={item.question.algebraicSolution} />
+                            </div>
+                            {userPick && item.question.distractorAutopsy[userPick] && (
+                              <div className="p-3 rounded bg-red-500/10 border border-red-500/30 text-red-300 space-y-1">
+                                <span className="font-mono font-bold block">Your Selection Autopsy ([{userPick}]):</span>
+                                <FormattedMathText text={item.question.distractorAutopsy[userPick]} />
+                              </div>
+                            )}
+                            {item.question.calculatorKeystrokes && (
+                              <div className="p-2.5 rounded bg-[#141418] border border-[#27272A] flex items-center gap-2 font-mono text-[11px] text-amber-300">
+                                <Cpu className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                <span>{item.question.calculatorKeystrokes}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
             </div>
           )}
         </div>
@@ -246,7 +379,7 @@ export const InterleavedSprintModal: React.FC = () => {
         {isFinished && (
           <div className="p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between font-mono text-xs">
             <button
-              onClick={initSprint}
+              onClick={() => initSprint(sprintLength)}
               className="px-4 py-2 rounded-lg bg-[#141418] hover:bg-[#1A1A20] text-zinc-300 border border-[#27272A] flex items-center gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />

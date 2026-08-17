@@ -243,7 +243,7 @@ export default function LandingPage() {
                 href="/app"
                 className="inline-flex items-center gap-2 text-xs font-mono text-brand-lime hover:underline font-bold"
               >
-                <span>Launch Full 10-Track Workspace with 50+ Case Vignettes &rarr;</span>
+                <span>Launch Full 10-Track Workspace with 150 Unique Diagnostic Questions &rarr;</span>
               </Link>
             </div>
           </div>

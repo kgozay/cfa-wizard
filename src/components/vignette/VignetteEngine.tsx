@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   ArrowLeft,
   Calculator,
@@ -69,6 +69,11 @@ export const VignetteEngine: React.FC = () => {
     return vignette.questions.slice(0, drillQuestionCount);
   }, [vignette, drillQuestionCount]);
 
+  const isFormComplete = useMemo(
+    () => activeQuestions.length > 0 && activeQuestions.every((q) => selectedAnswers[q.id]),
+    [activeQuestions, selectedAnswers]
+  );
+
   // Start timer on mount / question change
   useEffect(() => {
     if (hasSubmitted || !isPacingTimerEnabled) {
@@ -85,57 +90,16 @@ export const VignetteEngine: React.FC = () => {
     };
   }, [hasSubmitted, isPacingTimerEnabled]);
 
-  // Keyboard shortcut listener for rapid ergonomics (1/2/3, A/B/C, Space/Enter, K)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't capture when typing in scratchpad
-      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
-
-      const key = e.key.toUpperCase();
-
-      if (key === "K") {
-        setCalculatorOpen(true);
-        return;
-      }
-
-      if (!hasSubmitted) {
-        // Find the first unanswered question
-        const unanswered = activeQuestions.find((q) => !selectedAnswers[q.id]);
-        const targetQ = unanswered || activeQuestions[activeQuestions.length - 1];
-
-        if (key === "1" || key === "A") {
-          handleSelectOption(targetQ.id, "A");
-        } else if (key === "2" || key === "B") {
-          handleSelectOption(targetQ.id, "B");
-        } else if (key === "3" || key === "C") {
-          handleSelectOption(targetQ.id, "C");
-        } else if ((e.key === "Enter" || e.key === " ") && isFormComplete) {
-          e.preventDefault();
-          handleSubmitDiagnostic();
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  });
-
-  if (!activeVignetteId) return null;
-
-  const existingResult = vignetteResults[vignette.id];
-
-  const handleSelectOption = (questionId: number, option: OptionKey) => {
+  const handleSelectOption = useCallback((questionId: number, option: OptionKey) => {
     if (hasSubmitted) return;
     if (soundEnabled) sound.playKeyClick();
     setSelectedAnswers((prev) => ({
       ...prev,
       [questionId]: option,
     }));
-  };
+  }, [hasSubmitted, soundEnabled]);
 
-  const isFormComplete = activeQuestions.every((q) => selectedAnswers[q.id]);
-
-  const handleSubmitDiagnostic = () => {
+  const handleSubmitDiagnostic = useCallback(() => {
     if (!isFormComplete) return;
 
     let score = 0;
@@ -156,10 +120,14 @@ export const VignetteEngine: React.FC = () => {
           topicName: vignette.topicName,
           subReading: vignette.subReading,
           trapName: q.trapCategory,
+          questionId: q.id,
           questionStem: q.stem,
+          options: q.options,
+          userChoice: chosen,
           selectedOption: chosen,
           correctOption: q.correctOption,
-          autopsyExplanation: q.distractorAutopsy[chosen],
+          autopsyExplanation: q.distractorAutopsy[chosen] || q.algebraicSolution,
+          calculatorKeystrokes: q.calculatorKeystrokes,
           errorMode: q.errorModeDefault || "UNSPECIFIED",
           timestamp: new Date().toISOString(),
         });
@@ -190,7 +158,62 @@ export const VignetteEngine: React.FC = () => {
 
     recordVignetteSubmission(result, trapEntries);
     setHasSubmitted(true);
-  };
+  }, [
+    isFormComplete,
+    activeQuestions,
+    selectedAnswers,
+    vignette,
+    elapsedSeconds,
+    isPacingTimerEnabled,
+    recordVignetteSubmission
+  ]);
+
+  // Keyboard shortcut listener for rapid ergonomics (1/2/3, A/B/C, Space/Enter, K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't capture when typing in scratchpad or inputs
+      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
+
+      const key = e.key.toUpperCase();
+
+      if (key === "K") {
+        setCalculatorOpen(true);
+        return;
+      }
+
+      if (!hasSubmitted && activeQuestions.length > 0) {
+        // Find the first unanswered question
+        const unanswered = activeQuestions.find((q) => !selectedAnswers[q.id]);
+        const targetQ = unanswered || activeQuestions[activeQuestions.length - 1];
+
+        if (key === "1" || key === "A") {
+          handleSelectOption(targetQ.id, "A");
+        } else if (key === "2" || key === "B") {
+          handleSelectOption(targetQ.id, "B");
+        } else if (key === "3" || key === "C") {
+          handleSelectOption(targetQ.id, "C");
+        } else if ((e.key === "Enter" || e.key === " ") && isFormComplete) {
+          e.preventDefault();
+          handleSubmitDiagnostic();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    hasSubmitted,
+    activeQuestions,
+    selectedAnswers,
+    isFormComplete,
+    handleSelectOption,
+    handleSubmitDiagnostic,
+    setCalculatorOpen
+  ]);
+
+  if (!activeVignetteId) return null;
+
+  const existingResult = vignetteResults[vignette.id];
 
   const handleResetForRetake = () => {
     setSelectedAnswers({});
@@ -220,10 +243,10 @@ export const VignetteEngine: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-3 font-mono text-xs">
           
-          {/* Question Count Selector (2, 5, 10) */}
+          {/* Question Count Selector (2, 5, 10, 15) */}
           <div className="flex items-center gap-1 bg-[#121215] border border-[#27272A] p-0.5 rounded-lg">
             <span className="text-[10px] text-editorial-dim px-2 uppercase select-none">Count:</span>
-            {([2, 5, 10] as const).map((cnt) => (
+            {([2, 5, 10, 15] as const).map((cnt) => (
               <button
                 key={cnt}
                 onClick={() => {

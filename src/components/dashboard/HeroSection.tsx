@@ -17,9 +17,10 @@ export const HeroSection: React.FC = () => {
   } = useCFAStore();
 
   const totalCompleted = completedTopicIds.length;
-  const totalSolved = Object.keys(vignetteResults).length;
-  const totalCorrect = Object.values(vignetteResults).reduce((acc, r) => acc + r.score, 0);
-  const totalQuestions = totalSolved * 2;
+  const resultsList = Object.values(vignetteResults);
+  const totalSolved = resultsList.length;
+  const totalCorrect = resultsList.reduce((acc, r) => acc + r.score, 0);
+  const totalQuestions = resultsList.reduce((acc, r) => acc + (r.total || 2), 0);
   const accuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
   const trapsAvoidedRate = totalSolved > 0 ? Math.max(0, 100 - Math.round((trapLogs.length / (totalQuestions || 1)) * 100)) : 100;
 
@@ -50,7 +51,7 @@ export const HeroSection: React.FC = () => {
 
         {/* Editorial Subtitle */}
         <p className="text-sm sm:text-base text-editorial-steely max-w-3xl leading-relaxed mb-8">
-          Master high-yield trap mechanisms across all 10 curriculum tracks through 2-question institutional vignettes, step-by-step Texas Instruments BA II Plus workflows, and surgical Distractor Autopsies.
+          Master high-yield trap mechanisms across all 10 curriculum tracks through 150 unique institutional diagnostic questions, step-by-step Texas Instruments BA II Plus workflows, and surgical Distractor Autopsies.
         </p>
 
         {/* Telemetry Highlight Bar */}

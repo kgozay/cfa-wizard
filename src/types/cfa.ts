@@ -112,12 +112,17 @@ export interface TrapLogEntry {
   id: string;
   topicId: string;
   topicName: string;
-  subReading: string;
+  subReading?: string;
   trapName: string;
+  trapCategory?: string;
+  questionId?: number;
   questionStem: string;
-  selectedOption: OptionKey;
+  options?: { A: string; B: string; C: string };
+  selectedOption?: OptionKey;
+  userChoice?: OptionKey;
   correctOption: OptionKey;
   autopsyExplanation: string;
+  calculatorKeystrokes?: string;
   timestamp: string;
   errorMode?: ErrorMode;
   leitnerBox?: number; // 1 = daily, 2 = 3-day, 3 = 7-day

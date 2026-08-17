@@ -1,16 +1,36 @@
 "use client";
 
-import React from "react";
-import { X, AlertTriangle, ShieldCheck, Trash2, ArrowRight } from "lucide-react";
+import React, { useState } from "react";
+import { X, AlertTriangle, ShieldCheck, Trash2, ArrowRight, Search, Filter, Cpu } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { TRAP_TAXONOMY } from "@/data/trapTaxonomy";
 import { sound } from "@/components/common/SoundEffects";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 
 export const TrapLogModal: React.FC = () => {
-  const { isTrapLogOpen, setTrapLogOpen, trapLogs, startVignetteDrill, selectTopic, soundEnabled } = useCFAStore();
+  const {
+    isTrapLogOpen,
+    setTrapLogOpen,
+    trapLogs,
+    deleteTrapLogEntry,
+    clearAllTrapLogs,
+    soundEnabled,
+  } = useCFAStore();
+
+  const [selectedTopicFilter, setSelectedTopicFilter] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   if (!isTrapLogOpen) return null;
+
+  const filteredLogs = trapLogs.filter((entry) => {
+    const matchesTopic = selectedTopicFilter === "ALL" || entry.topicId === selectedTopicFilter;
+    const matchesSearch =
+      searchQuery.trim() === "" ||
+      entry.questionStem.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.trapName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.topicName.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTopic && matchesSearch;
+  });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200">
@@ -32,39 +52,93 @@ export const TrapLogModal: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              if (soundEnabled) sound.playKeyClick();
-              setTrapLogOpen(false);
-            }}
-            className="p-1.5 rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {trapLogs.length > 0 && (
+              <button
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to clear all logged traps?")) {
+                    clearAllTrapLogs();
+                  }
+                }}
+                className="px-2.5 py-1.5 rounded-lg bg-red-950/30 text-red-400 border border-red-900/40 hover:bg-red-900/40 text-xs font-mono flex items-center gap-1"
+                title="Clear All Traps"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">CLEAR ALL</span>
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (soundEnabled) sound.playKeyClick();
+                setTrapLogOpen(false);
+              }}
+              className="p-1.5 rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Filter and Search Bar */}
+        <div className="px-6 py-3 border-b border-[#1F1F23] bg-[#0E0E12] flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
+          <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-[#121215] border border-[#27272A] px-3 py-1.5 rounded-lg">
+            <Search className="w-3.5 h-3.5 text-editorial-dim" />
+            <input
+              type="text"
+              placeholder="Search traps, stems, or topics..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent border-none outline-none text-white text-xs w-full placeholder:text-editorial-dim"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Filter className="w-3.5 h-3.5 text-editorial-dim" />
+            <select
+              value={selectedTopicFilter}
+              onChange={(e) => setSelectedTopicFilter(e.target.value)}
+              className="bg-[#121215] text-editorial-white border border-[#27272A] rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-brand-lime"
+            >
+              <option value="ALL">All Tracks (01-10)</option>
+              <option value="01">Topic 01: Quant</option>
+              <option value="02">Topic 02: Economics</option>
+              <option value="03">Topic 03: Corporate Finance</option>
+              <option value="04">Topic 04: FSA</option>
+              <option value="05">Topic 05: Equity</option>
+              <option value="06">Topic 06: Fixed Income</option>
+              <option value="07">Topic 07: Derivatives</option>
+              <option value="08">Topic 08: Alternative Inv</option>
+              <option value="09">Topic 09: Portfolio Mgt</option>
+              <option value="10">Topic 10: Ethics</option>
+            </select>
+          </div>
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-4 overflow-y-auto">
+        <div className="p-6 space-y-4 overflow-y-auto flex-1">
           
-          {trapLogs.length === 0 ? (
+          {filteredLogs.length === 0 ? (
             <div className="p-12 text-center space-y-3 bg-[#09090B] border border-[#1F1F23] rounded-xl">
               <ShieldCheck className="w-10 h-10 text-brand-lime mx-auto" />
               <h4 className="text-base font-semibold text-white">
-                Zero High-Yield Traps Logged
+                {trapLogs.length === 0 ? "Zero High-Yield Traps Logged" : "No Matching Traps Found"}
               </h4>
               <p className="text-xs text-editorial-steely max-w-md mx-auto">
-                You have not fallen for any distractor traps in your completed diagnostic sets yet. Keep drilling vignettes to uncover weak spots.
+                {trapLogs.length === 0
+                  ? "You have not fallen for any distractor traps in your completed diagnostic sets yet. Keep drilling vignettes to uncover weak spots."
+                  : "Try clearing your search query or switching to All Tracks."}
               </p>
             </div>
           ) : (
             <div className="space-y-3">
-              {trapLogs.map((entry) => {
+              {filteredLogs.map((entry) => {
                 const taxonomy = TRAP_TAXONOMY[entry.trapName];
+                const userSelection = entry.userChoice || entry.selectedOption || "A";
 
                 return (
                   <div
                     key={entry.id}
-                    className="p-4 rounded-xl bg-[#09090B] border border-[#1F1F23] space-y-3 font-sans text-xs"
+                    className="p-4 rounded-xl bg-[#09090B] border border-[#1F1F23] space-y-3 font-sans text-xs hover:border-[#2E2E35] transition-all"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#18181B] font-mono text-[11px]">
                       <div className="flex items-center gap-2">
@@ -72,12 +146,21 @@ export const TrapLogModal: React.FC = () => {
                           {entry.trapName}
                         </span>
                         <span className="text-editorial-muted">
-                          Track {entry.topicId} • {entry.topicName}
+                          Track {entry.topicId} &bull; {entry.topicName}
                         </span>
                       </div>
-                      <span className="text-editorial-dim text-[10px]">
-                        {new Date(entry.timestamp).toLocaleTimeString()}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-editorial-dim text-[10px]">
+                          {new Date(entry.timestamp).toLocaleTimeString()}
+                        </span>
+                        <button
+                          onClick={() => deleteTrapLogEntry(entry.id)}
+                          className="p-1 rounded text-editorial-dim hover:text-red-400 hover:bg-red-950/30 transition-colors"
+                          title="Delete from Trap Log"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
 
                     <div>
@@ -85,12 +168,12 @@ export const TrapLogModal: React.FC = () => {
                         &quot;<FormattedMathText text={entry.questionStem} />&quot;
                       </div>
                       <div className="flex items-center gap-3 font-mono text-[11px] mt-1">
-                        <span className="text-red-400">
-                          Selected: <strong>Option {entry.selectedOption}</strong>
+                        <span className="text-red-400 font-bold">
+                          Selected: Option {userSelection}
                         </span>
                         <span className="text-editorial-dim">|</span>
-                        <span className="text-brand-lime">
-                          Key: <strong>Option {entry.correctOption}</strong>
+                        <span className="text-brand-lime font-bold">
+                          Key: Option {entry.correctOption}
                         </span>
                       </div>
                     </div>
@@ -101,6 +184,13 @@ export const TrapLogModal: React.FC = () => {
                       </span>
                       <FormattedMathText text={entry.autopsyExplanation} />
                     </div>
+
+                    {entry.calculatorKeystrokes && (
+                      <div className="p-2.5 rounded bg-[#141418] border border-[#27272A] flex items-center gap-2 font-mono text-[11px] text-amber-300">
+                        <Cpu className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span>TI BA II+: {entry.calculatorKeystrokes}</span>
+                      </div>
+                    )}
 
                     {taxonomy && (
                       <div className="text-[11px] text-editorial-muted font-mono">
@@ -118,7 +208,7 @@ export const TrapLogModal: React.FC = () => {
         {/* Footer */}
         <div className="p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between font-mono text-xs">
           <span className="text-editorial-dim">
-            Total Traps Recorded: {trapLogs.length}
+            Showing {filteredLogs.length} of {trapLogs.length} Traps
           </span>
           <button
             onClick={() => {

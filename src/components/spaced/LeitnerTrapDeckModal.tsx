@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Layers, Check, RefreshCw, ChevronRight, Eye, ShieldAlert, Sparkles } from "lucide-react";
+import { X, Layers, Check, RefreshCw, ChevronRight, Eye, ShieldAlert, Sparkles, Trash2, Cpu } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { LeitnerCard } from "@/types/cfa";
 import { ERROR_MODE_LABELS } from "@/data/trapTaxonomy";
@@ -14,6 +14,7 @@ export const LeitnerTrapDeckModal: React.FC = () => {
     setLeitnerDeckOpen,
     leitnerCards,
     updateLeitnerCard,
+    deleteLeitnerCard,
     soundEnabled,
   } = useCFAStore();
 
@@ -22,7 +23,8 @@ export const LeitnerTrapDeckModal: React.FC = () => {
   const [isAnswerRevealed, setIsAnswerRevealed] = useState<boolean>(false);
 
   const filteredCards = leitnerCards.filter((c) => c.box === activeBox);
-  const currentCard: LeitnerCard | undefined = filteredCards[currentCardIndex];
+  const safeIndex = filteredCards.length > 0 ? Math.min(currentCardIndex, filteredCards.length - 1) : 0;
+  const currentCard: LeitnerCard | undefined = filteredCards[safeIndex];
 
   if (!isLeitnerDeckOpen) return null;
 
@@ -32,9 +34,33 @@ export const LeitnerTrapDeckModal: React.FC = () => {
       if (isCorrect) sound.playSuccessChime();
       else sound.playWarningBuzz();
     }
+
+    const cardWillLeaveBox = (isCorrect && activeBox < 3) || (!isCorrect && activeBox > 1);
+
     updateLeitnerCard(currentCard.id, isCorrect);
     setIsAnswerRevealed(false);
-    if (currentCardIndex >= filteredCards.length - 1) {
+
+    if (cardWillLeaveBox) {
+      // The current card left this box view.
+      // If we were at the end of the list, wrap back to 0.
+      if (safeIndex >= filteredCards.length - 1) {
+        setCurrentCardIndex(0);
+      }
+    } else {
+      // Card stays in the same box. Advance to next card in deck.
+      if (filteredCards.length > 1) {
+        setCurrentCardIndex((safeIndex + 1) % filteredCards.length);
+      } else {
+        setCurrentCardIndex(0);
+      }
+    }
+  };
+
+  const handleDeleteCurrent = () => {
+    if (!currentCard) return;
+    deleteLeitnerCard(currentCard.id);
+    setIsAnswerRevealed(false);
+    if (safeIndex >= filteredCards.length - 1) {
       setCurrentCardIndex(0);
     }
   };
@@ -96,19 +122,19 @@ export const LeitnerTrapDeckModal: React.FC = () => {
         </div>
 
         {/* Flashcard Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+        <div className="p-6 overflow-y-auto flex-1 space-y-5">
           {filteredCards.length === 0 ? (
             <div className="py-12 text-center space-y-3">
               <ShieldAlert className="w-10 h-10 text-editorial-dim mx-auto" />
               <div className="font-mono text-sm font-bold text-white">
-                NO TRAPS LOGGED IN BOX {activeBox}
+                NO TRAPS IN BOX {activeBox}
               </div>
               <p className="text-xs text-editorial-dim max-w-sm mx-auto">
-                Missed questions and flagged distractor traps will automatically populate into Box 1 for spaced reinforcement.
+                Missed questions and distractor traps from drills will automatically populate into Box 1 for spaced reinforcement.
               </p>
             </div>
           ) : currentCard ? (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {/* Card Meta */}
               <div className="flex items-center justify-between font-mono text-xs">
                 <div className="flex items-center gap-2">
@@ -116,41 +142,87 @@ export const LeitnerTrapDeckModal: React.FC = () => {
                     TOPIC {currentCard.topicId}: {currentCard.topicName}
                   </span>
                   <span className="text-editorial-dim">
-                    Card {currentCardIndex + 1} of {filteredCards.length}
+                    Card {safeIndex + 1} of {filteredCards.length}
                   </span>
                 </div>
 
-                {currentCard.errorMode && (
-                  <span
-                    className={`px-2 py-0.5 rounded border text-[10px] ${
-                      ERROR_MODE_LABELS[currentCard.errorMode]?.badgeColor || "text-editorial-dim"
-                    }`}
+                <div className="flex items-center gap-2">
+                  {currentCard.errorMode && (
+                    <span
+                      className={`px-2 py-0.5 rounded border text-[10px] ${
+                        ERROR_MODE_LABELS[currentCard.errorMode]?.badgeColor || "text-editorial-dim"
+                      }`}
+                    >
+                      {ERROR_MODE_LABELS[currentCard.errorMode]?.label || currentCard.errorMode}
+                    </span>
+                  )}
+                  <button
+                    onClick={handleDeleteCurrent}
+                    className="p-1 rounded text-editorial-dim hover:text-red-400 hover:bg-red-950/30 transition-colors"
+                    title="Remove from Spaced Deck"
                   >
-                    {ERROR_MODE_LABELS[currentCard.errorMode]?.label || currentCard.errorMode}
-                  </span>
-                )}
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               {/* Question Stem */}
-              <div className="p-5 rounded-xl bg-[#0E0E12] border border-[#1F1F23] text-sm text-zinc-100 leading-relaxed font-sans">
+              <div className="p-4 sm:p-5 rounded-xl bg-[#0E0E12] border border-[#1F1F23] text-sm text-zinc-100 leading-relaxed font-sans shadow-inner">
                 <FormattedMathText text={currentCard.questionStem} />
               </div>
 
+              {/* Multiple Choice Options preview if available */}
+              {currentCard.options && (
+                <div className="grid grid-cols-1 gap-2 font-mono text-xs">
+                  {(["A", "B", "C"] as const).map((key) => {
+                    const optText = currentCard.options?.[key];
+                    if (!optText) return null;
+                    const isKeyCorrect = isAnswerRevealed && key === currentCard.correctOption;
+                    return (
+                      <div
+                        key={key}
+                        className={`p-2.5 rounded-lg border transition-all flex items-start gap-2.5 ${
+                          isKeyCorrect
+                            ? "bg-brand-lime/10 border-brand-lime text-brand-lime font-bold"
+                            : "bg-[#121215] border-[#1F1F23] text-zinc-300"
+                        }`}
+                      >
+                        <span className="w-5 h-5 rounded flex items-center justify-center bg-black/40 text-[11px] shrink-0 font-bold">
+                          {key}
+                        </span>
+                        <div className="leading-normal pt-0.5">
+                          <FormattedMathText text={optText} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Revealable Solution / Distractor Autopsy */}
               {isAnswerRevealed ? (
-                <div className="p-5 rounded-xl bg-brand-lime/5 border border-brand-lime/40 space-y-3 animate-in fade-in duration-150">
-                  <div className="flex items-center gap-2 font-mono text-xs text-brand-lime font-bold">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>CORRECT KEY: [{currentCard.correctOption}] &bull; TRAP AUTOPSY</span>
+                <div className="space-y-3 animate-in fade-in duration-150">
+                  <div className="p-4 rounded-xl bg-brand-lime/5 border border-brand-lime/40 space-y-2">
+                    <div className="flex items-center gap-2 font-mono text-xs text-brand-lime font-bold">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>CORRECT KEY: [{currentCard.correctOption}] &bull; CANONICAL SOLUTION</span>
+                    </div>
+                    <div className="text-xs text-zinc-200 leading-relaxed font-sans">
+                      <FormattedMathText text={currentCard.solution} />
+                    </div>
                   </div>
-                  <div className="text-xs text-zinc-200 leading-relaxed font-sans">
-                    <FormattedMathText text={currentCard.solution} />
-                  </div>
+
+                  {currentCard.keystrokes && (
+                    <div className="p-3 rounded-lg bg-[#121215] border border-[#27272A] flex items-center gap-2 text-xs font-mono text-amber-300/90">
+                      <Cpu className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span className="truncate">TI BA II+: {currentCard.keystrokes}</span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <button
                   onClick={() => setIsAnswerRevealed(true)}
-                  className="w-full py-4 rounded-xl border border-[#27272A] bg-[#121215] hover:bg-[#18181C] text-editorial-muted hover:text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-3.5 rounded-xl border border-[#27272A] bg-[#121215] hover:bg-[#18181C] text-editorial-muted hover:text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md"
                 >
                   <Eye className="w-4 h-4" />
                   <span>REVEAL CANONICAL SOLUTION & TRAP AUTOPSY</span>

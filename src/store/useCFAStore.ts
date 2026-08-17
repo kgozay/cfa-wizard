@@ -20,7 +20,7 @@ interface CFAState {
   activeVignetteId: string | null;
   
   // Drill Configuration Preferences
-  drillQuestionCount: 2 | 5 | 10;
+  drillQuestionCount: 2 | 5 | 10 | 15;
   isPacingTimerEnabled: boolean;
   
   // Submissions & Error Logging
@@ -45,12 +45,15 @@ interface CFAState {
   setActiveBriefing: (topicId: string | null) => void;
   startVignetteDrill: (vignetteId: string) => void;
   closeVignetteDrill: () => void;
-  setDrillQuestionCount: (count: 2 | 5 | 10) => void;
+  setDrillQuestionCount: (count: 2 | 5 | 10 | 15) => void;
   setPacingTimerEnabled: (enabled: boolean) => void;
   togglePacingTimer: () => void;
   recordVignetteSubmission: (result: VignetteSessionResult, trapEntries?: TrapLogEntry[]) => void;
   logErrorMode: (trapEntryId: string, errorMode: ErrorMode) => void;
   updateLeitnerCard: (cardId: string, isCorrect: boolean) => void;
+  deleteLeitnerCard: (cardId: string) => void;
+  deleteTrapLogEntry: (id: string) => void;
+  clearAllTrapLogs: () => void;
   addCustomVignette: (vignette: VignetteSet) => void;
   
   // Modals
@@ -128,7 +131,7 @@ export const useCFAStore = create<CFAState>()(
         set({ activeVignetteId: null });
       },
 
-      setDrillQuestionCount: (count: 2 | 5 | 10) => {
+      setDrillQuestionCount: (count: 2 | 5 | 10 | 15) => {
         set({ drillQuestionCount: count });
       },
 
@@ -144,7 +147,7 @@ export const useCFAStore = create<CFAState>()(
         const currentResults = { ...get().vignetteResults, [result.vignetteId]: result };
         const currentTraps = [...(trapEntries || []), ...get().trapLogs];
 
-        // Also add new Leitner flashcards for missed questions
+        // Also add new Leitner flashcards for missed questions with authentic options & keystrokes
         const currentLeitner = [...get().leitnerCards];
         if (trapEntries && trapEntries.length > 0) {
           trapEntries.forEach((entry) => {
@@ -158,10 +161,10 @@ export const useCFAStore = create<CFAState>()(
                 topicId: entry.topicId,
                 topicName: entry.topicName,
                 questionStem: entry.questionStem,
-                options: { A: "A", B: "B", C: "C" },
+                options: entry.options || { A: "Option A", B: "Option B", C: "Option C" },
                 correctOption: entry.correctOption,
                 solution: entry.autopsyExplanation,
-                keystrokes: "",
+                keystrokes: entry.calculatorKeystrokes || "",
                 trapName: entry.trapName,
                 errorMode: entry.errorMode || "UNSPECIFIED",
                 box: 1,
@@ -223,6 +226,23 @@ export const useCFAStore = create<CFAState>()(
           });
           return { leitnerCards: updated };
         });
+      },
+
+      deleteLeitnerCard: (cardId: string) => {
+        set((state) => ({
+          leitnerCards: state.leitnerCards.filter((c) => c.id !== cardId),
+        }));
+      },
+
+      deleteTrapLogEntry: (id: string) => {
+        set((state) => ({
+          trapLogs: state.trapLogs.filter((t) => t.id !== id),
+          leitnerCards: state.leitnerCards.filter((c) => c.trapLogId !== id),
+        }));
+      },
+
+      clearAllTrapLogs: () => {
+        set({ trapLogs: [], leitnerCards: [] });
       },
 
       addCustomVignette: (vignette: VignetteSet) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, FileText, Play, BookOpen, AlertCircle, Search, Filter } from "lucide-react";
+import { ChevronDown, ChevronUp, FileText, Play, BookOpen, AlertCircle, Search, Filter, Tag } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { useCFAStore } from "@/store/useCFAStore";
@@ -15,6 +15,7 @@ export const CurriculumIndexTable: React.FC = () => {
     selectTopic,
     setActiveBriefing,
     startVignetteDrill,
+    drillQuestionCount,
     soundEnabled,
   } = useCFAStore();
 
@@ -68,7 +69,7 @@ export const CurriculumIndexTable: React.FC = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-editorial-dim" />
           <input
             type="text"
-            placeholder="Search 10 tracks, traps, sub-readings..."
+            placeholder="Search 10 tracks, traps, learning modules..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#09090B] border border-[#27272A] rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder:text-editorial-dim focus:outline-none focus:border-brand-lime/50 font-mono"
@@ -102,18 +103,17 @@ export const CurriculumIndexTable: React.FC = () => {
       <div className="divide-y divide-[#1F1F23]">
         {filteredTopics.map((topic) => {
           const isCompleted = completedTopicIds.includes(topic.id);
-          const isInProgress = inProgressTopicId === topic.id;
+          const isInProgress = (activeTopicId || inProgressTopicId) === topic.id;
           const isExpanded = expandedTopicId === topic.id;
 
-          // Status Badge Variant
           let statusText = "READY";
           let statusClass = "text-[#3F3F46] border-[#27272A]";
           if (isCompleted) {
             statusText = "COMPLETED";
             statusClass = "text-editorial-muted border-editorial-dim/30 bg-[#141418]";
           } else if (isInProgress) {
-            statusText = "IN PROGRESS";
-            statusClass = "text-brand-lime border-brand-lime/50 bg-brand-lime/10 shadow-[0_0_10px_rgba(216,255,62,0.15)]";
+            statusText = "ACTIVE";
+            statusClass = "text-brand-lime border-brand-lime/50 bg-brand-lime/10 shadow-lime-sm";
           }
 
           return (
@@ -127,21 +127,21 @@ export const CurriculumIndexTable: React.FC = () => {
                 {/* Left: Index & Reading Title */}
                 <div className="flex items-center gap-3.5">
                   <span className="font-mono text-xs font-bold text-editorial-dim group-hover:text-brand-lime">
-                    {topic.id}
+                    [{topic.id}]
                   </span>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm sm:text-base font-semibold text-white tracking-tight">
+                      <h3 className="text-sm sm:text-base font-semibold text-white tracking-tight font-sans">
                         {topic.name}
                       </h3>
                       {topic.weightCategory === "HIGH" && (
-                        <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-[10px] font-semibold">
+                        <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime font-mono text-[10px] font-semibold">
                           HIGH YIELD
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-editorial-muted font-mono mt-0.5">
-                      Exam Weight: <span className="text-white font-medium">{topic.weight}</span> • {topic.subReadings.length} Sub-Readings
+                      Weight: <span className="text-white font-medium">{topic.weight}</span> &bull; {topic.subReadings.length} Modules &bull; {topic.formulas.length} Formulas
                     </p>
                   </div>
                 </div>
@@ -175,21 +175,25 @@ export const CurriculumIndexTable: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Sub-Readings List */}
+                  {/* Sub-Readings List with LOS Codes */}
                   <div className="space-y-1.5 font-mono text-xs">
                     <div className="text-[11px] text-editorial-dim tracking-wider uppercase mb-1">
-                      SUB-READINGS MATRIX:
+                      OFFICIAL LEARNING MODULES &amp; LOS TAXONOMY:
                     </div>
                     {topic.subReadings.map((sr) => (
                       <div
                         key={sr.id}
-                        className="p-2 rounded bg-[#0E0E12] border border-[#1F1F23] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px]"
+                        className="p-2.5 rounded bg-[#0E0E12] border border-[#1F1F23] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px]"
                       >
-                        <div className="flex items-center gap-2 text-white">
-                          <span className="text-editorial-dim">#{sr.readingNumber || sr.id}</span>
+                        <div className="flex items-center gap-2 text-white font-sans font-medium">
+                          {sr.losCode && (
+                            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#141418] border border-[#27272A] text-brand-lime">
+                              {sr.losCode}
+                            </span>
+                          )}
                           <span>{sr.title}</span>
                         </div>
-                        <span className="text-editorial-dim text-[10px] truncate max-w-sm">
+                        <span className="text-editorial-dim text-[10px] sm:max-w-xs font-mono truncate">
                           Trap: {sr.coreTrap}
                         </span>
                       </div>
@@ -203,14 +207,14 @@ export const CurriculumIndexTable: React.FC = () => {
                       className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-[#18181B] text-white hover:text-brand-lime border border-[#3F3F46] hover:border-brand-lime/40 font-mono text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
-                      <span>EXECUTIVE BRIEFING & FORMULAS</span>
+                      <span>EXECUTIVE BRIEFING &amp; FORMULAS</span>
                     </button>
                     <button
                       onClick={(e) => handleLaunchDrill(topic.id, e)}
-                      className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-brand-lime text-black font-mono text-xs font-bold flex items-center justify-center gap-2 hover:bg-brand-neon active:scale-95 transition-all shadow-lime-sm"
+                      className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-brand-lime text-black font-mono text-xs font-extrabold flex items-center justify-center gap-2 hover:bg-brand-lime/90 active:scale-95 transition-all shadow-lime-sm"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>LAUNCH 2-QUESTION VIGNETTE DRILL</span>
+                      <span>LAUNCH {drillQuestionCount}-QUESTION VIGNETTE DRILL</span>
                     </button>
                   </div>
 

@@ -1,8 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
-import { ArrowLeft, Calculator, Edit3, CheckCircle, AlertCircle, ShieldAlert, Sparkles, Send } from "lucide-react";
-import { OptionKey, QuestionSubmission, TrapLogEntry, VignetteSessionResult, VignetteSet } from "@/types/cfa";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import {
+  ArrowLeft,
+  Calculator,
+  Edit3,
+  CheckCircle,
+  AlertCircle,
+  ShieldAlert,
+  Sparkles,
+  Send,
+  Timer,
+  Clock,
+  Volume2,
+  Sliders,
+  Keyboard,
+} from "lucide-react";
+import {
+  OptionKey,
+  QuestionSubmission,
+  TrapLogEntry,
+  VignetteSessionResult,
+  VignetteSet,
+  VignetteQuestion
+} from "@/types/cfa";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { useCFAStore } from "@/store/useCFAStore";
@@ -22,6 +43,10 @@ export const VignetteEngine: React.FC = () => {
     selectTopic,
     customVignettes,
     soundEnabled,
+    drillQuestionCount,
+    setDrillQuestionCount,
+    isPacingTimerEnabled,
+    togglePacingTimer,
   } = useCFAStore();
 
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, OptionKey>>({});
@@ -29,14 +54,78 @@ export const VignetteEngine: React.FC = () => {
   const [isScratchpadOpen, setIsScratchpadOpen] = useState<boolean>(false);
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
+  // Per-question elapsed time tracking
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const allVignettes = useMemo(() => [...CFA_VIGNETTES, ...customVignettes], [customVignettes]);
+  const vignette = useMemo(
+    () => allVignettes.find((v) => v.id === activeVignetteId) || CFA_VIGNETTES[0],
+    [allVignettes, activeVignetteId]
+  );
+
+  // Slice questions based on active preference (or all available if fewer)
+  const activeQuestions: VignetteQuestion[] = useMemo(() => {
+    return vignette.questions.slice(0, drillQuestionCount);
+  }, [vignette, drillQuestionCount]);
+
+  // Start timer on mount / question change
+  useEffect(() => {
+    if (hasSubmitted || !isPacingTimerEnabled) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+
+    timerRef.current = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [hasSubmitted, isPacingTimerEnabled]);
+
+  // Keyboard shortcut listener for rapid ergonomics (1/2/3, A/B/C, Space/Enter, K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't capture when typing in scratchpad
+      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
+
+      const key = e.key.toUpperCase();
+
+      if (key === "K") {
+        setCalculatorOpen(true);
+        return;
+      }
+
+      if (!hasSubmitted) {
+        // Find the first unanswered question
+        const unanswered = activeQuestions.find((q) => !selectedAnswers[q.id]);
+        const targetQ = unanswered || activeQuestions[activeQuestions.length - 1];
+
+        if (key === "1" || key === "A") {
+          handleSelectOption(targetQ.id, "A");
+        } else if (key === "2" || key === "B") {
+          handleSelectOption(targetQ.id, "B");
+        } else if (key === "3" || key === "C") {
+          handleSelectOption(targetQ.id, "C");
+        } else if ((e.key === "Enter" || e.key === " ") && isFormComplete) {
+          e.preventDefault();
+          handleSubmitDiagnostic();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
   if (!activeVignetteId) return null;
 
-  const allVignettes = [...CFA_VIGNETTES, ...customVignettes];
-  const vignette = allVignettes.find((v) => v.id === activeVignetteId) || CFA_VIGNETTES[0];
   const existingResult = vignetteResults[vignette.id];
 
   const handleSelectOption = (questionId: number, option: OptionKey) => {
-    if (hasSubmitted) return; // Locked once submitted
+    if (hasSubmitted) return;
     if (soundEnabled) sound.playKeyClick();
     setSelectedAnswers((prev) => ({
       ...prev,
@@ -44,7 +133,7 @@ export const VignetteEngine: React.FC = () => {
     }));
   };
 
-  const isFormComplete = vignette.questions.every((q) => selectedAnswers[q.id]);
+  const isFormComplete = activeQuestions.every((q) => selectedAnswers[q.id]);
 
   const handleSubmitDiagnostic = () => {
     if (!isFormComplete) return;
@@ -54,7 +143,7 @@ export const VignetteEngine: React.FC = () => {
     const trapsTriggered: string[] = [];
     const trapEntries: TrapLogEntry[] = [];
 
-    vignette.questions.forEach((q) => {
+    activeQuestions.forEach((q) => {
       const chosen = selectedAnswers[q.id];
       const isCorrect = chosen === q.correctOption;
       if (isCorrect) {
@@ -71,6 +160,7 @@ export const VignetteEngine: React.FC = () => {
           selectedOption: chosen,
           correctOption: q.correctOption,
           autopsyExplanation: q.distractorAutopsy[chosen],
+          errorMode: q.errorModeDefault || "UNSPECIFIED",
           timestamp: new Date().toISOString(),
         });
       }
@@ -80,6 +170,8 @@ export const VignetteEngine: React.FC = () => {
         selectedOption: chosen,
         isCorrect,
         trapTriggered: isCorrect ? undefined : q.trapCategory,
+        errorModeLogged: isCorrect ? undefined : q.errorModeDefault,
+        timeSpentSeconds: elapsedSeconds,
       });
     });
 
@@ -88,252 +180,302 @@ export const VignetteEngine: React.FC = () => {
       topicId: vignette.topicId,
       submittedAt: new Date().toISOString(),
       score,
-      total: 2,
+      total: activeQuestions.length,
       userAnswers: selectedAnswers,
       submissions,
       trapsTriggered,
+      totalTimeSeconds: elapsedSeconds,
+      timerModeUsed: isPacingTimerEnabled ? "timed_90s" : "untimed",
     };
 
     recordVignetteSubmission(result, trapEntries);
     setHasSubmitted(true);
   };
 
-  const handleDrillAnother = () => {
-    // Look for another vignette in same topic or reset
+  const handleResetForRetake = () => {
     setSelectedAnswers({});
     setHasSubmitted(false);
-    setScratchpadText("");
+    setElapsedSeconds(0);
   };
 
-  const handleReviewFormulas = () => {
-    setActiveBriefing(vignette.topicId);
-  };
+  // Exam Pace benchmark (90s per question * count)
+  const targetTimeSeconds = activeQuestions.length * 90;
+  const isOvertime = elapsedSeconds > targetTimeSeconds;
+  const isWarning = elapsedSeconds > targetTimeSeconds * 0.75;
 
-  const handleReturnDashboard = () => {
-    closeVignetteDrill();
-  };
-
-  const handleNextTrack = () => {
-    const nextTopicId = (parseInt(vignette.topicId, 10) + 1).toString().padStart(2, "0");
-    const nextVignette = allVignettes.find((v) => v.topicId === nextTopicId);
-    if (nextVignette) {
-      setSelectedAnswers({});
-      setHasSubmitted(false);
-      setScratchpadText("");
-      selectTopic(nextTopicId);
-      startVignetteDrill(nextVignette.id);
-    } else {
-      closeVignetteDrill();
-    }
-  };
+  const currentTopic = CFA_CURRICULUM.find((t) => t.id === vignette.topicId);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6 font-sans">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
       
-      {/* Top Breadcrumb & Action Bar */}
-      <div className="flex items-center justify-between pb-4 border-b border-[#1F1F23]">
+      {/* Top Ergonomic Control Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[#1F1F23]">
         <button
-          onClick={() => {
-            if (soundEnabled) sound.playKeyClick();
-            closeVignetteDrill();
-          }}
-          className="flex items-center gap-2 font-mono text-xs text-editorial-muted hover:text-white transition-colors"
+          onClick={closeVignetteDrill}
+          className="inline-flex items-center gap-2 text-xs font-mono text-editorial-dim hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>RETURN TO CURRICULUM INDEX</span>
+          <span>RETURN TO DIAGNOSTIC MATRIX</span>
         </button>
 
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex flex-wrap items-center gap-3 font-mono text-xs">
+          
+          {/* Question Count Selector (2, 5, 10) */}
+          <div className="flex items-center gap-1 bg-[#121215] border border-[#27272A] p-0.5 rounded-lg">
+            <span className="text-[10px] text-editorial-dim px-2 uppercase select-none">Count:</span>
+            {([2, 5, 10] as const).map((cnt) => (
+              <button
+                key={cnt}
+                onClick={() => {
+                  if (hasSubmitted) return;
+                  if (soundEnabled) sound.playKeyClick();
+                  setDrillQuestionCount(cnt);
+                }}
+                disabled={hasSubmitted}
+                className={`px-2 py-1 rounded text-[11px] font-bold transition-all ${
+                  drillQuestionCount === cnt
+                    ? "bg-brand-lime text-black shadow-lime-sm"
+                    : "text-editorial-dim hover:text-white"
+                }`}
+              >
+                {cnt}Q
+              </button>
+            ))}
+          </div>
+
+          {/* 90-Second Exam Pace Toggle */}
           <button
             onClick={() => {
               if (soundEnabled) sound.playKeyClick();
-              setIsScratchpadOpen(!isScratchpadOpen);
+              togglePacingTimer();
             }}
-            className={`px-3 py-1.5 rounded border transition-all flex items-center gap-1.5 ${
-              isScratchpadOpen
-                ? "bg-brand-lime text-black font-bold border-brand-lime"
-                : "bg-[#121215] text-editorial-steely border-[#27272A] hover:text-white"
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-mono transition-all ${
+              isPacingTimerEnabled
+                ? isOvertime
+                  ? "bg-red-500/20 text-red-400 border-red-500/50 animate-pulse"
+                  : isWarning
+                  ? "bg-amber-500/20 text-amber-300 border-amber-500/50"
+                  : "bg-brand-lime/10 text-brand-lime border-brand-lime/40"
+                : "bg-[#121215] text-editorial-dim border-[#27272A] hover:text-white"
             }`}
           >
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>SCRATCHPAD</span>
+            <Clock className="w-3.5 h-3.5" />
+            <span>
+              {isPacingTimerEnabled
+                ? `${Math.floor(elapsedSeconds / 60)}:${(elapsedSeconds % 60)
+                    .toString()
+                    .padStart(2, "0")} / ${Math.floor(targetTimeSeconds / 60)}:00`
+                : "UNTIMED STUDY"}
+            </span>
           </button>
 
+          {/* Quick Launch TI BA II Plus */}
           <button
             onClick={() => {
               if (soundEnabled) sound.playKeyClick();
               setCalculatorOpen(true);
             }}
-            className="px-3 py-1.5 rounded bg-[#18181B] text-white border border-[#3F3F46] hover:border-brand-lime/50 flex items-center gap-1.5 transition-all"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] border border-[#27272A] text-brand-lime text-[11px]"
+            title="Open Texas Instruments BA II Plus (Hotkey: K)"
           >
-            <Calculator className="w-3.5 h-3.5 text-brand-lime" />
-            <span>TI BA II+</span>
+            <Calculator className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">BA II+ [K]</span>
+          </button>
+
+          {/* Scratchpad Toggle */}
+          <button
+            onClick={() => setIsScratchpadOpen(!isScratchpadOpen)}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[11px] transition-all ${
+              isScratchpadOpen
+                ? "bg-brand-lime text-black font-bold border-brand-lime"
+                : "bg-[#141418] text-editorial-dim border-[#27272A] hover:text-white"
+            }`}
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">SCRATCHPAD</span>
           </button>
         </div>
       </div>
 
-      {/* Candidate Scratchpad Drawer */}
-      {isScratchpadOpen && (
-        <div className="p-4 rounded-xl bg-[#09090B] border border-[#27272A] space-y-2 animate-in fade-in duration-150">
-          <div className="flex items-center justify-between font-mono text-xs text-editorial-dim">
-            <span className="flex items-center gap-1.5 text-brand-lime font-bold">
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>CANDIDATE SCRATCHPAD & CALCULATIONS</span>
-            </span>
-            <span className="text-[10px]">Private notes (not submitted)</span>
-          </div>
-          <textarea
-            value={scratchpadText}
-            onChange={(e) => setScratchpadText(e.target.value)}
-            placeholder="Type your notes, intermediate register values (PV, PMT, FV), or step-by-step logic here..."
-            className="w-full h-24 bg-[#121215] border border-[#1F1F23] rounded-lg p-3 text-xs font-mono text-white placeholder:text-editorial-dim focus:outline-none focus:border-brand-lime/40"
-          />
-        </div>
-      )}
-
-      {/* Vignette Context Header */}
-      <div className="p-6 rounded-xl bg-[#0B0B0E] border border-[#1F1F23] space-y-4">
+      {/* Main Grid: Vignette Header + Case Stem */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#18181B] font-mono text-xs">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded bg-brand-lime text-black font-bold text-[10px]">
-              TRACK {vignette.topicId}
-            </span>
-            <span className="text-white font-semibold">{vignette.topicName}</span>
+        {/* Left Column: Vignette Case Stem (7 cols) */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className="p-6 bg-[#0B0B0E] border border-[#1F1F23] rounded-xl relative overflow-hidden">
+            
+            {/* Topic & Difficulty Badges */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime font-mono text-[10px] font-bold uppercase tracking-wider">
+                  TOPIC {vignette.topicId} // {vignette.topicName}
+                </span>
+                <span className="text-xs font-mono text-editorial-dim">
+                  {vignette.subReading}
+                </span>
+              </div>
+              <span className="px-2 py-0.5 rounded bg-[#18181B] border border-[#27272A] text-editorial-steely font-mono text-[10px]">
+                DIFFICULTY: {vignette.difficulty.toUpperCase()}
+              </span>
+            </div>
+
+            {/* Vignette Case Stem Text */}
+            <h2 className="text-sm font-mono font-bold text-editorial-muted tracking-wider uppercase mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
+              INSTITUTIONAL CASE VIGNETTE
+            </h2>
+            <div className="text-sm text-zinc-200 leading-relaxed font-serif tracking-wide border-l-2 border-[#27272A] pl-4 py-1">
+              <FormattedMathText text={vignette.vignetteStem} />
+            </div>
+
+            {/* Hotkey Guide Pill */}
+            <div className="mt-4 pt-3 border-t border-[#18181B] flex items-center justify-between text-[11px] font-mono text-editorial-dim">
+              <span className="flex items-center gap-1.5">
+                <Keyboard className="w-3.5 h-3.5 text-brand-lime" />
+                <span>HOTKEYS: [1/2/3] SELECT &bull; [SPACE/ENTER] SUBMIT &bull; [K] BA II+</span>
+              </span>
+              <span>{activeQuestions.length} QUESTIONS IN SET</span>
+            </div>
           </div>
-          <span className="text-editorial-muted text-[11px] truncate">
-            {vignette.subReading}
-          </span>
+
+          {/* Scratchpad (Collapsible) */}
+          {isScratchpadOpen && (
+            <div className="p-4 bg-[#0A0A0D] border border-brand-lime/30 rounded-xl space-y-2 font-mono animate-in fade-in duration-150">
+              <div className="flex items-center justify-between text-xs text-brand-lime">
+                <span className="font-bold">SCRATCHPAD // INTERMEDIATE WORKINGS</span>
+                <span className="text-[10px] text-editorial-dim">Auto-persisted in session</span>
+              </div>
+              <textarea
+                value={scratchpadText}
+                onChange={(e) => setScratchpadText(e.target.value)}
+                placeholder="Type intermediate keystrokes, cash flows, or formula steps..."
+                rows={4}
+                className="w-full bg-[#121215] border border-[#27272A] rounded-lg p-3 text-xs text-zinc-100 placeholder:text-editorial-dim focus:outline-none focus:border-brand-lime font-mono"
+              />
+            </div>
+          )}
         </div>
 
-        {/* Realistic Institutional Scenario Stem */}
-        <div>
-          <div className="font-mono text-[11px] text-editorial-dim tracking-wider uppercase mb-2 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
-            <span>INSTITUTIONAL CASE SCENARIO:</span>
-          </div>
-          <div className="text-sm sm:text-base text-editorial-white leading-relaxed font-sans bg-[#0E0E12] p-4 rounded-lg border border-[#1F1F23]">
-            <FormattedMathText text={vignette.vignetteStem} />
-          </div>
-        </div>
-
-      </div>
-
-      {/* If already submitted, render the Distractor Autopsy Diagnostic */}
-      {hasSubmitted ? (
-        <DiagnosticAutopsyView
-          vignette={vignette}
-          result={{
-            vignetteId: vignette.id,
-            topicId: vignette.topicId,
-            submittedAt: new Date().toISOString(),
-            score: vignette.questions.filter((q) => selectedAnswers[q.id] === q.correctOption).length,
-            total: 2,
-            userAnswers: selectedAnswers,
-            submissions: vignette.questions.map((q) => ({
-              questionId: q.id,
-              selectedOption: selectedAnswers[q.id],
-              isCorrect: selectedAnswers[q.id] === q.correctOption,
-              trapTriggered: selectedAnswers[q.id] === q.correctOption ? undefined : q.trapCategory,
-            })),
-            trapsTriggered: vignette.questions
-              .filter((q) => selectedAnswers[q.id] !== q.correctOption)
-              .map((q) => q.trapCategory),
-          }}
-          onDrillAnother={handleDrillAnother}
-          onReviewFormulas={handleReviewFormulas}
-          onReturnDashboard={handleReturnDashboard}
-          onNextTrack={handleNextTrack}
-        />
-      ) : (
-        /* Unsubmitted Question Pair with Strict Submission Barrier */
-        <div className="space-y-6">
-          
-          {vignette.questions.map((q) => {
-            const currentSelected = selectedAnswers[q.id];
-
+        {/* Right Column: Questions & Distractor Selection (5 cols) */}
+        <div className="lg:col-span-5 space-y-6">
+          {activeQuestions.map((q, idx) => {
+            const chosen = selectedAnswers[q.id];
             return (
               <div
                 key={q.id}
-                className="p-6 rounded-xl bg-[#0B0B0E] border border-[#1F1F23] space-y-5"
+                className={`p-5 rounded-xl border transition-all ${
+                  chosen ? "bg-[#0E0E12] border-brand-lime/40" : "bg-[#0B0B0E] border-[#1F1F23]"
+                }`}
               >
-                {/* Question Stem */}
-                <div>
-                  <span className="font-mono text-xs font-bold text-brand-lime block mb-1">
-                    QUESTION 0{q.id} OF 02
+                {/* Question Header */}
+                <div className="flex items-center justify-between mb-3 font-mono text-xs">
+                  <span className="text-brand-lime font-bold">
+                    QUESTION {idx + 1} OF {activeQuestions.length}
                   </span>
-                  <h3 className="text-sm sm:text-base font-semibold text-white leading-snug">
-                    <FormattedMathText text={q.stem} />
-                  </h3>
+                  {q.losCode && (
+                    <span className="text-editorial-dim text-[11px] px-1.5 py-0.5 rounded bg-[#141418] border border-[#27272A]">
+                      {q.losCode}
+                    </span>
+                  )}
                 </div>
 
-                {/* 3 Options: A, B, C */}
-                <div className="space-y-2.5">
-                  {(["A", "B", "C"] as OptionKey[]).map((optKey) => {
-                    const isSelected = currentSelected === optKey;
+                {/* Question Stem */}
+                <div className="text-xs sm:text-sm text-zinc-100 font-medium mb-4 leading-relaxed">
+                  <FormattedMathText text={q.stem} />
+                </div>
 
+                {/* Option Selector (A, B, C) */}
+                <div className="space-y-2 font-mono">
+                  {(["A", "B", "C"] as OptionKey[]).map((opt) => {
+                    const isSelected = chosen === opt;
                     return (
                       <button
-                        key={optKey}
+                        key={opt}
                         type="button"
-                        onClick={() => handleSelectOption(q.id, optKey)}
-                        className={`w-full text-left p-4 rounded-lg border transition-all duration-150 flex items-start gap-3.5 group ${
+                        onClick={() => handleSelectOption(q.id, opt)}
+                        disabled={hasSubmitted}
+                        className={`w-full text-left p-3 rounded-lg border transition-all flex items-start gap-3 select-none ${
                           isSelected
-                            ? "bg-[#18181D] border-brand-lime/60 shadow-[0_0_15px_rgba(216,255,62,0.12)]"
-                            : "bg-[#0E0E12] border-[#1F1F23] hover:border-[#27272A] hover:bg-[#121216]"
-                        }`}
+                            ? "bg-brand-lime/10 border-brand-lime text-white shadow-[0_0_12px_rgba(216,255,62,0.15)]"
+                            : "bg-[#121215] border-[#222226] text-zinc-300 hover:border-[#3F3F46] hover:bg-[#16161A]"
+                        } ${hasSubmitted ? "cursor-not-allowed opacity-80" : ""}`}
                       >
-                        {/* Option Radio / Badge */}
-                        <div
-                          className={`w-6 h-6 rounded-full font-mono text-xs font-bold flex items-center justify-center shrink-0 border transition-all ${
-                            isSelected
-                              ? "bg-brand-lime text-black border-brand-lime shadow-lime-sm"
-                              : "bg-[#141418] text-editorial-muted border-[#27272A] group-hover:border-editorial-muted"
-                          }`}
-                        >
-                          {optKey}
-                        </div>
-
-                        {/* Option Text */}
                         <span
-                          className={`text-xs sm:text-sm leading-relaxed ${
-                            isSelected ? "text-white font-medium" : "text-editorial-steely group-hover:text-white"
+                          className={`inline-flex items-center justify-center w-5 h-5 rounded font-bold text-xs shrink-0 ${
+                            isSelected
+                              ? "bg-brand-lime text-black"
+                              : "bg-[#1C1C22] text-editorial-dim border border-[#27272A]"
                           }`}
                         >
-                          <FormattedMathText text={q.options[optKey]} />
+                          {opt}
                         </span>
+                        <div className="text-xs leading-relaxed flex-1 font-sans">
+                          <FormattedMathText text={q.options[opt]} />
+                        </div>
                       </button>
                     );
                   })}
                 </div>
-
               </div>
             );
           })}
 
-          {/* Submission Barrier Bar */}
-          <div className="p-5 rounded-xl bg-[#0E0E12] border border-[#1F1F23] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <ShieldAlert className="w-5 h-5 text-editorial-dim" />
-              <p className="text-xs text-editorial-muted font-mono">
-                Full algebraic solutions, calculator workflows, and Distractor Autopsies stay concealed until evaluation.
-              </p>
-            </div>
-
+          {/* Submit Action Button */}
+          {!hasSubmitted ? (
             <button
               onClick={handleSubmitDiagnostic}
               disabled={!isFormComplete}
-              className={`w-full sm:w-auto px-6 py-3 rounded-lg font-mono text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 ${
+              className={`w-full py-3.5 px-4 rounded-xl font-mono text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
                 isFormComplete
-                  ? "bg-brand-lime text-black hover:bg-brand-neon shadow-lime-glow"
+                  ? "bg-brand-lime text-black hover:bg-brand-lime/90 shadow-lime-glow cursor-pointer active:scale-[0.99]"
                   : "bg-[#18181B] text-editorial-dim border border-[#27272A] cursor-not-allowed"
               }`}
             >
-              <Send className="w-3.5 h-3.5" />
-              <span>SUBMIT & RUN DIAGNOSTIC</span>
+              <Send className="w-4 h-4" />
+              <span>
+                {isFormComplete
+                  ? "EXECUTE SURGICAL DIAGNOSTIC AUTOPSY"
+                  : `SELECT ALL ANSWERS (${Object.keys(selectedAnswers).length}/${activeQuestions.length})`}
+              </span>
             </button>
-          </div>
+          ) : (
+            <button
+              onClick={handleResetForRetake}
+              className="w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider bg-[#141418] hover:bg-[#1A1A20] text-zinc-300 border border-[#27272A] transition-all"
+            >
+              RE-DRILL THIS VIGNETTE (RESET)
+            </button>
+          )}
+        </div>
 
+      </div>
+
+      {/* Post-Submission Distractor Autopsy & Diagnostic Report */}
+      {hasSubmitted && existingResult && (
+        <div className="mt-12 pt-8 border-t border-[#1F1F23]">
+          <DiagnosticAutopsyView
+            vignette={{ ...vignette, questions: activeQuestions }}
+            result={existingResult}
+            onDrillAnother={() => {
+              const other = allVignettes.find((v) => v.id !== vignette.id);
+              if (other) startVignetteDrill(other.id);
+              else handleResetForRetake();
+            }}
+            onReviewFormulas={() => useCFAStore.getState().setFormulaSheetOpen(true)}
+            onReturnDashboard={closeVignetteDrill}
+            onNextTrack={() => {
+              const nextId = (parseInt(vignette.topicId, 10) + 1).toString().padStart(2, "0");
+              const nextTopic = CFA_CURRICULUM.find((t) => t.id === nextId);
+              if (nextTopic) {
+                selectTopic(nextId);
+                const v = allVignettes.find((item) => item.topicId === nextId);
+                if (v) startVignetteDrill(v.id);
+                else closeVignetteDrill();
+              } else {
+                closeVignetteDrill();
+              }
+            }}
+          />
         </div>
       )}
 

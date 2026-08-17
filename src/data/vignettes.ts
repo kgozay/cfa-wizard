@@ -1,462 +1,581 @@
 import { VignetteSet } from "@/types/cfa";
 
 export const CFA_VIGNETTES: VignetteSet[] = [
+  // TOPIC 01: Quantitative Methods
   {
-    id: "vignette-01-ethics",
+    id: "vignette-01-quant",
     topicId: "01",
-    topicName: "Ethical & Professional Standards",
-    subReading: "Guidance for Standards I–VII & Soft Dollar Allocation",
-    difficulty: "High Trap",
-    vignetteStem: "Elena Rostova, CFA, is a senior portfolio manager at Apex Asset Management managing institutional pension mandates. A broker-dealer, Zenith Securities, offers Elena an arrangement where Apex directs client equity trades to Zenith at standard commissions. In return, Zenith agrees to provide Apex with specialized macroeconomic econometric models, Bloomberg terminal software subscriptions for all portfolio managers, and tickets to an annual offshore investment symposium with paid luxury resort accommodations.",
-    questions: [
-      {
-        id: 1,
-        stem: "Under the CFA Institute Standards of Professional Conduct regarding Soft Dollar Practices (Standard III-A: Loyalty, Prudence, and Care), which of the following services offered by Zenith is most acceptable for Elena to receive using client brokerage commissions?",
-        options: {
-          A: "Bloomberg terminal software subscriptions for all portfolio managers.",
-          B: "Specialized macroeconomic econometric research models.",
-          C: "Luxury resort accommodations for the investment symposium."
-        },
-        correctOption: "B",
-        algebraicSolution: "\\text{Soft Dollar Test: } \\text{Benefit must directly aid the investment decision-making process for the specific client accounts generating brokerage.} \\newline \\text{Economic research models provide direct analytical decision support. Office subscriptions and travel expenses are manager overhead.}",
-        calculatorKeystrokes: "N/A — Qualitative Standard III-A / Soft Dollar Beneficiary Framework",
-        trapCategory: "Soft Dollar Beneficiary Distinction",
-        distractorAutopsy: {
-          A: "Incorrect. General office overhead, hardware, and routine terminal subscriptions benefit the investment management firm generally and cannot be financed using client soft dollar brokerage credits.",
-          B: "Correct. Proprietary econometric models and fundamental investment research directly assist in portfolio decision-making for client accounts, meeting the primary beneficiary standard.",
-          C: "Incorrect. Luxury travel and resort lodging constitute personal and firm benefits that breach fiduciary duty (Standard III-A) and independence (Standard I-B)."
-        }
-      },
-      {
-        id: 2,
-        stem: "Suppose Elena attends the investment symposium at Apex's expense. During a dinner, the CFO of an issuer held across Apex's portfolios informs Elena that next quarter's revenue will fall 35% below consensus estimates due to an unannounced supply chain collapse. Under Standard II-A (Material Nonpublic Information), Elena's most appropriate course of action is to:",
-        options: {
-          A: "Immediately liquidate the issuer's shares across all client portfolios to prevent fiduciary losses.",
-          B: "Refrain from trading or causing others to trade in the issuer's securities and urge company management to publicly disclose the information.",
-          C: "Incorporate the private revenue disclosure into her proprietary multi-factor mosaic model before executing rebalancing trades."
-        },
-        correctOption: "B",
-        algebraicSolution: "\\text{Standard II-A Rule: } \\text{Trading on material nonpublic information is strictly forbidden regardless of fiduciary duties.} \\newline \\text{Action: Urge management public disclosure while maintaining a trading freeze.}",
-        calculatorKeystrokes: "N/A — Standard II-A Material Nonpublic Information Protocol",
-        trapCategory: "Fiduciary Duty vs. Insider Trading Conflict",
-        distractorAutopsy: {
-          A: "Incorrect. Even though portfolio managers owe a duty of loyalty to clients, Standard II-A strictly prohibits trading on material nonpublic information; fiduciary duty never supersedes legal and ethical insider trading prohibitions.",
-          B: "Correct. When in possession of material nonpublic information directly from corporate insiders, the member must not trade, must isolate the information behind ethical walls, and must encourage corporate disclosure.",
-          C: "Incorrect. The Mosaic Theory permits piecing together non-material nonpublic information with public data, but the explicit revenue guidance leak is material on its own; utilizing it is a direct violation."
-        }
-      }
-    ]
-  },
-  {
-    id: "vignette-02-fsa",
-    topicId: "02",
-    topicName: "Financial Statement Analysis",
-    subReading: "Inventories: LIFO Reserve & Lease Capitalization",
-    difficulty: "Institutional",
-    vignetteStem: "Vanguard Industrial Corp. reports under US GAAP and uses the LIFO inventory valuation method during a period of persistent 6% annual input price inflation. For the fiscal year ended 2025, Vanguard reports COGS of $1,450,000 and ending inventory of $620,000. Vanguard's footnote disclosures indicate that the LIFO reserve was $180,000 on January 1, 2025, and increased to $245,000 on December 31, 2025. Vanguard's corporate marginal tax rate is 25%.",
-    questions: [
-      {
-        id: 1,
-        stem: "If Vanguard had reported its financial statements under the FIFO method instead of LIFO, its Cost of Goods Sold (COGS) for fiscal year 2025 would be closest to:",
-        options: {
-          A: "$1,385,000",
-          B: "$1,450,000",
-          C: "$1,515,000"
-        },
-        correctOption: "A",
-        algebraicSolution: "\\text{LIFO to FIFO COGS Adjustment Formula:} \\newline COGS_{FIFO} = COGS_{LIFO} - \\Delta LIFO\\ Reserve \\newline \\Delta LIFO\\ Reserve = 245,000 - 180,000 = +\\$65,000 \\newline COGS_{FIFO} = 1,450,000 - 65,000 = \\$1,385,000",
-        calculatorKeystrokes: "1450000 [-] [(] 245000 [-] 180000 [)] [=] => 1,385,000",
-        trapCategory: "LIFO Reserve Change Directional Sign",
-        distractorAutopsy: {
-          A: "Correct. During inflation, ending LIFO reserve expands (+$65,000). FIFO assigns earlier, cheaper inventory to COGS, so FIFO COGS equals LIFO COGS minus the change in LIFO reserve ($1,450,000 - $65,000 = $1,385,000).",
-          B: "Incorrect. Assumes no adjustment is required, ignoring the $65,000 expansion in the LIFO reserve.",
-          C: "Incorrect. The candidate erroneously added the change in LIFO reserve ($1,450,000 + $65,000 = $1,515,000), which would only occur in a deflationary environment where FIFO COGS exceeds LIFO COGS."
-        }
-      },
-      {
-        id: 2,
-        stem: "The cumulative adjustment to Vanguard's retained earnings to reflect the FIFO conversion on December 31, 2025, is most likely an increase of:",
-        options: {
-          A: "$48,750",
-          B: "$183,750",
-          C: "$245,000"
-        },
-        correctOption: "B",
-        algebraicSolution: "\\text{Cumulative Retained Earnings Adjustment:} \\newline \\Delta Retained\\ Earnings = LIFO\\ Reserve_{ending} \\times (1 - t) \\newline \\Delta Retained\\ Earnings = 245,000 \\times (1 - 0.25) = 245,000 \\times 0.75 = \\$183,750",
-        calculatorKeystrokes: "245000 [\\times] [(] 1 [-] 0.25 [)] [=] => 183,750",
-        trapCategory: "Cumulative vs. Single-Period Reserve Tax Adjustment",
-        distractorAutopsy: {
-          A: "Incorrect. Calculated using only the current period change in reserve after tax: $\\Delta LIFO\\ Reserve \\times (1 - t) = 65,000 \\times 0.75 = \\$48,750$. Retained earnings on the balance sheet is a cumulative stock measure, requiring the ending total reserve.",
-          B: "Correct. On the balance sheet, ending inventory increases by the full ending LIFO reserve ($245,000). Cumulative deferred taxes increase by $t \\times LIFO\\ Reserve = 245,000 \\times 0.25 = \\$61,250$, leaving an after-tax increase to retained earnings of $245,000 \\times 0.75 = \\$183,750$.",
-          C: "Incorrect. Assumes the full pre-tax ending reserve increases retained earnings, failing to deduct the tax liability component ($245,000 \\times 0.25 = \\$61,250$)."
-        }
-      }
-    ]
-  },
-  {
-    id: "vignette-03-equity",
-    topicId: "03",
-    topicName: "Equity Investments",
-    subReading: "Discounted Dividend Valuation & Multi-Stage DDM",
-    difficulty: "High Trap",
-    vignetteStem: "An equity research analyst is valuing Helios Energy using a two-stage dividend discount model (DDM). Helios just paid an annual dividend of $D_0 = \\$2.50$ per share. Dividends are projected to grow at a supernormal rate of 12.0% per year for the next 2 years (Years 1 and 2), after which growth will decelerate permanently to a constant sustainable rate of 4.0% per year beginning in Year 3. The analyst estimates Helios' required rate of return on equity to be 9.0%.",
-    questions: [
-      {
-        id: 1,
-        stem: "The terminal value of Helios Energy stock at the end of Year 2 ($P_2$) using the Gordon Growth Model is closest to:",
-        options: {
-          A: "$62.72",
-          B: "$65.23",
-          C: "$67.84"
-        },
-        correctOption: "B",
-        algebraicSolution: "\\text{Step 1: Compute dividends for Years 1, 2, and 3:} \\newline D_1 = 2.50 \\times (1 + 0.12) = \\$2.80 \\newline D_2 = 2.80 \\times (1 + 0.12) = 2.50 \\times (1.12)^2 = \\$3.136 \\newline D_3 = D_2 \\times (1 + g_L) = 3.136 \\times (1 + 0.04) = \\$3.26144 \\newline \\text{Step 2: Terminal Value at } t=2: \\newline P_2 = \\frac{D_3}{r - g_L} = \\frac{3.26144}{0.09 - 0.04} = \\frac{3.26144}{0.05} = \\$65.2288 \\approx \\$65.23",
-        calculatorKeystrokes: "2.50 [\\times] 1.12 [\\times] 1.12 [\\times] 1.04 [\\div] 0.05 [=] => 65.2288",
-        trapCategory: "Gordon Growth Numerator Timing ($D_n$ vs $D_{n+1}$)",
-        distractorAutopsy: {
-          A: "Incorrect. The candidate used $D_2$ instead of $D_3$ in the numerator: $P_2 = \\frac{D_2}{r - g} = \\frac{3.136}{0.05} = \\$62.72$. This is the classic CFA trap of failing to advance dividend growth to the perpetual growth phase.",
-          B: "Correct. The Gordon growth model requires next year's dividend in the numerator ($D_3 = D_2 \\times 1.04 = \\$3.26144$). Dividing by $(r - g) = (0.09 - 0.04) = 0.05$ yields $P_2 = \\$65.23$.",
-          C: "Incorrect. Computed by compounding $D_2$ by the supernormal rate of 12% ($D_3 = 3.136 \\times 1.12 = \\$3.512$), yielding $P_2 = \\frac{3.512}{0.05} = \\$70.24$, then discounting incorrectly."
-        }
-      },
-      {
-        id: 2,
-        stem: "The total intrinsic value per share of Helios Energy stock today ($P_0$) is closest to:",
-        options: {
-          A: "$57.48",
-          B: "$60.10",
-          C: "$62.55"
-        },
-        correctOption: "A",
-        algebraicSolution: "\\text{Discount all cash flows to } t=0 \\text{ at } r = 9\\%: \\newline P_0 = \\frac{D_1}{(1+r)^1} + \\frac{D_2 + P_2}{(1+r)^2} \\newline P_0 = \\frac{2.80}{1.09} + \\frac{3.136 + 65.2288}{(1.09)^2} = 2.5688 + \\frac{68.3648}{1.1881} = 2.5688 + 57.5413 = \\$60.11 \\newline \\text{Using exact cash flow registers:} \\newline CF_0 = 0, \\; CF_1 = 2.80, \\; CF_2 = 3.136 + 65.2288 = 68.3648, \\; I = 9\\% \\implies NPV = \\$60.11",
-        calculatorKeystrokes: "[CF] -> [2nd][CLR WORK] -> CF0 = 0 [ENTER] -> C01 = 2.80 [ENTER] -> C02 = 68.3648 [ENTER] -> [NPV] -> I = 9 [ENTER] -> [CPT] => 60.11",
-        trapCategory: "Terminal Value Discounting Period Mismatch",
-        distractorAutopsy: {
-          A: "Incorrect. The candidate mistakenly discounted the terminal value $P_2$ over 3 periods instead of 2 periods: $\\frac{2.80}{1.09} + \\frac{3.136}{(1.09)^2} + \\frac{65.23}{(1.09)^3} = 2.569 + 2.639 + 50.369 = \\$55.58$.",
-          B: "Correct. Discounting Year 1 dividend ($2.80 / 1.09 = \\$2.57$) and combined Year 2 cash flow ($[3.136 + 65.23] / 1.09^2 = \\$57.54$) produces an intrinsic price today of $P_0 = \\$60.11$.",
-          C: "Incorrect. The candidate added $D_0 = \\$2.50$ into the valuation stream or forgot to discount $D_2$ and $P_2$ over two years."
-        }
-      }
-    ]
-  },
-  {
-    id: "vignette-04-fixed-income",
-    topicId: "04",
-    topicName: "Fixed Income",
-    subReading: "Understanding Fixed-Income Risk & Convexity Adjustments",
-    difficulty: "Institutional",
-    vignetteStem: "A fixed-income portfolio manager at Citadel Capital oversees an institutional mandate holding a 5-year option-free annual corporate bond with a par value of $1,000 and a 6.00% annual coupon. The bond is currently trading at a market price of $980.00. Analytical models estimate that the bond has an Annual Modified Duration of 4.25 years and an Annual Convexity of 24.50. The Federal Reserve unexpectedly adjusts monetary policy, causing benchmark yields to rise immediately by 150 basis points (+1.50%).",
-    questions: [
-      {
-        id: 1,
-        stem: "Using both duration and convexity, the estimated percentage price change of the bond following the 150 bps yield increase is closest to:",
-        options: {
-          A: "-6.38%",
-          B: "-6.10%",
-          C: "-5.82%"
-        },
-        correctOption: "B",
-        algebraicSolution: "\\text{Percentage Price Change Formula:} \\newline \\frac{\\Delta P}{P} \\approx -\\text{AnnModDur} \\times \\Delta y + \\frac{1}{2} \\times \\text{AnnConvexity} \\times (\\Delta y)^2 \\newline \\text{Duration Effect} = -4.25 \\times (+0.0150) = -0.06375 \\; (-6.375\\%) \\newline \\text{Convexity Effect} = \\frac{1}{2} \\times 24.50 \\times (0.0150)^2 = 0.5 \\times 24.50 \\times 0.000225 = +0.002756 \\; (+0.276\\%) \\newline \\frac{\\Delta P}{P} \\approx -6.375\\% + 0.276\\% = -6.099\\% \\approx -6.10\\%",
-        calculatorKeystrokes: "[-] 4.25 [\\times] 0.015 [+] 0.5 [\\times] 24.50 [\\times] [(] 0.015 [x^2] [)] [=] => -0.06099 (-6.10%)",
-        trapCategory: "Omission of the 1/2 Convexity Scalar Factor",
-        distractorAutopsy: {
-          A: "Incorrect. This represents the linear duration-only approximation ($-4.25 \\times 0.015 = -6.38\\%$), ignoring the positive convexity adjustment that dampens price declines.",
-          B: "Correct. The duration effect creates a $-6.375\\%$ drop, which is cushioned by the positive convexity term of $+\\frac{1}{2}(24.50)(0.015)^2 = +0.276\\%$, resulting in a net $-6.10\\%$ price change.",
-          C: "Incorrect. The candidate forgot the $\\frac{1}{2}$ factor in the convexity term: $-6.375\\% + (24.50)(0.015)^2 = -6.375\\% + 0.551\\% = -5.82\\%$. Forgetting the $1/2$ is one of the most frequent CFA traps."
-        }
-      },
-      {
-        id: 2,
-        stem: "The Yield-to-Maturity (YTM) of the 5-year annual corporate bond prior to the interest rate shock is closest to:",
-        options: {
-          A: "6.00%",
-          B: "6.48%",
-          C: "6.85%"
-        },
-        correctOption: "B",
-        algebraicSolution: "\\text{Solve for YTM on TI BA II Plus:} \\newline N = 5, \\; PV = -980.00, \\; PMT = 60, \\; FV = 1000 \\newline \\text{Compute } I/Y \\implies 6.48\\%",
-        calculatorKeystrokes: "[2nd][CLR TVM] -> N = 5 -> PV = -980 [ENTER] -> PMT = 60 [ENTER] -> FV = 1000 [ENTER] -> [CPT] [I/Y] => 6.48%",
-        trapCategory: "Bond Price Sign Inversion ($PV$ vs $FV$)",
-        distractorAutopsy: {
-          A: "Incorrect. Assumes bond trades at par where YTM = coupon (6.00%). Because the bond trades at a discount ($980 < $1,000), YTM must exceed the coupon rate.",
-          B: "Correct. Using the TI BA II Plus TVM registers with $N=5$, $PV=-980$, $PMT=60$, $FV=1000$, and computing $[I/Y]$ yields $6.48\\%$.",
-          C: "Incorrect. Calculated by treating the annual bond as semi-annual with $N=10$ and $PMT=30$ without proper rate conversion."
-        }
-      }
-    ]
-  },
-  {
-    id: "vignette-05-portfolio",
-    topicId: "05",
-    topicName: "Portfolio Management",
-    subReading: "Capital Asset Pricing Model (CAPM) & SML Analysis",
-    difficulty: "High Trap",
-    vignetteStem: "An equity analyst at BlackRock is evaluating three technology stocks against the Capital Asset Pricing Model (CAPM). The risk-free rate is currently 4.0%, and the expected return on the broad market index is 10.0%. The analyst's proprietary research generates the following forecasts for Zenith Technologies:\n- Expected Return $E(R_z) = 13.5\\%$\n- Stock Standard Deviation $\\sigma_z = 28.0\\%$\n- Market Standard Deviation $\\sigma_m = 16.0\\%$\n- Correlation with the Market $\\rho_{z,m} = 0.75$",
-    questions: [
-      {
-        id: 1,
-        stem: "The Beta ($\\beta$) of Zenith Technologies relative to the market index is closest to:",
-        options: {
-          A: "0.75",
-          B: "1.31",
-          C: "1.75"
-        },
-        correctOption: "B",
-        algebraicSolution: "\\text{Beta Derivation Formula:} \\newline \\beta_z = \\frac{Cov(R_z, R_m)}{\\sigma_m^2} = \\rho_{z,m} \\times \\frac{\\sigma_z}{\\sigma_m} \\newline \\beta_z = 0.75 \\times \\frac{0.28}{0.16} = 0.75 \\times 1.75 = 1.3125 \\approx 1.31",
-        calculatorKeystrokes: "0.75 [\\times] 0.28 [\\div] 0.16 [=] => 1.3125",
-        trapCategory: "Beta Ratio Inversion (Market vs Asset Volatility)",
-        distractorAutopsy: {
-          A: "Incorrect. The candidate assumed Beta equals the correlation coefficient $\\rho_{z,m} = 0.75$, ignoring relative asset and market standard deviations.",
-          B: "Correct. Beta is the correlation multiplied by the ratio of the asset's standard deviation to the market's standard deviation: $0.75 \\times (28\\% / 16\\%) = 1.3125$.",
-          C: "Incorrect. The candidate calculated the standard deviation ratio $\\sigma_z / \\sigma_m = 28 / 16 = 1.75$ without multiplying by the correlation coefficient $\\rho = 0.75$."
-        }
-      },
-      {
-        id: 2,
-        stem: "Based on the CAPM, Zenith Technologies is most accurately described as:",
-        options: {
-          A: "Underpriced, plotting above the Security Market Line (SML).",
-          B: "Fairly priced, plotting directly on the Capital Market Line (CML).",
-          C: "Overpriced, plotting below the Security Market Line (SML)."
-        },
-        correctOption: "A",
-        algebraicSolution: "\\text{CAPM Required Return: } \\newline R_{req} = R_f + \\beta_z [E(R_m) - R_f] \\newline R_{req} = 0.04 + 1.3125 \\times (0.10 - 0.04) = 0.04 + 1.3125 \\times 0.06 = 0.04 + 0.07875 = 11.875\\% \\newline \\text{Comparison: } E(R_z) = 13.5\\% > R_{req} = 11.875\\% \\newline \\text{Conclusion: Asset provides excess return } (\\alpha = +1.625\\%) \\implies \\text{Plots ABOVE SML } \\implies \\text{UNDERPRICED (Buy)}",
-        calculatorKeystrokes: "0.04 [+] 1.3125 [\\times] 0.06 [=] => 0.11875 (11.88%)",
-        trapCategory: "Underpriced vs Overpriced SML Plot Inversion",
-        distractorAutopsy: {
-          A: "Correct. The CAPM required return is $11.88\\%$. Because the analyst's expected return ($13.50\\%$) exceeds required return, the stock offers positive alpha ($+1.625\\%$) and plots above the SML, meaning it is underpriced in the market.",
-          B: "Incorrect. The CML applies exclusively to efficient total portfolios, not individual securities. Individual stocks must be evaluated against the SML.",
-          C: "Incorrect. Candidates often mistakenly think higher expected return means the asset is 'too expensive' (overpriced). In finance, an asset expected to return more than its risk warrants is a bargain (underpriced)."
-        }
-      }
-    ]
-  },
-  {
-    id: "vignette-06-alts",
-    topicId: "06",
-    topicName: "Alternative Investments",
-    subReading: "Hedge Fund Fee Waterfalls & Commodity Roll Yield",
-    difficulty: "High Trap",
-    vignetteStem: "Alpha Capital operates a global macro hedge fund with $200 million in Assets Under Management (AUM) at the beginning of the year. The fund charges a standard '2 and 20' fee structure (2% management fee, 20% incentive fee). The management fee is calculated on beginning-of-year AUM. The incentive fee is calculated net of the management fee and is subject to a 5% soft hurdle rate with 100% catch-up. At the end of the year, the fund's portfolio value before fees is $230 million.",
-    questions: [
-      {
-        id: 1,
-        stem: "The total fee (management fee plus incentive fee) earned by Alpha Capital for the year is closest to:",
-        options: {
-          A: "$8.00 million",
-          B: "$9.20 million",
-          C: "$10.00 million"
-        },
-        correctOption: "B",
-        algebraicSolution: "\\text{Step 1: Management Fee} = 2\\% \\times \\$200\\text{M} = \\$4.00\\text{M} \\newline \\text{Step 2: Gross Profit Net of Mgmt Fee} = \\$230\\text{M} - \\$200\\text{M} - \\$4.00\\text{M} = \\$26.00\\text{M} \\newline \\text{Step 3: Hurdle Check} = 5\\% \\times \\$200\\text{M} = \\$10.00\\text{M}. \\; \\text{Since } \\$26\\text{M} > \\$10\\text{M}, \\text{hurdle is satisfied.} \\newline \\text{Step 4: 100\\% Catch-up Rule} \\implies \\text{GP receives 20\\% of the entire net profit } (\\$26.00\\text{M}): \\newline \\text{Incentive Fee} = 20\\% \\times \\$26.00\\text{M} = \\$5.20\\text{M} \\newline \\text{Total Fee} = \\text{Mgmt Fee} + \\text{Incentive Fee} = \\$4.00\\text{M} + \\$5.20\\text{M} = \\$9.20\\text{M}",
-        calculatorKeystrokes: "200 [\\times] 0.02 [=] 4.0; [(] 30 [-] 4 [)] [\\times] 0.20 [=] 5.2; 4 [+] 5.2 [=] 9.20",
-        trapCategory: "Hurdle Rate Catch-Up Clause vs Excess Profit",
-        distractorAutopsy: {
-          A: "Incorrect. Assumes a hard hurdle rate without catch-up where incentive fee applies only to profits above the 5% hurdle: $4.00\\text{M} + 20\\% \\times (26\\text{M} - 10\\text{M}) = 4.00 + 3.20 = \\$7.20\\text{M}$.",
-          B: "Correct. Because the contract specifies a soft hurdle with 100% catch-up, once the 5% threshold is crossed, the 20% incentive fee applies to the entire $26M net profit ($5.20M). Adding the $4.00M management fee yields $9.20M.",
-          C: "Incorrect. The candidate calculated fees gross of the management fee: $4.00\\text{M} + 20\\% \\times \\$30\\text{M} = \\$10.00\\text{M}$, ignoring the requirement that incentive fees be calculated net of management fees."
-        }
-      },
-      {
-        id: 2,
-        stem: "An investor in crude oil futures observes that the current spot price is $78.00/bbl, while the 3-month futures contract trades at $74.50/bbl. The term structure of the commodity is in:",
-        options: {
-          A: "Contango, generating negative roll yield for a long futures position.",
-          B: "Backwardation, generating positive roll yield for a long futures position.",
-          C: "Backwardation, generating negative roll yield for a long futures position."
-        },
-        correctOption: "B",
-        algebraicSolution: "\\text{Term Structure Condition: } F_0 = \\$74.50 < S_0 = \\$78.00 \\newline \\implies \\text{Backwardation (Inverted Market)}. \\newline \\text{Roll Yield for Long Futures: } \\text{As time passes, } F_t \\to S_t \\text{ (converges upward)}. \\newline \\text{Roll Yield} = \\frac{S_0 - F_0}{F_0} > 0 \\implies \\text{Positive Roll Yield}.",
-        calculatorKeystrokes: "78 [-] 74.50 [=] +3.50 (Positive Roll)",
-        trapCategory: "Contango vs Backwardation Roll Yield Polarity",
-        distractorAutopsy: {
-          A: "Incorrect. Contango occurs when futures prices exceed spot prices ($F_0 > S_0$), which causes negative roll yield when rolling expiring contracts to higher-priced contracts.",
-          B: "Correct. When futures trade below spot ($F_0 < S_0$), the curve is in backwardation. Long futures holders benefit from positive roll yield as the lower-priced futures converge upward toward spot at expiration.",
-          C: "Incorrect. While backwardation is identified correctly, backwardation generates positive—not negative—roll yield for long positions."
-        }
-      }
-    ]
-  },
-  {
-    id: "vignette-07-quants",
-    topicId: "07",
     topicName: "Quantitative Methods",
-    subReading: "Hypothesis Testing, Time Value of Money & Compounding",
-    difficulty: "Institutional",
-    vignetteStem: "A quantitative research analyst tests whether the average excess return of an algorithmic momentum strategy is statistically significantly greater than zero. Using 64 monthly observations ($n = 64$), the sample mean excess return is $\\bar{x} = 0.75\\%$ per month with a sample standard deviation of $s = 2.40\\%$. The analyst tests at the 5% significance level ($\\alpha = 0.05$). Separately, a high-net-worth client deposits $500,000 into a private credit vehicle earning a nominal stated annual rate of 8.00% compounded quarterly.",
+    subReading: "Rates & Returns, TVM, and Hypothesis Testing",
+    difficulty: "High Trap",
+    vignetteStem: "An institutional asset management analyst is constructing benchmark return forecasts and evaluating candidate investment funds. The portfolio requires monthly compounding rate transformations, annuity-due retirement cash flow projections, and two-tailed hypothesis testing against a historical benchmark return of 7.5% per annum.",
     questions: [
       {
-        id: 1,
-        stem: "The calculated test statistic for the momentum strategy hypothesis test ($H_0: \\mu \\le 0 \\text{ vs. } H_a: \\mu > 0$) is closest to:",
+        id: 101,
+        losCode: "LOS 1.b",
+        stem: "A corporate bond offering quotes a stated nominal annual interest rate of 8.40% compounded monthly. What is the Effective Annual Rate (EAR) generated by this security?",
         options: {
-          A: "1.25",
-          B: "2.50",
-          C: "3.13"
+          A: "8.400%",
+          B: "8.731%",
+          C: "8.765%"
         },
         correctOption: "B",
-        algebraicSolution: "\\text{Standard Error of the Mean: } \\newline s_{\\bar{x}} = \\frac{s}{\\sqrt{n}} = \\frac{2.40\\%}{\\sqrt{64}} = \\frac{2.40\\%}{8} = 0.30\\% \\newline \\text{Test Statistic (t-statistic): } \\newline t_{calc} = \\frac{\\bar{x} - \\mu_0}{s_{\\bar{x}}} = \\frac{0.75\\% - 0\\%}{0.30\\%} = 2.50",
-        calculatorKeystrokes: "0.75 [\\div] [(] 2.40 [\\div] [\\sqrt{64}] [)] [=] => 2.50",
-        trapCategory: "Standard Error Sample Size Square Root Omission",
+        algebraicSolution: "EAR = (1 + r_s / m)^m - 1 = (1 + 0.084 / 12)^12 - 1 = (1.007)^12 - 1 = 1.087311 - 1 = 8.731%.",
+        calculatorKeystrokes: "[2nd][ICONV] -> NOM = 8.40 [ENTER] -> [↓][↓] -> C/Y = 12 [ENTER] -> [↑] -> [CPT] EFF => 8.731%",
+        trapCategory: "Effective Annual Rate Compounding Periodicity",
+        errorModeDefault: "PERIODICITY_MISMATCH",
         distractorAutopsy: {
-          A: "Incorrect. The candidate divided sample mean by the full sample standard deviation without dividing by $\\sqrt{n}$: $\\frac{0.75}{2.40} = 0.3125$, then multiplied by 4.",
-          B: "Correct. Standard error is $s / \\sqrt{n} = 2.40\\% / 8 = 0.30\\%$. Dividing the sample mean ($0.75\\%$) by standard error ($0.30\\%$) yields a test statistic of $t = 2.50$.",
-          C: "Incorrect. The candidate incorrectly divided by degrees of freedom $\\sqrt{n-1} = \\sqrt{63}$ in the numerator or flipped the standard error formula."
+          A: "Distractor A assumes no intra-year compounding (treating stated rate equal to effective rate).",
+          B: "CORRECT: Accurately applies (1 + 0.084/12)^12 - 1 = 8.731%.",
+          C: "Distractor C assumes daily continuous compounding e^0.084 - 1 = 8.765%, compounding too frequently."
         }
       },
       {
-        id: 2,
-        stem: "The Effective Annual Rate (EAR) earned on the client's quarterly-compounded credit vehicle is closest to:",
+        id: 102,
+        losCode: "LOS 2.d",
+        stem: "An endowment fund commits to paying an immediate scholarship grant of $50,000 at the beginning of each year for the next 6 years (payments at t = 0, 1, 2, 3, 4, 5). If the annual discount rate is 6.50%, the present value of this annuity due is closest to:",
         options: {
-          A: "8.00%",
-          B: "8.24%",
-          C: "8.33%"
+          A: "$241,986",
+          B: "$257,715",
+          C: "$274,466"
         },
         correctOption: "B",
-        algebraicSolution: "\\text{Effective Annual Rate Formula: } \\newline EAR = \\left(1 + \\frac{r_s}{m}\\right)^m - 1 \\newline EAR = \\left(1 + \\frac{0.08}{4}\\right)^4 - 1 = (1 + 0.02)^4 - 1 = (1.02)^4 - 1 = 1.082432 - 1 = 8.2432\\% \\approx 8.24\\%",
-        calculatorKeystrokes: "[2nd][ICONV] -> NOM = 8 [ENTER] -> C/Y = 4 [ENTER] -> [CPT] EFF => 8.2432%",
-        trapCategory: "Compounding Frequency Inversion ($m=4$ vs $m=12$)",
+        algebraicSolution: "PV(Ordinary) = $50,000 * [(1 - (1.065)^-6) / 0.065] = $241,986.08. PV(Annuity Due) = PV(Ordinary) * (1 + 0.065) = $241,986.08 * 1.065 = $257,715.18.",
+        calculatorKeystrokes: "[2nd][BGN][2nd][SET][2nd][QUIT] -> [N] = 6 -> [I/Y] = 6.50 -> [PMT] = 50000 -> [FV] = 0 -> [CPT][PV] => -257,715.18",
+        trapCategory: "Annuity Due Mode Timing Trap ([BGN] vs [END])",
+        errorModeDefault: "BA2_MODE",
         distractorAutopsy: {
-          A: "Incorrect. This is the nominal stated rate (8.00%), which ignores the positive effect of quarterly interest compounding.",
-          B: "Correct. Compounding at $2\\%$ per quarter for 4 quarters produces an effective annual yield of $(1.02)^4 - 1 = 8.2432\\%$.",
-          C: "Incorrect. Calculated assuming monthly compounding ($m=12$): $(1 + 0.08/12)^{12} - 1 = 8.30\\%$ or continuous compounding $e^{0.08} - 1 = 8.33\\%$."
+          A: "Distractor A is the classic ordinary annuity value computed in [END] mode, omitting the (1 + r) immediate timing factor.",
+          B: "CORRECT: Accurately calculates present value in [BGN] mode ($257,715).",
+          C: "Distractor C multiplies by (1 + r)^2, over-adjusting the compounding periods."
+        }
+      },
+      {
+        id: 103,
+        losCode: "LOS 4.d",
+        stem: "An equity analyst estimates that there is a 30% prior probability of an economic recession. In a recession, Company X has an 80% probability of cutting its dividend; without a recession, the probability of a dividend cut is only 15%. If Company X cuts its dividend, what is the updated posterior probability P(Recession | Cut)?",
+        options: {
+          A: "59.5%",
+          B: "69.6%",
+          C: "80.0%"
+        },
+        correctOption: "B",
+        algebraicSolution: "Total P(Cut) = (0.30 * 0.80) + (0.70 * 0.15) = 0.24 + 0.105 = 0.345. P(Recession | Cut) = (0.30 * 0.80) / 0.345 = 0.24 / 0.345 = 69.57% ~ 69.6%.",
+        calculatorKeystrokes: "[0.30] [\\times] [0.80] [=] 0.24 [STO] 1 -> [0.70] [\\times] [0.15] [+] [RCL] 1 [=] 0.345 [STO] 2 -> [RCL] 1 [\\div] [RCL] 2 [=] 0.6957",
+        trapCategory: "Probability Trees and Conditional Expectations",
+        errorModeDefault: "CONCEPTUAL_CONFUSION",
+        distractorAutopsy: {
+          A: "Distractor A erroneously divides joint probability 0.24 by (0.24 + 0.163), misweighting prior probabilities.",
+          B: "CORRECT: Applies Bayes' formula: P(A|B) = [P(B|A)*P(A)] / P(B) = 0.24 / 0.345 = 69.6%.",
+          C: "Distractor C confuses P(Cut | Recession) = 80% with the posterior P(Recession | Cut)."
+        }
+      },
+      {
+        id: 104,
+        losCode: "LOS 6.c",
+        stem: "A sample of 25 monthly mutual fund returns yields a sample mean of 1.20% and sample standard deviation of 2.00%. The analyst tests H_0: μ = 0.50% against H_a: μ ≠ 0.50% at the 5% significance level (two-tailed critical t = 2.064 with 24 df). The calculated t-statistic and test conclusion are:",
+        options: {
+          A: "t = 1.75; Fail to reject H_0",
+          B: "t = 2.064; Fail to reject H_0",
+          C: "t = 1.75; Reject H_0"
+        },
+        correctOption: "A",
+        algebraicSolution: "Standard Error = s / sqrt(n) = 2.00% / sqrt(25) = 2.00% / 5 = 0.40%. Test statistic t = (1.20% - 0.50%) / 0.40% = 0.70 / 0.40 = 1.75. Because |1.75| < 2.064, fail to reject H_0.",
+        calculatorKeystrokes: "1.20 [-] 0.50 [=] 0.70 [\\div] (2.00 [\\div] [\\sqrt{25}]) [=] 1.75",
+        trapCategory: "Hypothesis Testing & Parametric Tests",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "CORRECT: t = 1.75 is less than critical value 2.064; cannot reject null.",
+          B: "Distractor B confuses the calculated test statistic with the critical cutoff.",
+          C: "Distractor C makes the classic decision inversion, rejecting null when statistic is inside non-rejection zone."
+        }
+      },
+      {
+        id: 105,
+        losCode: "LOS 7.c",
+        stem: "In a simple linear regression of asset return on the market index, the Total Sum of Squares (SST) is 400 and the Sum of Squared Errors (SSE) is 140. The coefficient of determination (R-squared) is closest to:",
+        options: {
+          A: "0.350",
+          B: "0.650",
+          C: "0.725"
+        },
+        correctOption: "B",
+        algebraicSolution: "Regression Sum of Squares (SSR) = SST - SSE = 400 - 140 = 260. R^2 = SSR / SST = 1 - (SSE / SST) = 1 - (140 / 400) = 1 - 0.35 = 0.65 (65%).",
+        calculatorKeystrokes: "1 [-] (140 [\\div] 400) [=] 0.65",
+        trapCategory: "Simple Linear Regression",
+        errorModeDefault: "SIGN_INVERSION",
+        distractorAutopsy: {
+          A: "Distractor A calculates the unexplained variance ratio (SSE / SST = 140/400 = 0.35) instead of R-squared.",
+          B: "CORRECT: R^2 = SSR / SST = 260 / 400 = 0.65.",
+          C: "Distractor C computes sqrt(0.65) = 0.806 or misapplies degree of freedom adjustments."
         }
       }
     ]
   },
+
+  // TOPIC 02: Economics
   {
-    id: "vignette-08-econ",
-    topicId: "08",
+    id: "vignette-02-econ",
+    topicId: "02",
     topicName: "Economics",
-    subReading: "Currency Exchange Rates & IS-LM Monetary/Fiscal Policy",
-    difficulty: "High Trap",
-    vignetteStem: "A foreign exchange strategist at UBS is analyzing foreign exchange quotations. The current spot exchange rate between the Euro and US Dollar is quoted as EUR/USD = 1.1000 (meaning $1.1000 USD per 1 EUR). The 1-year risk-free interest rate in the United States is 5.00%, while the 1-year risk-free interest rate in the Eurozone is 2.00%. Separately, the government enacts an aggressive expansionary fiscal stimulus while the central bank maintains a restrictive tight monetary policy.",
+    subReading: "Currency Cross-Rates, Elasticities, and Market Structure",
+    difficulty: "Institutional",
+    vignetteStem: "A macro strategy desk is analyzing FX arbitrage opportunities between London, Tokyo, and Zurich, while assessing market pricing power for an industrial manufacturer operating under monopolistic competition.",
     questions: [
       {
-        id: 1,
-        stem: "Under Covered Interest Rate Parity (CIP), the 1-year no-arbitrage forward exchange rate (EUR/USD) is closest to:",
+        id: 201,
+        losCode: "LOS 12.c",
+        stem: "A dealer quotes the following spot exchange rates:\n• USD/EUR: 1.1200 – 1.1205\n• USD/CHF: 0.9800 – 0.9805\nThe implied CHF/EUR bid cross-rate is closest to:",
         options: {
-          A: "1.0686",
-          B: "1.1000",
-          C: "1.1324"
+          A: "1.1423",
+          B: "1.1428",
+          C: "1.1434"
         },
-        correctOption: "C",
-        algebraicSolution: "\\text{Covered Interest Parity Formula (Price/Base):} \\newline \\text{Quote is EUR/USD, where USD is Price Currency and EUR is Base Currency.} \\newline F_{\\text{USD/EUR}} = S_{\\text{USD/EUR}} \\times \\left[\\frac{1 + r_{\\text{USD}}}{1 + r_{\\text{EUR}}}\\right] \\newline F = 1.1000 \\times \\left[\\frac{1 + 0.05}{1 + 0.02}\\right] = 1.1000 \\times \\frac{1.05}{1.02} = 1.1000 \\times 1.02941 = 1.13235 \\approx 1.1324",
-        calculatorKeystrokes: "1.1000 [\\times] 1.05 [\\div] 1.02 [=] => 1.1324",
-        trapCategory: "Base vs Price Currency Interest Rate Ratio Inversion",
+        correctOption: "A",
+        algebraicSolution: "CHF/EUR = (USD/EUR) / (USD/CHF). Bid(CHF/EUR) = Bid(USD/EUR) / Ask(USD/CHF) = 1.1200 / 0.9805 = 1.14227 ~ 1.1423.",
+        calculatorKeystrokes: "1.1200 [\\div] 0.9805 [=] 1.14227",
+        trapCategory: "Currency Exchange Rates & Cross-Rates",
+        errorModeDefault: "PERIODICITY_MISMATCH",
         distractorAutopsy: {
-          A: "Incorrect. The candidate inverted the interest rate ratio: $1.1000 \\times \\frac{1.02}{1.05} = 1.0686$. In EUR/USD notation, USD is the price currency (numerator) and EUR is base currency (denominator).",
-          B: "Incorrect. Assumes forward rate equals spot rate, which would only hold if both countries had identical interest rates.",
-          C: "Correct. Because the price currency (USD) carries a higher interest rate (5%) than the base currency EUR (2%), the base currency EUR must appreciate forward to $1.1324 to eliminate covered interest arbitrage."
+          A: "CORRECT: Correctly matches Bid numerator to Ask denominator for cross-rate bid: 1.1200 / 0.9805 = 1.1423.",
+          B: "Distractor B divides Bid by Bid (1.1200 / 0.9800 = 1.14285), ignoring bid-ask spread rules.",
+          C: "Distractor C divides Ask by Ask (1.1205 / 0.9800 = 1.14336), yielding an ask rate rather than bid."
         }
       },
       {
-        id: 2,
-        stem: "According to the IS-LM framework, the simultaneous combination of expansionary fiscal policy and restrictive monetary policy will most likely cause real interest rates to:",
+        id: 202,
+        losCode: "LOS 9.d",
+        stem: "Which of the following characteristics is least likely to describe a firm operating in a monopolistically competitive industry in long-run equilibrium?",
         options: {
-          A: "Increase, while the net effect on real output (GDP) is ambiguous.",
-          B: "Decrease, while real output unambiguously increases.",
-          C: "Remain unchanged, while real output decreases."
+          A: "Price equals marginal cost (P = MC)",
+          B: "Economic profit is equal to zero",
+          C: "Demand curve facing the firm is downward sloping"
         },
         correctOption: "A",
-        algebraicSolution: "\\text{IS Curve (Fiscal Stimulus): } \\text{Shifts Right } \\implies Y \\uparrow, \\; r \\uparrow \\newline \\text{LM Curve (Tight Monetary): } \\text{Shifts Left } \\implies Y \\downarrow, \\; r \\uparrow \\newline \\text{Combined Effect: } \\newline \\text{Real Interest Rate } (r): \\text{Both policies push interest rates UP } \\implies r \\uparrow \\text{ (Unambiguous increase)} \\newline \\text{Real Output } (Y): \\text{Opposing forces } (\\uparrow \\text{ vs } \\downarrow) \\implies \\text{Ambiguous effect}",
-        calculatorKeystrokes: "N/A — IS-LM Matrix Shift Interaction",
-        trapCategory: "IS-LM Curve Shift Intersection Ambiguity",
+        algebraicSolution: "In monopolistic competition, downward sloping demand means P > MR = MC. Thus P > MC in both short and long run (producing excess capacity). Freedom of entry drives economic profit to zero.",
+        calculatorKeystrokes: "Conceptual rule: P = MC occurs ONLY in Perfect Competition.",
+        trapCategory: "The Firm and Market Structures",
+        errorModeDefault: "CONCEPTUAL_CONFUSION",
         distractorAutopsy: {
-          A: "Correct. Expansionary fiscal policy increases aggregate demand (IS right, pushing r up), while tight monetary policy reduces liquidity (LM left, pushing r up). Both forces compound to increase interest rates, while their opposite effects on output leave GDP ambiguous.",
-          B: "Incorrect. Expansionary fiscal and tight monetary policies both drive interest rates higher, not lower.",
-          C: "Incorrect. Interest rates experience a strong compounding upward shift rather than remaining unchanged."
+          A: "CORRECT (Least Likely): P > MC in monopolistic competition due to product differentiation; P = MC only in perfect competition.",
+          B: "Distractor B is true for monopolistic competition in long-run equilibrium due to low barriers to entry.",
+          C: "Distractor C is true because product differentiation gives the firm a downward-sloping demand curve."
         }
       }
     ]
   },
+
+  // TOPIC 03: Corporate Finance
   {
-    id: "vignette-09-corp",
-    topicId: "09",
-    topicName: "Corporate Issuers",
-    subReading: "Measures of Leverage (DOL, DFL, DTL) & WACC Flotation Costs",
-    difficulty: "Standard",
-    vignetteStem: "Apex Robotics is evaluating a major expansion project requiring an initial capital expenditure of $10 million. The company's target capital structure is 40% debt and 60% common equity. Apex's pre-tax cost of debt is 6.50%, the marginal corporate tax rate is 25%, and the required return on equity is 12.00%. To fund the equity portion, Apex must issue new shares incurring a flotation cost of 4.0%. Separately, Apex's operating data reveals a Degree of Operating Leverage (DOL) of 2.20 and a Degree of Financial Leverage (DFL) of 1.50 at current production levels.",
+    id: "vignette-03-corpfin",
+    topicId: "03",
+    topicName: "Corporate Finance",
+    subReading: "Cost of Capital (WACC) and Capital Allocation (NPV vs IRR)",
+    difficulty: "High Trap",
+    vignetteStem: "An industrial manufacturer with a 25% marginal corporate tax rate is reviewing its target capital structure. The firm can issue 10-year bonds at an 8.00% yield, preferred shares at 7.00%, and equity at 13.00% under CAPM. The target capital structure is 40% Debt, 10% Preferred, and 50% Common Equity.",
     questions: [
       {
-        id: 1,
-        stem: "Apex Robotics' Degree of Total Leverage (DTL) is closest to:",
+        id: 301,
+        losCode: "LOS 16.b",
+        stem: "The firm's Weighted Average Cost of Capital (WACC) is closest to:",
         options: {
-          A: "3.30",
-          B: "3.70",
-          C: "0.70"
+          A: "9.60%",
+          B: "10.40%",
+          C: "8.90%"
         },
         correctOption: "A",
-        algebraicSolution: "\\text{Degree of Total Leverage Formula: } \\newline DTL = DOL \\times DFL \\newline DTL = 2.20 \\times 1.50 = 3.30 \\newline \\text{Interpretation: A 1\\% increase in sales yields a 3.30\\% increase in EPS.}",
-        calculatorKeystrokes: "2.20 [\\times] 1.50 [=] => 3.30",
-        trapCategory: "Addition vs. Multiplication of Leverage Coefficients",
+        algebraicSolution: "After-tax cost of debt = 8.00% * (1 - 0.25) = 6.00%. WACC = (0.40 * 6.00%) + (0.10 * 7.00%) + (0.50 * 13.00%) = 2.40% + 0.70% + 6.50% = 9.60%.",
+        calculatorKeystrokes: "0.40 [\\times] 8.00 [\\times] 0.75 [+] 0.10 [\\times] 7.00 [+] 0.50 [\\times] 13.00 [=] 9.60%",
+        trapCategory: "WACC After-Tax Cost of Debt Trap",
+        errorModeDefault: "FORMULA_SCALAR",
         distractorAutopsy: {
-          A: "Correct. Total leverage is the multiplicative product of operating and financial leverage: $DTL = DOL \\times DFL = 2.20 \\times 1.50 = 3.30$.",
-          B: "Incorrect. The candidate added the two leverage metrics ($2.20 + 1.50 = 3.70$), which violates the compounding definition of total leverage.",
-          C: "Incorrect. The candidate subtracted DFL from DOL ($2.20 - 1.50 = 0.70$)."
+          A: "CORRECT: Properly incorporates the (1 - t) tax shield on debt: 0.40*(6.0%) + 0.10*(7.0%) + 0.50*(13.0%) = 9.60%.",
+          B: "Distractor B fails to apply the tax shield to debt: 0.40*(8.0%) + 0.10*(7.0%) + 0.50*(13.0%) = 10.40%.",
+          C: "Distractor C erroneously applies the (1 - t) tax shield to preferred stock dividends as well."
         }
       },
       {
-        id: 2,
-        stem: "Under recommended CFA Institute methodology, the 4.0% equity flotation cost on the expansion project should be accounted for by:",
+        id: 302,
+        losCode: "LOS 14.b",
+        stem: "When evaluating two mutually exclusive projects of differing scales with positive NPVs, the CFO observes that Project A has NPV = $5.2M and IRR = 18%, while Project B has NPV = $7.1M and IRR = 14%. Assuming a cost of capital of 10%, the firm should:",
         options: {
-          A: "Increasing the cost of equity ($r_e$) in the WACC calculation by 4.0%.",
-          B: "Adding the total flotation cost ($4.0\\% \\times \\$6\\text{M} = \\$240,000$) as an initial cash outflow at time $t=0$.",
-          C: "Amortizing the flotation cost over the operating life of the machine as a non-cash expense."
+          A: "Accept Project A because it provides a higher internal rate of return (18%)",
+          B: "Accept Project B because it maximizes total shareholder dollar wealth ($7.1M)",
+          C: "Accept both projects because both internal rates of return exceed the hurdle rate"
         },
         correctOption: "B",
-        algebraicSolution: "\\text{CFA Institute Recommended Flotation Cost Rule:} \\newline \\text{Flotation costs are a lump-sum financing cost paid at inception.} \\newline CF_0 = -(\\text{CapEx Outlay} + \\text{Equity Flotation Cost}) = -(\\$10,000,000 + 0.04 \\times \\$6,000,000) = -\\$10,240,000 \\newline \\text{Adjusting WACC upward improperly penalizes long-term perpetual project cash flows.}",
-        calculatorKeystrokes: "10000000 [+] [(] 0.60 [\\times] 10000000 [\\times] 0.04 [)] [=] => 10,240,000",
-        trapCategory: "WACC Rate Adjustment vs Cash Flow Outlay Treatment",
+        algebraicSolution: "For mutually exclusive projects, the NPV rule always dominates because it assumes reinvestment at the opportunity cost of capital (10%) and directly maximizes shareholder wealth. Accept Project B ($7.1M NPV).",
+        calculatorKeystrokes: "Decision Rule: NPV dominates IRR for mutually exclusive projects.",
+        trapCategory: "Capital Investments & Capital Allocation",
+        errorModeDefault: "CONCEPTUAL_CONFUSION",
         distractorAutopsy: {
-          A: "Incorrect. Adjusting the discount rate upward overstates the cost of flotation across all future cash flows and biases NPV against longer-lived projects.",
-          B: "Correct. Flotation costs represent a one-time cash outflow at project inception ($t=0$). The equity portion is $\$6\text{M}$, so flotation cost is $\$240,000$, added directly to $CF_0$.",
-          C: "Incorrect. Flotation costs cannot be amortized as an operating expense under standard capital budgeting methodology."
+          A: "Distractor A falls for the IRR ranking trap; IRR assumes unrealistic reinvestment at 18% and ignores project scale.",
+          B: "CORRECT: For mutually exclusive projects, always maximize NPV ($7.1M > $5.2M).",
+          C: "Distractor C ignores the condition that projects are mutually exclusive (cannot accept both)."
         }
       }
     ]
   },
+
+  // TOPIC 04: Financial Statement Analysis
   {
-    id: "vignette-10-derivatives",
-    topicId: "10",
+    id: "vignette-04-fsa",
+    topicId: "04",
+    topicName: "Financial Statement Analysis",
+    subReading: "Inventories, LIFO/FIFO Adjustments, and Lease Accounting",
+    difficulty: "High Trap",
+    vignetteStem: "Apex Heavy Industrial Corp reports under US GAAP using LIFO inventory valuation in an inflationary environment. For 2025, Apex reports LIFO COGS of $4,200,000, Beginning LIFO Reserve of $350,000, and Ending LIFO Reserve of $520,000. Marginal tax rate is 30%.",
+    questions: [
+      {
+        id: 401,
+        losCode: "LOS 18.c",
+        stem: "If Apex had reported under FIFO, its 2025 Cost of Goods Sold (COGS) would be closest to:",
+        options: {
+          A: "$4,030,000",
+          B: "$4,370,000",
+          C: "$3,680,000"
+        },
+        correctOption: "A",
+        algebraicSolution: "ΔLIFO Reserve = $520,000 - $350,000 = $170,000. COGS(FIFO) = COGS(LIFO) - ΔLIFO Reserve = $4,200,000 - $170,000 = $4,030,000.",
+        calculatorKeystrokes: "4200000 [-] (520000 [-] 350000) [=] 4,030,000",
+        trapCategory: "LIFO Reserve Change Directional Sign",
+        errorModeDefault: "SIGN_INVERSION",
+        distractorAutopsy: {
+          A: "CORRECT: In rising prices, FIFO uses cheaper earlier costs: COGS = $4,200,000 - $170,000 = $4,030,000.",
+          B: "Distractor B adds the delta reserve instead of subtracting it ($4,200,000 + $170,000 = $4,370,000).",
+          C: "Distractor C subtracts the entire ending LIFO reserve ($520,000) rather than the single-period delta."
+        }
+      },
+      {
+        id: 402,
+        losCode: "LOS 18.e",
+        stem: "The cumulative adjustment to Apex's ending Retained Earnings balance upon converting from LIFO to FIFO at year-end 2025 is closest to an increase of:",
+        options: {
+          A: "$119,000",
+          B: "$364,000",
+          C: "$520,000"
+        },
+        correctOption: "B",
+        algebraicSolution: "Retained Earnings adjustment = Ending LIFO Reserve * (1 - Tax Rate) = $520,000 * (1 - 0.30) = $520,000 * 0.70 = $364,000 increase.",
+        calculatorKeystrokes: "520000 [\\times] 0.70 [=] 364,000",
+        trapCategory: "Cumulative vs. Single-Period Reserve Tax Adjustment",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Distractor A multiplies single-period ΔReserve ($170,000) by (1 - t), which is the single-period net income change, not cumulative retained earnings.",
+          B: "CORRECT: Balance sheet cumulative retained earnings adjustment = Ending Reserve * (1 - t) = $520,000 * 0.70 = $364,000.",
+          C: "Distractor C uses the gross ending LIFO reserve ($520,000), forgetting the cumulative deferred tax liability deduction."
+        }
+      }
+    ]
+  },
+
+  // TOPIC 05: Equities
+  {
+    id: "vignette-05-equity",
+    topicId: "05",
+    topicName: "Equities",
+    subReading: "Dividend Discount Valuation & Relative Multiples",
+    difficulty: "High Trap",
+    vignetteStem: "An equity research analyst is valuing shares of Vantage Dynamics Corp. The firm just paid an annual dividend D_0 = $2.50 per share. Dividends are forecast to grow at 15% per year for 2 years (years 1 and 2), and 4.0% perpetually thereafter. Required return on equity is 9.0%.",
+    questions: [
+      {
+        id: 501,
+        losCode: "LOS 25.b",
+        stem: "The terminal share price P_2 at the end of Year 2 is closest to:",
+        options: {
+          A: "$68.74",
+          B: "$66.10",
+          C: "$58.12"
+        },
+        correctOption: "A",
+        algebraicSolution: "D_1 = $2.50 * 1.15 = $2.875. D_2 = $2.875 * 1.15 = $3.30625. D_3 = D_2 * 1.04 = $3.30625 * 1.04 = $3.4385. Terminal Price P_2 = D_3 / (r - g) = $3.4385 / (0.09 - 0.04) = $3.4385 / 0.05 = $68.77 ~ $68.74.",
+        calculatorKeystrokes: "2.50 [\\times] 1.15 [\\times] 1.15 [\\times] 1.04 [\\div] 0.05 [=] 68.77",
+        trapCategory: "Gordon Growth Numerator Timing ($D_n$ vs $D_{n+1}$)",
+        errorModeDefault: "PERIODICITY_MISMATCH",
+        distractorAutopsy: {
+          A: "CORRECT: Accurately advances dividend to D_3 ($3.4385) before dividing by (r - g) = 0.05 => $68.77.",
+          B: "Distractor B uses D_2 ($3.306) in the Gordon Growth numerator without advancing to D_3 ($3.306 / 0.05 = $66.12).",
+          C: "Distractor C divides D_1 by (r - g), creating a premature terminal horizon."
+        }
+      },
+      {
+        id: 502,
+        losCode: "LOS 22.c",
+        stem: "An investor purchases 1,000 shares of stock on margin at $60.00 per share with an initial margin requirement of 50% and maintenance margin of 30%. At what stock price will the investor receive a margin call?",
+        options: {
+          A: "$42.86",
+          B: "$36.00",
+          C: "$45.00"
+        },
+        correctOption: "A",
+        algebraicSolution: "Margin Call Price = P_0 * [(1 - IM) / (1 - MM)] = $60 * [(1 - 0.50) / (1 - 0.30)] = $60 * (0.50 / 0.70) = $42.857 ~ $42.86.",
+        calculatorKeystrokes: "60 [\\times] 0.50 [\\div] 0.70 [=] 42.857",
+        trapCategory: "Market Organization and Structure",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "CORRECT: Margin Call Price = $60 * (1 - 0.50) / (1 - 0.30) = $42.86.",
+          B: "Distractor B computes $60 * (1 - 0.40) or subtracts margin percentages linearly.",
+          C: "Distractor C computes $60 * (1 - 0.50 * 0.50) = $45.00, misrepresenting broker maintenance equity formulas."
+        }
+      }
+    ]
+  },
+
+  // TOPIC 06: Fixed Income
+  {
+    id: "vignette-06-fixedinc",
+    topicId: "06",
+    topicName: "Fixed Income",
+    subReading: "Bond Convexity, Duration, and Semiannual Valuation",
+    difficulty: "Institutional",
+    vignetteStem: "A fixed income portfolio manager holds a 10-year, 6.00% semiannual coupon bond trading at par ($1,000) with a yield to maturity of 6.00%. The bond has a Modified Duration of 7.40 years and an Annual Convexity of 68.0.",
+    questions: [
+      {
+        id: 601,
+        losCode: "LOS 30.e",
+        stem: "If market benchmark yields increase instantaneously by 150 basis points (+1.50%), the estimated percentage change in the bond's price using both Modified Duration and Convexity is closest to:",
+        options: {
+          A: "-10.335%",
+          B: "-11.100%",
+          C: "-9.570%"
+        },
+        correctOption: "A",
+        algebraicSolution: "Duration effect = -ModDur * Δy = -7.40 * (+0.015) = -0.1110 (-11.10%). Convexity effect = 0.5 * Convexity * (Δy)^2 = 0.5 * 68.0 * (0.015)^2 = 34.0 * 0.000225 = +0.00765 (+0.765%). Total %ΔP ≈ -11.10% + 0.765% = -10.335%.",
+        calculatorKeystrokes: "[-] 7.40 [\\times] 0.015 [+] (0.5 [\\times] 68.0 [\\times] 0.015 [x^2]) [=] -0.10335 => -10.335%",
+        trapCategory: "Omission of the 1/2 Convexity Scalar Factor",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "CORRECT: Accurately applies %ΔP = -ModDur*(Δy) + 0.5*Convexity*(Δy)^2 = -11.10% + 0.765% = -10.335%.",
+          B: "Distractor B uses only the linear Modified Duration term (-11.10%), omitting the positive convexity cushion.",
+          C: "Distractor C omits the 1/2 multiplier on convexity (-11.10% + 1.530% = -9.570%)."
+        }
+      },
+      {
+        id: 602,
+        losCode: "LOS 28.c",
+        stem: "A 5-year corporate bond pays a 7.00% annual coupon semiannually (3.50% per period) on $1,000 par. If the market requires an annual YTM of 8.00%, the bond's price is closest to:",
+        options: {
+          A: "$959.45",
+          B: "$960.07",
+          C: "$972.10"
+        },
+        correctOption: "A",
+        algebraicSolution: "N = 5 * 2 = 10; I/Y = 8.00 / 2 = 4.00%; PMT = (0.07 * 1000) / 2 = 35.00; FV = 1000. CPT PV = -$959.45.",
+        calculatorKeystrokes: "[2nd][CLR TVM] -> [10][N] -> [4][I/Y] -> [35][PMT] -> [1000][FV] -> [CPT][PV] => -959.45",
+        trapCategory: "Bond Semiannual Yield Convention",
+        errorModeDefault: "PERIODICITY_MISMATCH",
+        distractorAutopsy: {
+          A: "CORRECT: N=10, I/Y=4%, PMT=35, FV=1000 => PV = $959.45.",
+          B: "Distractor B uses annual compounding N=5, I/Y=8%, PMT=70 => PV = $960.07.",
+          C: "Distractor C inputs I/Y=8% without dividing by 2 while using N=10, severely over-discounting."
+        }
+      }
+    ]
+  },
+
+  // TOPIC 07: Derivatives
+  {
+    id: "vignette-07-deriv",
+    topicId: "07",
     topicName: "Derivatives",
-    subReading: "Put-Call Parity & Synthetic Asset Replication",
+    subReading: "Put-Call Parity and Forward Valuation",
     difficulty: "High Trap",
-    vignetteStem: "A derivatives arbitrage trader at Jane Street monitors 6-month European options on Nova Corp stock. Nova Corp currently trades at $S_0 = \\$65.00$ and does not pay dividends. A 6-month European call option with a strike price of $X = \\$60.00$ trades at $C = \\$8.50$. The continuously compounded risk-free rate is 4.00% (or discretely 4.00% annual, $PV(X) = 60 / (1.04)^{0.5} = \\$58.835$). The trader discovers that a 6-month European put option with the identical $60 strike trades in the market for $P = \\$1.80$.",
+    vignetteStem: "A quantitative derivatives desk is executing arbitrage monitoring across European options and forwards on Titan Stock. Titan currently trades at $100.00. The 1-year European call with strike $100 trades at $8.50, and 1-year risk-free rate is 5.00% continuously compounded.",
     questions: [
       {
-        id: 1,
-        stem: "Based on Put-Call Parity ($C + PV(X) = S + P$), the theoretical no-arbitrage price of the European put option is closest to:",
+        id: 701,
+        losCode: "LOS 34.c",
+        stem: "According to Put-Call Parity, the no-arbitrage price of a 1-year European put option with a $100 strike is closest to:",
         options: {
-          A: "$1.80",
-          B: "$2.34",
-          C: "$3.50"
+          A: "$3.62",
+          B: "$4.88",
+          C: "$8.50"
         },
-        correctOption: "B",
-        algebraicSolution: "\\text{Put-Call Parity Formula: } C + \\frac{X}{(1+r)^T} = S + P \\newline \\text{Rearrange for Put Price } P: \\newline P = C + \\frac{X}{(1+r)^T} - S \\newline PV(X) = \\frac{60}{(1 + 0.04)^{0.5}} = \\frac{60}{1.01980} = \\$58.835 \\newline P = 8.50 + 58.835 - 65.00 = 67.335 - 65.00 = \\$2.335 \\approx \\$2.34",
-        calculatorKeystrokes: "8.50 [+] [(] 60 [\\div] [(] 1.04 [\\sqrt{x}] [)] [)] [-] 65 [=] => 2.335",
-        trapCategory: "Put-Call Parity Sign Reversal",
+        correctOption: "A",
+        algebraicSolution: "PV(X) = 100 * e^(-0.05*1) = 100 * 0.95123 = $95.12. Put-Call Parity: p_0 = c_0 + PV(X) - S_0 = $8.50 + $95.12 - $100.00 = $3.62.",
+        calculatorKeystrokes: "8.50 [+] (100 [\\times] [e^{-0.05}]) [-] 100 [=] 3.62",
+        trapCategory: "Put-Call Parity Directional Sign Trap",
+        errorModeDefault: "SIGN_INVERSION",
         distractorAutopsy: {
-          A: "Incorrect. This is the market trading price of the put ($1.80), which represents an underpriced market mispricing rather than the theoretical parity price.",
-          B: "Correct. Rearranging Put-Call Parity yields $P = C + PV(X) - S = 8.50 + 58.835 - 65.00 = \\$2.335 \\approx \\$2.34$.",
-          C: "Incorrect. The candidate used undiscounted strike price $X = \\$60$: $8.50 + 60.00 - 65.00 = \\$3.50$, forgetting to discount the strike back to present value."
+          A: "CORRECT: p = c + PV(X) - S = 8.50 + 95.12 - 100.00 = $3.62.",
+          B: "Distractor B uses discrete simple compounding 100 / 1.05 = 95.24 - 100 + 8.50 = $3.74 or inverts spot and strike signs.",
+          C: "Distractor C assumes call price must equal put price for at-the-money options."
         }
       },
       {
-        id: 2,
-        stem: "To exploit the mispricing where the market put trades at $1.80 (below theoretical value $2.34), the trader should execute which of the following arbitrage transactions?",
+        id: 702,
+        losCode: "LOS 33.b",
+        stem: "Which of the following positions replicates a synthetic long asset position using options and bonds?",
         options: {
-          A: "Buy market Put ($1.80), Buy Stock ($65), Short Call ($8.50), and Issue Zero-Coupon Bond.",
-          B: "Buy market Put ($1.80), Buy Stock ($65), Short Call ($8.50), and Buy Zero-Coupon Bond.",
-          C: "Sell market Put ($1.80), Short Stock ($65), Buy Call ($8.50), and Buy Zero-Coupon Bond."
+          A: "Long Call + Short Put + Long Zero-Coupon Bond (PV of Strike)",
+          B: "Long Call + Long Put + Short Zero-Coupon Bond",
+          C: "Short Call + Long Put + Long Zero-Coupon Bond"
         },
         correctOption: "A",
-        algebraicSolution: "\\text{Arbitrage Rule: Buy Underpriced, Sell Overpriced.} \\newline \\text{Synthetic Put Value} = \\$2.34 > \\text{Market Put} = \\$1.80 \\implies \\text{Market Put is CHEAP, Synthetic Put is EXPENSIVE.} \\newline \\text{Action: } \\newline \\text{1. Buy Cheap Market Put } (+P) \\newline \\text{2. Sell Expensive Synthetic Put } (-[C + PV(X) - S]) = -C - PV(X) + S \\newline \\implies \\text{Buy Market Put, Buy Stock, Short Call, Borrow/Issue Bond } PV(X). \\newline \\text{Initial Cash Flow Arbitrage Profit: } \\newline +C - P - S + PV(X) = +8.50 - 1.80 - 65.00 + 58.835 = +\\$0.535 \\text{ risk-free profit per share.}",
-        calculatorKeystrokes: "8.50 [-] 1.80 [-] 65.00 [+] 58.835 [=] => +0.535 Arbitrage Profit",
-        trapCategory: "Arbitrage Direction: Synthetic vs Market Position Inversion",
+        algebraicSolution: "From Put-Call Parity S_0 = c_0 - p_0 + PV(X). To replicate Long Stock: Long Call (+c) + Short Put (-p) + Lend PV(X) (+Bond).",
+        calculatorKeystrokes: "Synthetic Stock = Long Call + Short Put + PV(X)",
+        trapCategory: "Put-Call Parity Directional Sign Trap",
+        errorModeDefault: "SIGN_INVERSION",
         distractorAutopsy: {
-          A: "Correct. Because the market put is underpriced ($1.80 < $2.34), the trader buys the market put and sells the synthetic put (Long Stock + Short Call + Borrow PV of Strike), locking in a guaranteed risk-free profit of $0.535 per share.",
-          B: "Incorrect. Buying the zero-coupon bond means lending money rather than borrowing, which reverses the cash flow needed to finance the position.",
-          C: "Incorrect. This strategy sells the underpriced put and buys the overpriced synthetic put, resulting in an immediate arbitrage loss."
+          A: "CORRECT: S_0 = c_0 - p_0 + PV(X) => Long Call + Short Put + Long Bond.",
+          B: "Distractor B creates a straddle combined with debt borrowing.",
+          C: "Distractor C creates a synthetic short stock position."
+        }
+      }
+    ]
+  },
+
+  // TOPIC 08: Alternative Investments
+  {
+    id: "vignette-08-alts",
+    topicId: "08",
+    topicName: "Alternative Investments",
+    subReading: "Hedge Fund Fees, High-Water Marks, and Real Estate Valuation",
+    difficulty: "High Trap",
+    vignetteStem: "A private wealth client invests $10,000,000 in a hedge fund with a '2 and 20' fee structure (2% management fee calculated on beginning-of-year assets, 20% incentive fee calculated net of management fees with a high-water mark of $10,000,000). At year-end, gross fund value increases to $12,500,000.",
+    questions: [
+      {
+        id: 801,
+        losCode: "LOS 38.c",
+        stem: "The total fees (management fee + incentive fee) earned by the hedge fund manager in Year 1 are closest to:",
+        options: {
+          A: "$660,000",
+          B: "$700,000",
+          C: "$500,000"
+        },
+        correctOption: "A",
+        algebraicSolution: "Management Fee = 2% * $10,000,000 = $200,000. Net gain for incentive fee = $12,500,000 - $200,000 - $10,000,000 = $2,300,000. Incentive Fee = 20% * $2,300,000 = $460,000. Total Fee = $200,000 + $460,000 = $660,000.",
+        calculatorKeystrokes: "10000000 [\\times] 0.02 [=] 200000 -> (12500000 [-] 200000 [-] 10000000) [\\times] 0.20 [+] 200000 [=] 660,000",
+        trapCategory: "Hedge Funds & Fee Calculations",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "CORRECT: Accurately deducts management fee before computing incentive fee: $200k + $460k = $660,000.",
+          B: "Distractor B computes the incentive fee gross of management fees: 20% * $2,500,000 = $500,000 + $200,000 = $700,000.",
+          C: "Distractor C calculates only the incentive fee ($500,000) without adding the management fee."
+        }
+      },
+      {
+        id: 802,
+        losCode: "LOS 37.b",
+        stem: "A commercial office building generates $1,800,000 in potential gross income, with 5% vacancy/credit loss and $610,000 in operating expenses (including property taxes and insurance, but excluding $300,000 in mortgage interest). If market capitalization rate is 6.50%, estimated value is closest to:",
+        options: {
+          A: "$16,923,077",
+          B: "$12,307,692",
+          C: "$18,307,692"
+        },
+        correctOption: "A",
+        algebraicSolution: "Effective Gross Income = $1,800,000 * 0.95 = $1,710,000. Net Operating Income (NOI) = $1,710,000 - $610,000 = $1,100,000 (NOI strictly ignores mortgage interest). Property Value = NOI / Cap Rate = $1,100,000 / 0.065 = $16,923,077.",
+        calculatorKeystrokes: "(1800000 [\\times] 0.95 [-] 610000) [\\div] 0.065 [=] 16,923,076.92",
+        trapCategory: "Real Estate & Infrastructure",
+        errorModeDefault: "CONCEPTUAL_CONFUSION",
+        distractorAutopsy: {
+          A: "CORRECT: NOI = $1,710,000 - $610,000 = $1,100,000. Value = $1,100,000 / 0.065 = $16,923,077.",
+          B: "Distractor B erroneously subtracts mortgage interest from NOI ($1,100,000 - $300,000 = $800,000 / 0.065 = $12,307,692).",
+          C: "Distractor C forgets to deduct operating expenses from gross revenue."
+        }
+      }
+    ]
+  },
+
+  // TOPIC 09: Portfolio Construction
+  {
+    id: "vignette-09-port",
+    topicId: "09",
+    topicName: "Portfolio Construction",
+    subReading: "CAPM, Beta, Security Market Line, and Performance Ratios",
+    difficulty: "High Trap",
+    vignetteStem: "An institutional endowment has a risk-free rate R_f = 4.00% and expected market portfolio return E(R_m) = 10.00%. An equity fund manager analyzes Stock Delta, which has an expected return of 13.50% and standard deviation of 24.0%. Market standard deviation is 15.0%, and correlation between Stock Delta and the market is 0.75.",
+    questions: [
+      {
+        id: 901,
+        losCode: "LOS 41.c",
+        stem: "The beta of Stock Delta and its CAPM required rate of return are closest to:",
+        options: {
+          A: "Beta = 1.20; Required Return = 11.20%",
+          B: "Beta = 1.20; Required Return = 13.50%",
+          C: "Beta = 0.47; Required Return = 6.82%"
+        },
+        correctOption: "A",
+        algebraicSolution: "Beta = Correlation * (σ_asset / σ_market) = 0.75 * (24.0% / 15.0%) = 0.75 * 1.60 = 1.20. CAPM Required Return = R_f + Beta * [E(R_m) - R_f] = 4.0% + 1.20 * (10.0% - 4.0%) = 4.0% + 1.20 * (6.0%) = 4.0% + 7.20% = 11.20%.",
+        calculatorKeystrokes: "0.75 [\\times] (24 [\\div] 15) [=] 1.20 -> 4 [+] 1.20 [\\times] 6 [=] 11.20%",
+        trapCategory: "Beta Ratio Inversion (Market vs Asset Volatility)",
+        errorModeDefault: "SIGN_INVERSION",
+        distractorAutopsy: {
+          A: "CORRECT: Beta = 0.75 * (24/15) = 1.20. Required Return = 4% + 1.20*(6%) = 11.20%.",
+          B: "Distractor B confuses the forecast expected return (13.50%) with the CAPM required return.",
+          C: "Distractor C inverts the standard deviation ratio (0.75 * 15/24 = 0.46875), resulting in a wrong beta."
+        }
+      },
+      {
+        id: 902,
+        losCode: "LOS 41.d",
+        stem: "Based on its expected return of 13.50% and required return of 11.20%, Stock Delta plots relative to the Security Market Line (SML) as:",
+        options: {
+          A: "Above the SML and is undervalued (generate buy recommendation)",
+          B: "Above the SML and is overvalued (generate sell recommendation)",
+          C: "Below the SML and is overvalued (generate sell recommendation)"
+        },
+        correctOption: "A",
+        algebraicSolution: "Alpha = Expected Return - Required Return = 13.50% - 11.20% = +2.30% (Positive Alpha). An asset offering higher return than required for its beta plots ABOVE the SML and is undervalued.",
+        calculatorKeystrokes: "13.50 [-] 11.20 [=] +2.30% (Undervalued / Buy)",
+        trapCategory: "Underpriced vs Overpriced SML Plot Inversion",
+        errorModeDefault: "CONCEPTUAL_CONFUSION",
+        distractorAutopsy: {
+          A: "CORRECT: Expected Return > Required Return => Positive Alpha (+2.30%) => Plots Above SML => Undervalued.",
+          B: "Distractor B correctly identifies that it plots above SML but makes the polarity inversion concluding it is overvalued.",
+          C: "Distractor C assumes it plots below the SML."
+        }
+      }
+    ]
+  },
+
+  // TOPIC 10: Ethics
+  {
+    id: "vignette-10-ethics",
+    topicId: "10",
+    topicName: "Ethics",
+    subReading: "Soft Dollars, Independence & Objectivity, and GIPS Standards",
+    difficulty: "High Trap",
+    vignetteStem: "Sarah Jenkins, CFA, manages discretionary equity portfolios at Apex Wealth. A regional broker provides Apex with in-depth proprietary equity research models and proposes using soft dollar client commissions to purchase Bloomberg terminals for Apex's research analysts and fund travel expenses for Jenkins to attend an annual issuer due diligence symposium in Geneva.",
+    questions: [
+      {
+        id: 1001,
+        losCode: "LOS 44.c",
+        stem: "Under Standard III(A) Loyalty, Prudence, and Care, which of the proposed expenditures is permissible using client soft dollar brokerage commissions?",
+        options: {
+          A: "Proprietary equity research models and Bloomberg research data feeds only",
+          B: "Bloomberg research terminals and travel expenses to the Geneva symposium",
+          C: "All proposed expenditures, provided full written disclosure is made to clients"
+        },
+        correctOption: "A",
+        algebraicSolution: "Soft dollar commissions belong to the client. Under Standard III(A) and CFA Institute Soft Dollar Standards, commissions may ONLY be used to purchase research and brokerage services that directly aid the investment decision-making process for client accounts. Travel expenses and office administrative overhead are strictly prohibited.",
+        calculatorKeystrokes: "Conceptual Rule: Soft dollars must directly benefit client investment decisions.",
+        trapCategory: "Soft Dollar Beneficiary Distinction",
+        errorModeDefault: "CONCEPTUAL_CONFUSION",
+        distractorAutopsy: {
+          A: "CORRECT: Investment research models and data feeds directly benefit client decision-making.",
+          B: "Distractor B fails to recognize that travel and lodging expenses cannot be paid with client soft dollars.",
+          C: "Distractor C erroneously assumes client disclosure waives core fiduciary prohibitions on misappropriation of brokerage."
+        }
+      },
+      {
+        id: 1002,
+        losCode: "LOS 45.b",
+        stem: "Apex Asset Management claims compliance with the Global Investment Performance Standards (GIPS). An audit reveals that Apex excluded three unprofitable terminated institutional portfolios from its 5-year historical composite track record. Under GIPS rules, this practice:",
+        options: {
+          A: "Directly breaches GIPS provisions because composites must include all past fee-paying discretionary portfolios, including terminated accounts",
+          B: "Is permissible under GIPS provided the portfolios were terminated due to client liquidation rather than manager underperformance",
+          C: "Is permissible if the composite presentation clearly discloses the exclusion in a footnote"
+        },
+        correctOption: "A",
+        algebraicSolution: "GIPS standards mandate that composites include all actual, fee-paying, discretionary portfolios managed to that strategy, including terminated accounts for the full duration of their existence to eliminate survivorship bias.",
+        calculatorKeystrokes: "Conceptual Rule: GIPS requires inclusion of terminated accounts to prevent survivorship bias.",
+        trapCategory: "GIPS Provisions & Composite Construction",
+        errorModeDefault: "CONCEPTUAL_CONFUSION",
+        distractorAutopsy: {
+          A: "CORRECT: GIPS strictly requires inclusion of terminated accounts to eliminate survivorship bias.",
+          B: "Distractor B invents an unapproved liquidation exemption.",
+          C: "Distractor C assumes footnote disclosures can override fundamental GIPS calculation rules."
         }
       }
     ]

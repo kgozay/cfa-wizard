@@ -70,9 +70,9 @@ interface CFAState {
 export const useCFAStore = create<CFAState>()(
   persist(
     (set, get) => ({
-      completedTopicIds: ["01", "02", "03"],
-      inProgressTopicId: "04",
-      activeTopicId: "04",
+      completedTopicIds: [],
+      inProgressTopicId: "01",
+      activeTopicId: "01",
       activeVignetteId: null,
 
       drillQuestionCount: 5,
@@ -256,7 +256,7 @@ export const useCFAStore = create<CFAState>()(
       },
     }),
     {
-      name: "cfa-wizard-storage-v2",
+      name: "cfa-wizard-storage-v3",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         completedTopicIds: state.completedTopicIds,

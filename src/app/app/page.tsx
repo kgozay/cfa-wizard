@@ -196,52 +196,53 @@ export default function DiagnosticCockpitPage() {
       
       {/* 56px Symmetrical Institutional HUD Header Bar (Fluid across Mobile, Tablet, Desktop) */}
       <div className="w-full bg-[#0B0B0E]/95 backdrop-blur-md border-b border-[#1F1F23] sticky top-0 z-40">
-        <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 h-14 flex items-center justify-between font-mono text-xs gap-2 sm:gap-4">
+        <div className="w-full max-w-[1600px] mx-auto px-2.5 sm:px-4 lg:px-6 h-14 flex items-center justify-between font-mono text-xs gap-2">
           
           {/* Zone 1 (Left): Brand & Cockpit Badge */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <span className="w-2.5 h-2.5 rounded-full bg-brand-lime animate-pulse shadow-lime-sm" />
-              <span className="font-extrabold tracking-tight text-white text-sm sm:text-base">
+              <span className="w-2.5 h-2.5 rounded-full bg-brand-lime animate-pulse shadow-lime-sm shrink-0" />
+              <span className="font-extrabold tracking-tight text-white text-sm sm:text-base whitespace-nowrap">
                 CFA WIZARD
               </span>
             </Link>
-            <span className="text-editorial-dim select-none hidden sm:inline">//</span>
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded bg-[#141418] border border-[#27272A] text-[10px] text-editorial-muted uppercase tracking-wider font-bold">
-              STUDY COCKPIT
+            <span className="text-editorial-dim select-none hidden md:inline">//</span>
+            <span className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded bg-[#141418] border border-[#27272A] text-[9px] text-editorial-muted uppercase tracking-wider font-bold whitespace-nowrap">
+              COCKPIT
             </span>
           </div>
 
           {/* Zone 2 (Center): Symmetrical Telemetry HUD Pill */}
-          <div className="hidden lg:flex items-center gap-3 xl:gap-5 text-[11px] whitespace-nowrap px-3 py-1.5 rounded-lg bg-[#0E0E12] border border-[#1F1F23] shadow-sm">
-            <div className="flex items-center gap-1.5">
-              <span className="text-editorial-dim text-[10px] xl:text-[11px]">PROGRESS:</span>
+          <div className="hidden lg:flex items-center gap-2.5 xl:gap-4 text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-[#0E0E12] border border-[#1F1F23] shadow-sm shrink-0">
+            <div className="flex items-center gap-1">
+              <span className="text-editorial-dim text-[10px] hidden xl:inline">PROGRESS:</span>
               <span className="text-brand-lime font-bold">{totalCompleted}/10</span>
             </div>
 
             <span className="text-[#27272A]">|</span>
 
-            <div className="flex items-center gap-1.5" title="Target Benchmark: 70%">
-              <span className="text-editorial-dim text-[10px] xl:text-[11px]">ACCURACY:</span>
+            <div className="flex items-center gap-1" title="Target Benchmark: 70%">
+              <span className="text-editorial-dim text-[10px] hidden xl:inline">ACCURACY:</span>
               <span className={`font-bold ${accuracy >= 70 ? "text-brand-lime" : "text-amber-400"}`}>
                 {accuracy}%
               </span>
+              <span className="text-editorial-dim text-[9px] xl:hidden">ACC</span>
             </div>
 
             <span className="text-[#27272A]">|</span>
 
-            <div className="flex items-center gap-1.5">
-              <span className="text-editorial-dim text-[10px] xl:text-[11px]">RETENTION:</span>
+            <div className="flex items-center gap-1">
+              <span className="text-editorial-dim text-[10px] hidden xl:inline">RETENTION:</span>
               <span className="text-brand-lime font-bold">{trapImmunityPct}%</span>
+              <span className="text-editorial-dim text-[9px] xl:hidden">RET</span>
             </div>
           </div>
 
           {/* Zone 3 (Right): Grouped Controls, Tool Dock & Utilities */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             
             {/* Cluster A: Drill Configuration */}
             <div className="flex items-center bg-[#141418] border border-[#27272A] p-0.5 rounded-lg text-[10px] whitespace-nowrap">
-              <span className="text-editorial-dim px-1.5 hidden md:inline">DRILL:</span>
               {([2, 5, 10, 15] as const).map((cnt) => (
                 <button
                   key={cnt}
@@ -266,7 +267,7 @@ export default function DiagnosticCockpitPage() {
                 if (soundEnabled) sound.playKeyClick();
                 togglePacingTimer();
               }}
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border font-bold transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1 px-1.5 py-1 rounded-lg text-[10px] sm:text-[11px] border font-bold transition-all whitespace-nowrap ${
                 isPacingTimerEnabled
                   ? "bg-brand-lime/10 text-brand-lime border-brand-lime/40"
                   : "bg-[#141418] text-editorial-dim border-[#27272A] hover:text-white"
@@ -278,7 +279,7 @@ export default function DiagnosticCockpitPage() {
             </button>
 
             {/* Cluster B: Core Workspace Tools (Desktop/Tablet) */}
-            <div className="hidden md:flex items-center gap-1.5 pl-1.5 border-l border-[#1F1F23]">
+            <div className="hidden md:flex items-center gap-1 pl-1 border-l border-[#1F1F23]">
               
               {/* BA II+ Calculator */}
               <button
@@ -286,12 +287,12 @@ export default function DiagnosticCockpitPage() {
                   if (soundEnabled) sound.playNodeSwitch();
                   setCalculatorOpen(true);
                 }}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-amber-300 border border-[#27272A] hover:border-amber-400/40 text-[11px] font-bold transition-all whitespace-nowrap"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-amber-300 border border-[#27272A] hover:border-amber-400/40 text-[11px] font-bold transition-all whitespace-nowrap"
                 title="Texas Instruments BA II Plus Emulator (Hotkey: K)"
               >
                 <Calculator className="w-3 h-3 shrink-0" />
-                <span>BA II+</span>
-                <span className="hidden xl:inline text-[9px] px-1 rounded bg-[#222228] text-editorial-dim border border-[#2D2D35]">K</span>
+                <span className="hidden xl:inline">BA II+</span>
+                <span className="text-[9px] px-1 rounded bg-[#222228] text-amber-400/80 border border-[#2D2D35]">K</span>
               </button>
 
               {/* Formulas Sheet */}
@@ -300,13 +301,13 @@ export default function DiagnosticCockpitPage() {
                   if (soundEnabled) sound.playNodeSwitch();
                   setFormulaSheetOpen(true);
                 }}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-cyan-300 border border-[#27272A] hover:border-cyan-400/40 text-[11px] font-bold transition-all whitespace-nowrap"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-cyan-300 border border-[#27272A] hover:border-cyan-400/40 text-[11px] font-bold transition-all whitespace-nowrap"
                 title="LaTeX Formula Reference & Sandboxes (Hotkey: F)"
               >
                 <FileText className="w-3 h-3 shrink-0" />
-                <span className="hidden lg:inline">FORMULAS</span>
-                <span className="lg:hidden">FORM</span>
-                <span className="hidden xl:inline text-[9px] px-1 rounded bg-[#222228] text-editorial-dim border border-[#2D2D35]">F</span>
+                <span className="hidden 2xl:inline">FORMULAS</span>
+                <span className="hidden xl:inline 2xl:hidden">FORM</span>
+                <span className="text-[9px] px-1 rounded bg-[#222228] text-cyan-400/80 border border-[#2D2D35]">F</span>
               </button>
 
               {/* Leitner Recall Deck */}
@@ -315,13 +316,13 @@ export default function DiagnosticCockpitPage() {
                   if (soundEnabled) sound.playNodeSwitch();
                   setLeitnerDeckOpen(true);
                 }}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-brand-lime border border-[#27272A] hover:border-brand-lime/40 text-[11px] font-bold transition-all whitespace-nowrap"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-brand-lime border border-[#27272A] hover:border-brand-lime/40 text-[11px] font-bold transition-all whitespace-nowrap"
                 title="Spaced Repetition Trap Vault (Hotkey: R)"
               >
                 <Layers className="w-3 h-3 shrink-0" />
-                <span className="hidden lg:inline">RECALL</span>
-                <span className="lg:hidden">REC</span>
-                <span className="hidden xl:inline text-[9px] px-1 rounded bg-[#222228] text-editorial-dim border border-[#2D2D35]">R</span>
+                <span className="hidden 2xl:inline">RECALL</span>
+                <span className="hidden xl:inline 2xl:hidden">REC</span>
+                <span className="text-[9px] px-1 rounded bg-[#222228] text-brand-lime/80 border border-[#2D2D35]">R</span>
               </button>
 
               {/* Interleaved Sprint */}
@@ -330,13 +331,13 @@ export default function DiagnosticCockpitPage() {
                   if (soundEnabled) sound.playNodeSwitch();
                   setSprintModalOpen(true);
                 }}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[11px] font-bold transition-all whitespace-nowrap"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[11px] font-bold transition-all whitespace-nowrap"
                 title="10-Question Interleaved Multi-Track Sprint (Hotkey: S)"
               >
                 <Zap className="w-3 h-3 shrink-0" />
-                <span className="hidden lg:inline">SPRINT</span>
-                <span className="lg:hidden">SPRT</span>
-                <span className="hidden xl:inline text-[9px] px-1 rounded bg-[#222228] text-amber-400/60 border border-[#2D2D35]">S</span>
+                <span className="hidden 2xl:inline">SPRINT</span>
+                <span className="hidden xl:inline 2xl:hidden">SPRT</span>
+                <span className="text-[9px] px-1 rounded bg-[#222228] text-amber-400/80 border border-[#2D2D35]">S</span>
               </button>
             </div>
 
@@ -346,17 +347,17 @@ export default function DiagnosticCockpitPage() {
                 if (soundEnabled) sound.playNodeSwitch();
                 setAIGeneratorOpen(true);
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-brand-lime/10 hover:bg-brand-lime/20 text-brand-lime border border-brand-lime/40 text-[11px] font-bold transition-all whitespace-nowrap active:scale-95 shadow-lime-sm"
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-brand-lime/10 hover:bg-brand-lime/20 text-brand-lime border border-brand-lime/40 text-[11px] font-bold transition-all whitespace-nowrap active:scale-95 shadow-lime-sm"
               title="Generate Dynamic Custom Vignettes with AI (Hotkey: G)"
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">AI SCENARIOS</span>
-              <span className="sm:hidden">AI</span>
-              <span className="hidden xl:inline text-[9px] px-1 rounded bg-[#222228] text-brand-lime/60 border border-[#2D2D35]">G</span>
+              <span className="hidden 2xl:inline">AI SCENARIOS</span>
+              <span className="hidden sm:inline 2xl:hidden">AI LAB</span>
+              <span className="text-[9px] px-1 rounded bg-[#222228] text-brand-lime/80 border border-[#2D2D35]">G</span>
             </button>
 
             {/* Cluster C: System Utilities */}
-            <div className="flex items-center gap-1 pl-1.5 border-l border-[#1F1F23]">
+            <div className="flex items-center gap-0.5 sm:gap-1 pl-1 border-l border-[#1F1F23]">
               
               {/* Trap Radar Log */}
               <button

@@ -28,23 +28,29 @@ export default function LandingPage() {
     offset: ["start start", "end end"],
   });
 
-  // Phase 1 (0.00 - 0.28): The Foundation (Zero overlap with Phase 2)
-  const opacity1 = useTransform(scrollYProgress, [0, 0.20, 0.28], [1, 1, 0]);
-  const filter1 = useTransform(scrollYProgress, [0, 0.20, 0.28], ["blur(0px)", "blur(0px)", "blur(14px)"]);
-  const y1 = useTransform(scrollYProgress, [0, 0.28], [0, -35]);
-  const scale1 = useTransform(scrollYProgress, [0, 0.28], [1, 0.96]);
+  // Phase 1 (0.00 - 0.28): The Foundation
+  const opacity1 = useTransform(scrollYProgress, [0, 0.18, 0.28], [1, 1, 0]);
+  const blur1 = useTransform(scrollYProgress, [0, 0.18, 0.28], [0, 0, 24]);
+  const filter1 = useTransform(blur1, (b) => `blur(${b}px)`);
+  const y1 = useTransform(scrollYProgress, [0, 0.28], [0, -40]);
+  const scale1 = useTransform(scrollYProgress, [0, 0.28], [1, 0.95]);
+  const display1 = useTransform(scrollYProgress, (v) => (v <= 0.30 ? "block" : "none"));
 
-  // Phase 2 (0.32 - 0.68): The Mechanics (Begins cleanly at 0.32, exits by 0.68)
-  const opacity2 = useTransform(scrollYProgress, [0.32, 0.40, 0.60, 0.68], [0, 1, 1, 0]);
-  const filter2 = useTransform(scrollYProgress, [0.32, 0.40, 0.60, 0.68], ["blur(14px)", "blur(0px)", "blur(0px)", "blur(14px)"]);
-  const y2 = useTransform(scrollYProgress, [0.32, 0.40, 0.60, 0.68], [35, 0, 0, -35]);
-  const scale2 = useTransform(scrollYProgress, [0.32, 0.40, 0.60, 0.68], [0.96, 1, 1, 0.96]);
+  // Phase 2 (0.30 - 0.68): The Mechanics
+  const opacity2 = useTransform(scrollYProgress, [0.30, 0.38, 0.58, 0.68], [0, 1, 1, 0]);
+  const blur2 = useTransform(scrollYProgress, [0.30, 0.38, 0.58, 0.68], [24, 0, 0, 24]);
+  const filter2 = useTransform(blur2, (b) => `blur(${b}px)`);
+  const y2 = useTransform(scrollYProgress, [0.30, 0.38, 0.58, 0.68], [40, 0, 0, -40]);
+  const scale2 = useTransform(scrollYProgress, [0.30, 0.38, 0.58, 0.68], [0.95, 1, 1, 0.95]);
+  const display2 = useTransform(scrollYProgress, (v) => (v > 0.28 && v < 0.70 ? "block" : "none"));
 
-  // Phase 3 (0.72 - 1.00): Active Mastery (Begins cleanly at 0.72)
-  const opacity3 = useTransform(scrollYProgress, [0.72, 0.80, 1.0], [0, 1, 1]);
-  const filter3 = useTransform(scrollYProgress, [0.72, 0.80, 1.0], ["blur(14px)", "blur(0px)", "blur(0px)"]);
-  const y3 = useTransform(scrollYProgress, [0.72, 0.80, 1.0], [35, 0, 0]);
-  const scale3 = useTransform(scrollYProgress, [0.72, 0.80, 1.0], [0.96, 1, 1]);
+  // Phase 3 (0.70 - 1.00): Active Mastery
+  const opacity3 = useTransform(scrollYProgress, [0.70, 0.78, 1.0], [0, 1, 1]);
+  const blur3 = useTransform(scrollYProgress, [0.70, 0.78, 1.0], [24, 0, 0]);
+  const filter3 = useTransform(blur3, (b) => `blur(${b}px)`);
+  const y3 = useTransform(scrollYProgress, [0.70, 0.78, 1.0], [40, 0, 0]);
+  const scale3 = useTransform(scrollYProgress, [0.70, 0.78, 1.0], [0.95, 1, 1]);
+  const display3 = useTransform(scrollYProgress, (v) => (v >= 0.68 ? "block" : "none"));
 
   // Progress Bar Width
   const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
@@ -122,7 +128,7 @@ export default function LandingPage() {
             
             {/* Act 1: The Reality */}
             <motion.div
-              style={{ opacity: opacity1, filter: filter1, y: y1, scale: scale1 }}
+              style={{ opacity: opacity1, filter: filter1, y: y1, scale: scale1, display: display1 }}
               className="absolute inset-x-0 space-y-6 px-4 pointer-events-auto"
             >
               <div className="font-mono text-xs text-editorial-muted tracking-widest uppercase">
@@ -139,7 +145,7 @@ export default function LandingPage() {
 
             {/* Act 2: The Mechanism */}
             <motion.div
-              style={{ opacity: opacity2, filter: filter2, y: y2, scale: scale2 }}
+              style={{ opacity: opacity2, filter: filter2, y: y2, scale: scale2, display: display2 }}
               className="absolute inset-x-0 space-y-6 px-4 pointer-events-none"
             >
               <div className="font-mono text-xs text-brand-lime tracking-widest uppercase font-bold">
@@ -156,7 +162,7 @@ export default function LandingPage() {
 
             {/* Act 3: Active Mastery */}
             <motion.div
-              style={{ opacity: opacity3, filter: filter3, y: y3, scale: scale3 }}
+              style={{ opacity: opacity3, filter: filter3, y: y3, scale: scale3, display: display3 }}
               className="absolute inset-x-0 space-y-6 px-4"
             >
               <div className="font-mono text-xs text-brand-lime tracking-widest uppercase font-bold">

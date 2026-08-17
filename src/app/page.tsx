@@ -28,20 +28,23 @@ export default function LandingPage() {
     offset: ["start start", "end end"],
   });
 
-  // Phase 1 (0.0 - 0.32): The Foundation
-  const opacity1 = useTransform(scrollYProgress, [0, 0.22, 0.32], [1, 1, 0]);
-  const y1 = useTransform(scrollYProgress, [0, 0.32], [0, -25]);
-  const scale1 = useTransform(scrollYProgress, [0, 0.32], [1, 0.97]);
+  // Phase 1 (0.00 - 0.28): The Foundation (Zero overlap with Phase 2)
+  const opacity1 = useTransform(scrollYProgress, [0, 0.20, 0.28], [1, 1, 0]);
+  const filter1 = useTransform(scrollYProgress, [0, 0.20, 0.28], ["blur(0px)", "blur(0px)", "blur(14px)"]);
+  const y1 = useTransform(scrollYProgress, [0, 0.28], [0, -35]);
+  const scale1 = useTransform(scrollYProgress, [0, 0.28], [1, 0.96]);
 
-  // Phase 2 (0.33 - 0.66): The Mechanics
-  const opacity2 = useTransform(scrollYProgress, [0.33, 0.42, 0.58, 0.66], [0, 1, 1, 0]);
-  const y2 = useTransform(scrollYProgress, [0.33, 0.42, 0.58, 0.66], [25, 0, 0, -25]);
-  const scale2 = useTransform(scrollYProgress, [0.33, 0.42, 0.58, 0.66], [0.97, 1, 1, 0.97]);
+  // Phase 2 (0.32 - 0.68): The Mechanics (Begins cleanly at 0.32, exits by 0.68)
+  const opacity2 = useTransform(scrollYProgress, [0.32, 0.40, 0.60, 0.68], [0, 1, 1, 0]);
+  const filter2 = useTransform(scrollYProgress, [0.32, 0.40, 0.60, 0.68], ["blur(14px)", "blur(0px)", "blur(0px)", "blur(14px)"]);
+  const y2 = useTransform(scrollYProgress, [0.32, 0.40, 0.60, 0.68], [35, 0, 0, -35]);
+  const scale2 = useTransform(scrollYProgress, [0.32, 0.40, 0.60, 0.68], [0.96, 1, 1, 0.96]);
 
-  // Phase 3 (0.67 - 1.0): The Active Mastery
-  const opacity3 = useTransform(scrollYProgress, [0.67, 0.77, 1.0], [0, 1, 1]);
-  const y3 = useTransform(scrollYProgress, [0.67, 0.77, 1.0], [25, 0, 0]);
-  const scale3 = useTransform(scrollYProgress, [0.67, 0.77, 1.0], [0.97, 1, 1]);
+  // Phase 3 (0.72 - 1.00): Active Mastery (Begins cleanly at 0.72)
+  const opacity3 = useTransform(scrollYProgress, [0.72, 0.80, 1.0], [0, 1, 1]);
+  const filter3 = useTransform(scrollYProgress, [0.72, 0.80, 1.0], ["blur(14px)", "blur(0px)", "blur(0px)"]);
+  const y3 = useTransform(scrollYProgress, [0.72, 0.80, 1.0], [35, 0, 0]);
+  const scale3 = useTransform(scrollYProgress, [0.72, 0.80, 1.0], [0.96, 1, 1]);
 
   // Progress Bar Width
   const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
@@ -101,15 +104,17 @@ export default function LandingPage() {
           
           {/* Ambient Financial Manifold Background */}
           <div className="absolute inset-0 pointer-events-none z-0">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_30%,rgba(216,255,62,0.06),transparent_70%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f230f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f230f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_35%,rgba(216,255,62,0.05),transparent_70%)]" />
+            <div className="absolute inset-0 bg-[#09090B]/50 backdrop-blur-[1px]" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f2312_1px,transparent_1px),linear-gradient(to_bottom,#1f1f2312_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)]" />
           </div>
 
           {/* Top Label */}
-          <div className="relative z-10 max-w-5xl mx-auto w-full text-center pt-6">
-            <span className="font-mono text-xs text-brand-lime tracking-widest uppercase font-bold">
-              OFFICIAL 2026/2027 CURRICULUM ARCHITECTURE
-            </span>
+          <div className="relative z-10 max-w-5xl mx-auto w-full text-center pt-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121215]/90 border border-[#222226] font-mono text-[11px] text-brand-lime">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
+              <span>OFFICIAL 2026/2027 CURRICULUM ARCHITECTURE</span>
+            </div>
           </div>
 
           {/* Center Stage: 3 Progress-Locked Narrative Acts */}
@@ -117,48 +122,51 @@ export default function LandingPage() {
             
             {/* Act 1: The Reality */}
             <motion.div
-              style={{ opacity: opacity1, y: y1, scale: scale1 }}
-              className="absolute inset-x-0 space-y-6"
+              style={{ opacity: opacity1, filter: filter1, y: y1, scale: scale1 }}
+              className="absolute inset-x-0 space-y-6 px-4 pointer-events-auto"
             >
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06]">
+              <div className="font-mono text-xs text-editorial-muted tracking-widest uppercase">
+                01 // THE CURRICULUM FOUNDATION
+              </div>
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06] drop-shadow-sm">
                 Master CFA® Level 1{" "}
                 <span className="text-brand-lime block sm:inline">from first principles.</span>
               </h1>
-              <p className="text-base sm:text-lg text-editorial-steely max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
                 10 Official Tracks. 150 Learning Outcome Modules. Build profound financial intuition through structured, step-by-step conceptual deconstruction.
               </p>
             </motion.div>
 
             {/* Act 2: The Mechanism */}
             <motion.div
-              style={{ opacity: opacity2, y: y2, scale: scale2 }}
-              className="absolute inset-x-0 space-y-6 pointer-events-none"
+              style={{ opacity: opacity2, filter: filter2, y: y2, scale: scale2 }}
+              className="absolute inset-x-0 space-y-6 px-4 pointer-events-none"
             >
-              <span className="font-mono text-xs text-editorial-muted tracking-widest uppercase">
-                DEEP CONCEPTUAL CLARITY
-              </span>
-              <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06]">
+              <div className="font-mono text-xs text-brand-lime tracking-widest uppercase font-bold">
+                02 // DEEP CONCEPTUAL MECHANICS
+              </div>
+              <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06] drop-shadow-sm">
                 Understand the exact mechanics{" "}
                 <span className="text-brand-lime block sm:inline">behind every formula.</span>
               </h2>
-              <p className="text-base sm:text-lg text-editorial-steely max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
                 No surface memorization. Dissect how duration approximations, currency cross-rates, and multi-stage DCF models actually function under real market conditions.
               </p>
             </motion.div>
 
             {/* Act 3: Active Mastery */}
             <motion.div
-              style={{ opacity: opacity3, y: y3, scale: scale3 }}
-              className="absolute inset-x-0 space-y-6"
+              style={{ opacity: opacity3, filter: filter3, y: y3, scale: scale3 }}
+              className="absolute inset-x-0 space-y-6 px-4"
             >
-              <span className="font-mono text-xs text-brand-lime tracking-widest uppercase font-bold">
-                TACTILE EXECUTION & RETENTION
-              </span>
-              <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06]">
+              <div className="font-mono text-xs text-brand-lime tracking-widest uppercase font-bold">
+                03 // TACTILE EXECUTION &amp; RETENTION
+              </div>
+              <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06] drop-shadow-sm">
                 Active learning through{" "}
-                <span className="text-brand-lime block sm:inline">BA II+ workflows & spaced recall.</span>
+                <span className="text-brand-lime block sm:inline">BA II+ workflows &amp; spaced recall.</span>
               </h2>
-              <p className="text-base sm:text-lg text-editorial-steely max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
                 Seamless Texas Instruments keystroke pipelines, 90-second exam pacers, and adaptive Leitner intervals designed for permanent mastery.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4 pt-4 font-mono text-xs">

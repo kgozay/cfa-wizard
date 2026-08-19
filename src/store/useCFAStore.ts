@@ -32,6 +32,7 @@ interface CFAState {
   // UI & Tool Modals
   soundEnabled: boolean;
   isCalculatorOpen: boolean;
+  calculatorMode: "closed" | "docked" | "floating" | "minimized";
   isFormulaSheetOpen: boolean;
   isTrapLogOpen: boolean;
   isAIGeneratorOpen: boolean;
@@ -39,6 +40,7 @@ interface CFAState {
   isSprintModalOpen: boolean;
   isLeitnerDeckOpen: boolean;
   isShortcutsOpen: boolean;
+  weakAreaTargetTopic: string | null;
   
   // Actions
   selectTopic: (id: string) => void;
@@ -56,10 +58,13 @@ interface CFAState {
   deleteTrapLogEntry: (id: string) => void;
   clearAllTrapLogs: () => void;
   addCustomVignette: (vignette: VignetteSet) => void;
+  addQuestionsToActiveVignette: (questions: import("@/types/cfa").VignetteQuestion[]) => void;
+  setWeakAreaTargetTopic: (topicId: string | null) => void;
   
   // Modals
   toggleSound: () => void;
   setCalculatorOpen: (open: boolean) => void;
+  setCalculatorMode: (mode: "closed" | "docked" | "floating" | "minimized") => void;
   setFormulaSheetOpen: (open: boolean) => void;
   setTrapLogOpen: (open: boolean) => void;
   setAIGeneratorOpen: (open: boolean) => void;
@@ -90,6 +95,7 @@ export const useCFAStore = create<CFAState>()(
 
       soundEnabled: true,
       isCalculatorOpen: false,
+      calculatorMode: "closed",
       isFormulaSheetOpen: false,
       isTrapLogOpen: false,
       isAIGeneratorOpen: false,
@@ -97,6 +103,7 @@ export const useCFAStore = create<CFAState>()(
       isSprintModalOpen: false,
       isLeitnerDeckOpen: false,
       isShortcutsOpen: false,
+      weakAreaTargetTopic: null,
 
       selectTopic: (id: string) => {
         set({ activeTopicId: id, inProgressTopicId: id });
@@ -256,8 +263,55 @@ export const useCFAStore = create<CFAState>()(
         }));
       },
 
+      addQuestionsToActiveVignette: (questions: import("@/types/cfa").VignetteQuestion[]) => {
+        const { activeVignetteId, customVignettes } = get();
+        if (!activeVignetteId) return;
+
+        // Check if active vignette is in customVignettes or CFA_VIGNETTES
+        const customIdx = customVignettes.findIndex((v) => v.id === activeVignetteId);
+        if (customIdx >= 0) {
+          const updatedCustom = [...customVignettes];
+          updatedCustom[customIdx] = {
+            ...updatedCustom[customIdx],
+            questions: [...updatedCustom[customIdx].questions, ...questions],
+          };
+          set({ customVignettes: updatedCustom });
+        } else {
+          // Clone base vignette into customVignettes with added questions
+          const baseV = CFA_VIGNETTES.find((v) => v.id === activeVignetteId);
+          if (baseV) {
+            const newVignette: VignetteSet = {
+              ...baseV,
+              id: `${baseV.id}-expanded-${Date.now()}`,
+              questions: [...baseV.questions, ...questions],
+            };
+            set({
+              customVignettes: [newVignette, ...customVignettes],
+              activeVignetteId: newVignette.id,
+            });
+          }
+        }
+      },
+
+      setWeakAreaTargetTopic: (topicId: string | null) => {
+        set({ weakAreaTargetTopic: topicId });
+      },
+
       toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
-      setCalculatorOpen: (open: boolean) => set({ isCalculatorOpen: open }),
+      setCalculatorOpen: (open: boolean) =>
+        set((state) => ({
+          isCalculatorOpen: open,
+          calculatorMode: open
+            ? state.calculatorMode === "closed"
+              ? "floating"
+              : state.calculatorMode
+            : "closed",
+        })),
+      setCalculatorMode: (mode) =>
+        set({
+          calculatorMode: mode,
+          isCalculatorOpen: mode !== "closed",
+        }),
       setFormulaSheetOpen: (open: boolean) => set({ isFormulaSheetOpen: open }),
       setTrapLogOpen: (open: boolean) => set({ isTrapLogOpen: open }),
       setAIGeneratorOpen: (open: boolean) => set({ isAIGeneratorOpen: open }),

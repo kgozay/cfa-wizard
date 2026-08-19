@@ -117,7 +117,7 @@ export const FormattedMathText: React.FC<FormattedMathTextProps> = ({
               key={idx}
               math={part.content}
               block={false}
-              className="align-middle inline-flex items-center text-brand-lime font-normal"
+              className="align-middle inline-flex items-center text-zinc-100 font-normal"
             />
           );
         }

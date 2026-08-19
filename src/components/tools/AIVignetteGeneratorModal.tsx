@@ -8,16 +8,32 @@ import { sound } from "@/components/common/SoundEffects";
 import { VignetteSet } from "@/types/cfa";
 
 export const AIVignetteGeneratorModal: React.FC = () => {
-  const { isAIGeneratorOpen, setAIGeneratorOpen, addCustomVignette, inProgressTopicId, soundEnabled } = useCFAStore();
+  const {
+    isAIGeneratorOpen,
+    setAIGeneratorOpen,
+    addCustomVignette,
+    inProgressTopicId,
+    activeTopicId,
+    weakAreaTargetTopic,
+    soundEnabled,
+  } = useCFAStore();
   
-  const [selectedTopicId, setSelectedTopicId] = useState<string>(inProgressTopicId || "04");
+  const [selectedTopicId, setSelectedTopicId] = useState<string>(
+    weakAreaTargetTopic || activeTopicId || inProgressTopicId || "01"
+  );
   const [difficulty, setDifficulty] = useState<"Standard" | "High Trap" | "Institutional">("High Trap");
   const [customPrompt, setCustomPrompt] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
+  React.useEffect(() => {
+    if (weakAreaTargetTopic) {
+      setSelectedTopicId(weakAreaTargetTopic);
+    }
+  }, [weakAreaTargetTopic]);
+
   if (!isAIGeneratorOpen) return null;
 
-  const topic = CFA_CURRICULUM.find((t) => t.id === selectedTopicId) || CFA_CURRICULUM[3];
+  const topic = CFA_CURRICULUM.find((t) => t.id === selectedTopicId) || CFA_CURRICULUM[0];
 
   const handleGenerate = async () => {
     if (soundEnabled) sound.playKeyClick();
@@ -60,7 +76,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
               <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
                 ON-DEMAND AI VIGNETTE GENERATOR
               </h3>
-              <span className="font-mono text-xs text-editorial-dim">
+              <span className="font-mono text-xs text-zinc-400">
                 SYNTHESIZE REALISTIC 2-QUESTION INSTITUTIONAL VIGNETTE SETS
               </span>
             </div>
@@ -71,7 +87,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
               if (soundEnabled) sound.playKeyClick();
               setAIGeneratorOpen(false);
             }}
-            className="p-1.5 rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -82,13 +98,13 @@ export const AIVignetteGeneratorModal: React.FC = () => {
           
           {/* Target Track Selector */}
           <div>
-            <label className="block font-mono text-xs font-semibold text-white mb-2 uppercase tracking-wide">
+            <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
               1. Select Curriculum Track:
             </label>
             <select
               value={selectedTopicId}
               onChange={(e) => setSelectedTopicId(e.target.value)}
-              className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-brand-lime/50"
+              className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-brand-lime"
             >
               {CFA_CURRICULUM.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -100,8 +116,8 @@ export const AIVignetteGeneratorModal: React.FC = () => {
 
           {/* Difficulty Setting */}
           <div>
-            <label className="block font-mono text-xs font-semibold text-white mb-2 uppercase tracking-wide">
-              2. Trap Rigor & Difficulty:
+            <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
+              2. Trap Rigor &amp; Difficulty:
             </label>
             <div className="grid grid-cols-3 gap-2 font-mono text-xs">
               {(["Standard", "High Trap", "Institutional"] as const).map((diff) => (
@@ -109,10 +125,10 @@ export const AIVignetteGeneratorModal: React.FC = () => {
                   key={diff}
                   type="button"
                   onClick={() => setDifficulty(diff)}
-                  className={`py-2 px-3 rounded-lg border text-center font-medium transition-all ${
+                  className={`py-2 px-3 rounded-lg border text-center font-semibold transition-all ${
                     difficulty === diff
                       ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
-                      : "bg-[#121215] text-editorial-muted border-[#27272A] hover:text-white"
+                      : "bg-[#121215] text-zinc-400 border-[#27272A] hover:text-white"
                   }`}
                 >
                   {diff}
@@ -122,13 +138,13 @@ export const AIVignetteGeneratorModal: React.FC = () => {
           </div>
 
           {/* Trap Area Context Banner */}
-          <div className="p-3.5 rounded-lg bg-[#121215] border border-[#1F1F23] flex items-start gap-2.5 text-xs">
+          <div className="p-3.5 rounded-lg bg-[#121215] border border-amber-400/30 flex items-start gap-2.5 text-xs">
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <span className="font-mono text-[11px] font-bold text-amber-400 block">
+              <span className="font-mono text-xs font-bold text-amber-400 block">
                 PRIMARY TARGET TRAP IN FOCUS:
               </span>
-              <p className="text-editorial-steely text-xs mt-0.5">
+              <p className="text-zinc-200 text-xs mt-0.5 leading-relaxed">
                 {topic.highYieldTrapArea}
               </p>
             </div>
@@ -136,15 +152,15 @@ export const AIVignetteGeneratorModal: React.FC = () => {
 
           {/* Optional Prompt Refinement */}
           <div>
-            <label className="block font-mono text-xs font-semibold text-white mb-2 uppercase tracking-wide">
+            <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
               3. Custom Scenario Focus (Optional):
             </label>
             <input
               type="text"
-              placeholder="e.g. Callable bond yield shock, LIFO liquidation in high inflation..."
+              placeholder="e.g. Callable bond yield shock, LIFO liquidation in high inflation, put-call parity..."
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
-              className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-2.5 text-xs text-white placeholder:text-editorial-dim focus:outline-none focus:border-brand-lime/50 font-mono"
+              className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-lime font-mono"
             />
           </div>
 
@@ -154,7 +170,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
         <div className="p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between font-mono text-xs">
           <button
             onClick={() => setAIGeneratorOpen(false)}
-            className="px-4 py-2 rounded-lg text-editorial-muted hover:text-white"
+            className="px-4 py-2 rounded-lg text-zinc-400 hover:text-white"
           >
             CANCEL
           </button>
@@ -172,7 +188,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
             ) : (
               <>
                 <Wand2 className="w-4 h-4" />
-                <span>SYNTHESIZE & LAUNCH DRILL</span>
+                <span>SYNTHESIZE &amp; LAUNCH DRILL</span>
               </>
             )}
           </button>

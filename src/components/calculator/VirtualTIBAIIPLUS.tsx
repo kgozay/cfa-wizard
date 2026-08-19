@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { X, Cpu, RotateCcw, Sparkles, BookOpen } from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { X, Cpu, RotateCcw, Sparkles, BookOpen, Minimize2, Maximize2, PanelRight, Move, ChevronUp } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
 
 export const VirtualTIBAIIPLUS: React.FC = () => {
-  const { isCalculatorOpen, setCalculatorOpen, soundEnabled } = useCFAStore();
+  const { isCalculatorOpen, setCalculatorOpen, calculatorMode, setCalculatorMode, soundEnabled } = useCFAStore();
 
   // LCD Display State
   const [displayValue, setDisplayValue] = useState<string>("0.0000");
@@ -450,7 +450,31 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
     setCalculatorOpen,
   ]);
 
-  if (!isCalculatorOpen) return null;
+  if (!isCalculatorOpen || calculatorMode === "closed") return null;
+
+  // Minimized Widget Pill
+  if (calculatorMode === "minimized") {
+    return (
+      <div className="fixed bottom-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <button
+          onClick={() => {
+            playClick();
+            setCalculatorMode("floating");
+          }}
+          className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#0E0E12] border border-brand-lime/40 hover:border-brand-lime text-white font-mono text-xs shadow-2xl transition-all active:scale-95 group hover:shadow-lime-sm"
+        >
+          <div className="w-5 h-5 rounded bg-brand-lime/20 border border-brand-lime/40 flex items-center justify-center text-brand-lime">
+            <Cpu className="w-3 h-3" />
+          </div>
+          <div className="text-left">
+            <span className="text-[10px] text-zinc-400 block font-bold">TI BA II+ [K]</span>
+            <span className="text-brand-lime font-extrabold text-sm">{displayValue}</span>
+          </div>
+          <Maximize2 className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white ml-1" />
+        </button>
+      </div>
+    );
+  }
 
   const loadPreset = (type: "bond" | "annuity-end" | "annuity-bgn" | "compound" | "volatility") => {
     playClick();
@@ -482,7 +506,6 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
       setDisplayValue("-257715.18");
       setStatusLine("LOADED: 6-Yr $50k [BGN] PV = $257,715.18");
     } else if (type === "compound") {
-      // 1.084^12
       setStoredOperand(1.084);
       setLastOperator("^");
       setDisplayValue("12");
@@ -497,38 +520,77 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
     setWaitingForNewInput(true);
   };
 
+  const isDocked = calculatorMode === "docked";
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-[460px] bg-[#0C0C0F] border border-[#27272A] rounded-2xl shadow-2xl p-4 sm:p-5 relative overflow-hidden flex flex-col font-sans max-h-[96vh] overflow-y-auto">
-        
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#1F1F23]">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-brand-lime/20 border border-brand-lime/40 flex items-center justify-center text-brand-lime">
-              <Cpu className="w-3.5 h-3.5" />
-            </div>
-            <div>
-              <span className="font-mono text-xs font-bold tracking-wider text-white flex items-center gap-1.5">
-                <span>TI BA II PLUS</span>
-                <span className="text-[10px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                  PROFESSIONAL
-                </span>
-              </span>
-            </div>
+    <div
+      className={
+        isDocked
+          ? "fixed top-14 right-0 bottom-0 w-[420px] max-w-[100vw] bg-[#0C0C0F] border-l border-[#27272A] shadow-2xl z-50 flex flex-col font-sans overflow-hidden animate-in slide-in-from-right duration-200"
+          : "fixed bottom-4 right-4 z-50 w-[440px] max-w-[calc(100vw-32px)] max-h-[90vh] bg-[#0C0C0F] border border-[#27272A] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] p-4 sm:p-5 flex flex-col font-sans overflow-y-auto animate-in fade-in slide-in-from-bottom-3 duration-200"
+      }
+    >
+      {/* Top Header Bar */}
+      <div className={`flex items-center justify-between pb-3 border-b border-[#1F1F23] select-none ${isDocked ? "p-4" : ""}`}>
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded bg-brand-lime/20 border border-brand-lime/40 flex items-center justify-center text-brand-lime">
+            <Cpu className="w-3.5 h-3.5" />
           </div>
+          <div>
+            <span className="font-mono text-xs font-bold tracking-wider text-white flex items-center gap-1.5">
+              <span>TI BA II PLUS</span>
+              <span className="text-[10px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                PRO
+              </span>
+            </span>
+          </div>
+        </div>
+
+        {/* Window Controls */}
+        <div className="flex items-center gap-1">
+          {/* Dock / Float Switcher */}
           <button
-            onClick={() => { playClick(); setCalculatorOpen(false); }}
-            className="p-1.5 rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
+            onClick={() => {
+              playClick();
+              setCalculatorMode(isDocked ? "floating" : "docked");
+            }}
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
+            title={isDocked ? "Switch to Floating Window" : "Dock to Right Panel"}
+          >
+            <PanelRight className={`w-3.5 h-3.5 ${isDocked ? "text-brand-lime" : ""}`} />
+          </button>
+
+          {/* Minimize */}
+          <button
+            onClick={() => {
+              playClick();
+              setCalculatorMode("minimized");
+            }}
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
+            title="Minimize to Pill"
+          >
+            <Minimize2 className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Close */}
+          <button
+            onClick={() => {
+              playClick();
+              setCalculatorOpen(false);
+            }}
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
             title="Close Emulator (Esc)"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
+      </div>
 
+      <div className={isDocked ? "p-4 overflow-y-auto flex-1 flex flex-col justify-between" : ""}>
         {/* LCD Screen Display */}
         <div className="my-3 p-3 sm:p-4 rounded-xl bg-[#070709] border border-[#27272A] relative flex flex-col justify-between shadow-inner">
           {/* LCD Top Annunciator Indicators */}
-          <div className="flex items-center justify-between text-[10px] font-mono tracking-widest text-editorial-dim select-none pb-1 border-b border-[#18181D]">
+          <div className="flex items-center justify-between text-[10px] font-mono tracking-widest text-zinc-400 select-none pb-1 border-b border-[#18181D]">
             <span className={activeSecondary ? "text-[#FACC15] font-bold" : "opacity-25"}>2nd</span>
             <span className={computeMode ? "text-brand-lime font-bold" : "opacity-25"}>CPT</span>
             <span className={pendingMemoryAction ? "text-cyan-400 font-bold" : "opacity-25"}>
@@ -548,7 +610,7 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
           </div>
 
           {/* LCD Status line */}
-          <div className="text-right text-[11px] font-mono text-brand-lime/80 truncate">
+          <div className="text-right text-[11px] font-mono text-brand-lime/90 truncate font-semibold">
             {statusLine}
           </div>
         </div>
@@ -556,23 +618,23 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
         {/* TVM Registers Snapshot Bar */}
         <div className="grid grid-cols-5 gap-1 mb-3 p-2 bg-[#121216] rounded-lg border border-[#1F1F23] text-center font-mono text-[10px]">
           <div>
-            <span className="text-editorial-dim block">N</span>
+            <span className="text-zinc-400 block">N</span>
             <span className="text-white font-bold">{tvmN}</span>
           </div>
           <div>
-            <span className="text-editorial-dim block">I/Y</span>
+            <span className="text-zinc-400 block">I/Y</span>
             <span className="text-brand-lime font-bold">{tvmIY.toFixed(2)}%</span>
           </div>
           <div>
-            <span className="text-editorial-dim block">PV</span>
+            <span className="text-zinc-400 block">PV</span>
             <span className="text-white font-bold">{tvmPV.toFixed(1)}</span>
           </div>
           <div>
-            <span className="text-editorial-dim block">PMT</span>
+            <span className="text-zinc-400 block">PMT</span>
             <span className="text-white font-bold">{tvmPMT.toFixed(1)}</span>
           </div>
           <div>
-            <span className="text-editorial-dim block">FV</span>
+            <span className="text-zinc-400 block">FV</span>
             <span className="text-white font-bold">{tvmFV.toFixed(1)}</span>
           </div>
         </div>
@@ -607,7 +669,7 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               className={`py-2 px-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                 isBgnMode
                   ? "bg-amber-500/20 text-amber-300 border-amber-500/50"
-                  : "bg-[#18181D] text-editorial-steely border-[#27272A] hover:text-white"
+                  : "bg-[#18181D] text-zinc-300 border-[#27272A] hover:text-white"
               }`}
               title="Toggle Annuity Timing ([BGN] vs [END])"
             >
@@ -618,7 +680,7 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               className={`py-2 px-1 rounded-lg text-xs font-mono border transition-all ${
                 activeSecondary
                   ? "bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold"
-                  : "bg-[#18181D] text-white border-[#27272A] hover:border-editorial-muted"
+                  : "bg-[#18181D] text-white border-[#27272A] hover:border-zinc-400"
               }`}
               title={activeSecondary ? "Reset All TVM Registers" : "Divide"}
             >
@@ -695,7 +757,7 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               className={`py-2 px-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                 pendingMemoryAction === "STO"
                   ? "bg-cyan-500/30 text-cyan-300 border-cyan-400 animate-pulse"
-                  : "bg-[#141418] text-editorial-steely border-[#27272A] hover:text-white"
+                  : "bg-[#141418] text-zinc-300 border-[#27272A] hover:text-white"
               }`}
               title="Store to Memory [0-9]"
             >
@@ -706,7 +768,7 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               className={`py-2 px-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                 pendingMemoryAction === "RCL"
                   ? "bg-cyan-500/30 text-cyan-300 border-cyan-400 animate-pulse"
-                  : "bg-[#141418] text-editorial-steely border-[#27272A] hover:text-white"
+                  : "bg-[#141418] text-zinc-300 border-[#27272A] hover:text-white"
               }`}
               title="Recall from Memory [0-9]"
             >
@@ -714,21 +776,21 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
             </button>
             <button
               onClick={handleOpenParen}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#141418] text-editorial-steely border border-[#27272A] hover:text-white"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#141418] text-zinc-300 border border-[#27272A] hover:text-white"
               title="Open Parenthesis ("
             >
               (
             </button>
             <button
               onClick={handleCloseParen}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#141418] text-editorial-steely border border-[#27272A] hover:text-white"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#141418] text-zinc-300 border border-[#27272A] hover:text-white"
               title="Close Parenthesis )"
             >
               )
             </button>
             <button
               onClick={() => handleUnaryOp("pct")}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#141418] text-editorial-steely border border-[#27272A] hover:text-white"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#141418] text-zinc-300 border border-[#27272A] hover:text-white"
               title="Percent % (/100)"
             >
               %
@@ -758,44 +820,43 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
             {/* 0 . +/- = */}
             <button onClick={() => handleDigit("0")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">0</button>
             <button onClick={() => handleDigit(".")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">.</button>
-            <button onClick={handleToggleSign} className="py-2.5 rounded-lg font-mono text-xs font-bold bg-[#18181D] text-editorial-white border border-[#27272A] hover:bg-[#222228] active:scale-95 transition-all">+/-</button>
+            <button onClick={handleToggleSign} className="py-2.5 rounded-lg font-mono text-xs font-bold bg-[#18181D] text-zinc-100 border border-[#27272A] hover:bg-[#222228] active:scale-95 transition-all">+/-</button>
             <button onClick={handleEquals} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-extrabold bg-brand-lime text-black border border-brand-lime hover:bg-brand-neon active:scale-95 shadow-lime-sm flex items-center justify-center">=</button>
           </div>
         </div>
 
         {/* Quick Presets Bar */}
         <div className="mt-3 pt-3 border-t border-[#1F1F23] flex items-center justify-between text-xs font-mono">
-          <span className="text-editorial-dim text-[10px] uppercase font-bold">Presets:</span>
+          <span className="text-zinc-400 text-[11px] uppercase font-bold">Presets:</span>
           <div className="flex gap-1 flex-wrap justify-end">
             <button
               onClick={() => loadPreset("compound")}
-              className="px-2 py-1 rounded bg-[#18181B] text-cyan-300 hover:text-white border border-cyan-500/30 text-[10px]"
+              className="px-2 py-1 rounded bg-[#18181B] text-cyan-300 hover:text-white border border-cyan-500/30 text-[11px] font-medium"
               title="Calculate 1.084^12"
             >
               y<sup>x</sup> Power
             </button>
             <button
               onClick={() => loadPreset("volatility")}
-              className="px-2 py-1 rounded bg-[#18181B] text-cyan-300 hover:text-white border border-cyan-500/30 text-[10px]"
+              className="px-2 py-1 rounded bg-[#18181B] text-cyan-300 hover:text-white border border-cyan-500/30 text-[11px] font-medium"
               title="Calculate √68.0 Variance"
             >
               √x Root
             </button>
             <button
               onClick={() => loadPreset("bond")}
-              className="px-2 py-1 rounded bg-[#18181B] text-editorial-steely hover:text-white border border-[#27272A] hover:border-brand-lime/40 text-[10px]"
+              className="px-2 py-1 rounded bg-[#18181B] text-zinc-300 hover:text-white border border-[#27272A] hover:border-brand-lime/40 text-[11px] font-medium"
             >
               Bond YTM
             </button>
             <button
               onClick={() => loadPreset("annuity-bgn")}
-              className="px-2 py-1 rounded bg-[#18181B] text-amber-300/80 hover:text-amber-300 border border-[#27272A] hover:border-amber-400/40 text-[10px]"
+              className="px-2 py-1 rounded bg-[#18181B] text-amber-300/90 hover:text-amber-300 border border-[#27272A] hover:border-amber-400/40 text-[11px] font-medium"
             >
               [BGN] Due
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );

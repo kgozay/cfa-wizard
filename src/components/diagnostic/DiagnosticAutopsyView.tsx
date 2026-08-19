@@ -276,51 +276,61 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
                 </div>
               </div>
 
-              {/* Interactive Post-Mortem Error Mode Tagging (If missed or reviewed) */}
-              <div className="p-4 rounded-lg bg-[#121216] border border-[#27272A] space-y-3 font-mono">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-editorial-steely font-bold flex items-center gap-1.5">
-                    <Tag className="w-3.5 h-3.5 text-brand-lime" />
-                    <span>POST-MORTEM ERROR TAXONOMY:</span>
-                  </span>
-                  <span className="text-[10px] text-editorial-dim">
-                    Currently Logged:{" "}
-                    <strong className="text-brand-lime">
-                      {ERROR_MODE_LABELS[activeErrorMode]?.label || activeErrorMode}
-                    </strong>
-                  </span>
-                </div>
+              {/* Post-Mortem Error Taxonomy (Only rendered on missed questions) or Mastered Badge */}
+              {!isCorrect ? (
+                <div className="p-4 rounded-lg bg-[#141418] border border-red-500/30 space-y-3 font-mono">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-amber-400 font-bold flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5" />
+                      <span>TAG DISTRACTOR ERROR TAXONOMY (REMEDIATION):</span>
+                    </span>
+                    <span className="text-[11px] text-zinc-400">
+                      Currently Logged:{" "}
+                      <strong className="text-brand-lime">
+                        {ERROR_MODE_LABELS[activeErrorMode]?.label || activeErrorMode}
+                      </strong>
+                    </span>
+                  </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {(
-                    [
-                      "SIGN_INVERSION",
-                      "BA2_MODE",
-                      "PERIODICITY_MISMATCH",
-                      "GAAP_VS_IFRS",
-                      "FORMULA_SCALAR",
-                      "CONCEPTUAL_CONFUSION",
-                      "READING_MISINTERPRETATION",
-                    ] as ErrorMode[]
-                  ).map((mode) => {
-                    const isSelected = activeErrorMode === mode;
-                    return (
-                      <button
-                        key={mode}
-                        type="button"
-                        onClick={() => handleSelectErrorMode(q.id, mode)}
-                        className={`px-2.5 py-1 rounded text-[10px] border transition-all ${
-                          isSelected
-                            ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
-                            : "bg-[#18181C] text-zinc-400 border-[#2A2A30] hover:text-white hover:border-[#3F3F46]"
-                        }`}
-                      >
-                        {ERROR_MODE_LABELS[mode].label}
-                      </button>
-                    );
-                  })}
+                  <div className="flex flex-wrap gap-1.5">
+                    {(
+                      [
+                        "SIGN_INVERSION",
+                        "BA2_MODE",
+                        "PERIODICITY_MISMATCH",
+                        "GAAP_VS_IFRS",
+                        "FORMULA_SCALAR",
+                        "CONCEPTUAL_CONFUSION",
+                        "READING_MISINTERPRETATION",
+                      ] as ErrorMode[]
+                    ).map((mode) => {
+                      const isSelected = activeErrorMode === mode;
+                      return (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => handleSelectErrorMode(q.id, mode)}
+                          className={`px-2.5 py-1 rounded text-xs border transition-all ${
+                            isSelected
+                              ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
+                              : "bg-[#18181C] text-zinc-300 border-[#2A2A30] hover:text-white hover:border-[#3F3F46]"
+                          }`}
+                        >
+                          {ERROR_MODE_LABELS[mode].label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="p-3.5 rounded-lg bg-brand-lime/5 border border-brand-lime/30 flex items-center justify-between font-mono text-xs">
+                  <div className="flex items-center gap-2 text-brand-lime font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>CONCEPT MASTERED // DISTRACTOR TRAP AVOIDED</span>
+                  </div>
+                  <span className="text-zinc-400 text-xs">Trap: {q.trapCategory}</span>
+                </div>
+              )}
 
             </div>
           );
@@ -328,7 +338,7 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
       </div>
 
       {/* Bottom Master Navigation Actions */}
-      <div className="p-6 bg-[#0E0E12] border border-[#1F1F23] rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+      <div className="p-6 bg-[#0E0E12] border border-[#1F1F23] rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs shadow-lg">
         <button
           onClick={onReturnDashboard}
           className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-[#141418] hover:bg-[#1A1A20] border border-[#27272A] text-zinc-300 font-bold transition-all"
@@ -336,10 +346,22 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
           &larr; RETURN TO STUDY COCKPIT
         </button>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+          <button
+            onClick={() => {
+              if (soundEnabled) sound.playNodeSwitch();
+              useCFAStore.getState().setAIGeneratorOpen(true);
+            }}
+            className="px-4 py-2.5 rounded-lg bg-[#18181C] hover:bg-[#222228] border border-brand-lime/40 text-brand-lime font-bold transition-all flex items-center justify-center gap-1.5"
+            title="Generate AI practice questions targeted at this topic"
+          >
+            <Zap className="w-3.5 h-3.5 text-brand-lime" />
+            <span>PRACTICE SIMILAR AI SCENARIO</span>
+          </button>
+
           <button
             onClick={onDrillAnother}
-            className="flex-1 sm:flex-initial px-4 py-2.5 rounded-lg bg-[#18181C] hover:bg-[#222228] border border-[#2E2E36] text-white font-bold transition-all flex items-center justify-center gap-1.5"
+            className="px-4 py-2.5 rounded-lg bg-[#18181C] hover:bg-[#222228] border border-[#2E2E36] text-white font-bold transition-all flex items-center justify-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>DRILL NEXT VIGNETTE</span>
@@ -348,7 +370,7 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
           {hasNextTrack && (
             <button
               onClick={onNextTrack}
-              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-lg bg-brand-lime text-black font-extrabold hover:bg-brand-lime/90 shadow-lime-glow transition-all flex items-center justify-center gap-1.5"
+              className="px-5 py-2.5 rounded-lg bg-brand-lime text-black font-extrabold hover:bg-brand-lime/90 shadow-lime-glow transition-all flex items-center justify-center gap-1.5"
             >
               <span>ADVANCE TO TOPIC {nextTopicId}</span>
               <ArrowRight className="w-4 h-4" />

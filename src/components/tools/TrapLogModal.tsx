@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, AlertTriangle, ShieldCheck, Trash2, ArrowRight, Search, Filter, Cpu } from "lucide-react";
+import { X, AlertTriangle, ShieldCheck, Trash2, ArrowRight, Search, Filter, Cpu, Sparkles } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { TRAP_TAXONOMY } from "@/data/trapTaxonomy";
 import { sound } from "@/components/common/SoundEffects";
@@ -15,6 +15,8 @@ export const TrapLogModal: React.FC = () => {
     deleteTrapLogEntry,
     clearAllTrapLogs,
     soundEnabled,
+    setAIGeneratorOpen,
+    setWeakAreaTargetTopic,
   } = useCFAStore();
 
   const [selectedTopicFilter, setSelectedTopicFilter] = useState<string>("ALL");
@@ -32,6 +34,15 @@ export const TrapLogModal: React.FC = () => {
     return matchesTopic && matchesSearch;
   });
 
+  const handleLaunchTargetedAI = () => {
+    if (soundEnabled) sound.playNodeSwitch();
+    // Pick the most common missed topic or the first filtered log's topic
+    const targetTopicId = filteredLogs[0]?.topicId || trapLogs[0]?.topicId || "01";
+    setWeakAreaTargetTopic(targetTopicId);
+    setTrapLogOpen(false);
+    setAIGeneratorOpen(true);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200">
       <div className="w-full max-w-4xl bg-[#0B0B0E] border border-[#27272A] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[90vh]">
@@ -44,9 +55,9 @@ export const TrapLogModal: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                CANDIDATE TRAP RADAR & WEAK-AREA LOG
+                CANDIDATE TRAP RADAR &amp; WEAK-AREA LOG
               </h3>
-              <span className="font-mono text-xs text-editorial-dim">
+              <span className="font-mono text-xs text-zinc-400">
                 REAL-TIME DIAGNOSTIC REVISION OF CANDIDATE DISTRACTOR CHOICES
               </span>
             </div>
@@ -72,7 +83,7 @@ export const TrapLogModal: React.FC = () => {
                 if (soundEnabled) sound.playKeyClick();
                 setTrapLogOpen(false);
               }}
-              className="p-1.5 rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -82,34 +93,34 @@ export const TrapLogModal: React.FC = () => {
         {/* Filter and Search Bar */}
         <div className="px-6 py-3 border-b border-[#1F1F23] bg-[#0E0E12] flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
           <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-[#121215] border border-[#27272A] px-3 py-1.5 rounded-lg">
-            <Search className="w-3.5 h-3.5 text-editorial-dim" />
+            <Search className="w-3.5 h-3.5 text-zinc-400" />
             <input
               type="text"
               placeholder="Search traps, stems, or topics..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent border-none outline-none text-white text-xs w-full placeholder:text-editorial-dim"
+              className="bg-transparent border-none outline-none text-white text-xs w-full placeholder:text-zinc-500"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-editorial-dim" />
+            <Filter className="w-3.5 h-3.5 text-zinc-400" />
             <select
               value={selectedTopicFilter}
               onChange={(e) => setSelectedTopicFilter(e.target.value)}
-              className="bg-[#121215] text-editorial-white border border-[#27272A] rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-brand-lime"
+              className="bg-[#121215] text-white border border-[#27272A] rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-brand-lime"
             >
               <option value="ALL">All Tracks (01-10)</option>
-              <option value="01">Topic 01: Quant</option>
-              <option value="02">Topic 02: Economics</option>
-              <option value="03">Topic 03: Corporate Finance</option>
+              <option value="01">Topic 01: Ethics</option>
+              <option value="02">Topic 02: Quantitative Methods</option>
+              <option value="03">Topic 03: Economics</option>
               <option value="04">Topic 04: FSA</option>
-              <option value="05">Topic 05: Equity</option>
+              <option value="05">Topic 05: Corporate Issuers</option>
               <option value="06">Topic 06: Fixed Income</option>
               <option value="07">Topic 07: Derivatives</option>
-              <option value="08">Topic 08: Alternative Inv</option>
-              <option value="09">Topic 09: Portfolio Mgt</option>
-              <option value="10">Topic 10: Ethics</option>
+              <option value="08">Topic 08: Alternative Investments</option>
+              <option value="09">Topic 09: Equity Investments</option>
+              <option value="10">Topic 10: Portfolio Management</option>
             </select>
           </div>
         </div>
@@ -123,7 +134,7 @@ export const TrapLogModal: React.FC = () => {
               <h4 className="text-base font-semibold text-white">
                 {trapLogs.length === 0 ? "Zero High-Yield Traps Logged" : "No Matching Traps Found"}
               </h4>
-              <p className="text-xs text-editorial-steely max-w-md mx-auto">
+              <p className="text-xs text-zinc-400 max-w-md mx-auto">
                 {trapLogs.length === 0
                   ? "You have not fallen for any distractor traps in your completed diagnostic sets yet. Keep drilling vignettes to uncover weak spots."
                   : "Try clearing your search query or switching to All Tracks."}
@@ -140,22 +151,22 @@ export const TrapLogModal: React.FC = () => {
                     key={entry.id}
                     className="p-4 rounded-xl bg-[#09090B] border border-[#1F1F23] space-y-3 font-sans text-xs hover:border-[#2E2E35] transition-all"
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#18181B] font-mono text-[11px]">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#18181B] font-mono text-xs">
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 font-bold border border-amber-500/30">
                           {entry.trapName}
                         </span>
-                        <span className="text-editorial-muted">
+                        <span className="text-zinc-400">
                           Track {entry.topicId} &bull; {entry.topicName}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-editorial-dim text-[10px]">
+                        <span className="text-zinc-500 text-[11px]">
                           {new Date(entry.timestamp).toLocaleTimeString()}
                         </span>
                         <button
                           onClick={() => deleteTrapLogEntry(entry.id)}
-                          className="p-1 rounded text-editorial-dim hover:text-red-400 hover:bg-red-950/30 transition-colors"
+                          className="p-1 rounded text-zinc-500 hover:text-red-400 hover:bg-red-950/30 transition-colors"
                           title="Delete from Trap Log"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -167,33 +178,33 @@ export const TrapLogModal: React.FC = () => {
                       <div className="text-white font-medium block mb-1">
                         &quot;<FormattedMathText text={entry.questionStem} />&quot;
                       </div>
-                      <div className="flex items-center gap-3 font-mono text-[11px] mt-1">
+                      <div className="flex items-center gap-3 font-mono text-xs mt-1">
                         <span className="text-red-400 font-bold">
                           Selected: Option {userSelection}
                         </span>
-                        <span className="text-editorial-dim">|</span>
+                        <span className="text-zinc-600">|</span>
                         <span className="text-brand-lime font-bold">
                           Key: Option {entry.correctOption}
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded bg-[#121215] border border-[#27272A] text-editorial-steely leading-relaxed">
-                      <span className="font-mono text-[10px] text-amber-400 font-semibold block mb-0.5">
+                    <div className="p-3 rounded bg-[#121215] border border-[#27272A] text-zinc-200 leading-relaxed">
+                      <span className="font-mono text-[11px] text-amber-400 font-bold block mb-0.5">
                         DISTRACTOR AUTOPSY:
                       </span>
                       <FormattedMathText text={entry.autopsyExplanation} />
                     </div>
 
                     {entry.calculatorKeystrokes && (
-                      <div className="p-2.5 rounded bg-[#141418] border border-[#27272A] flex items-center gap-2 font-mono text-[11px] text-amber-300">
+                      <div className="p-2.5 rounded bg-[#141418] border border-[#27272A] flex items-center gap-2 font-mono text-xs text-amber-300">
                         <Cpu className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                         <span>TI BA II+: {entry.calculatorKeystrokes}</span>
                       </div>
                     )}
 
                     {taxonomy && (
-                      <div className="text-[11px] text-editorial-muted font-mono">
+                      <div className="text-xs text-zinc-300 font-mono">
                         💡 <strong>Remediation:</strong> <FormattedMathText text={taxonomy.recommendedRemediation} />
                       </div>
                     )}
@@ -207,18 +218,31 @@ export const TrapLogModal: React.FC = () => {
 
         {/* Footer */}
         <div className="p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between font-mono text-xs">
-          <span className="text-editorial-dim">
+          <span className="text-zinc-400">
             Showing {filteredLogs.length} of {trapLogs.length} Traps
           </span>
-          <button
-            onClick={() => {
-              if (soundEnabled) sound.playKeyClick();
-              setTrapLogOpen(false);
-            }}
-            className="px-4 py-2 rounded-lg bg-[#18181B] text-white hover:text-brand-lime border border-[#3F3F46]"
-          >
-            CLOSE
-          </button>
+          
+          <div className="flex items-center gap-2">
+            {trapLogs.length > 0 && (
+              <button
+                onClick={handleLaunchTargetedAI}
+                className="px-4 py-2 rounded-lg bg-brand-lime text-black font-bold flex items-center gap-1.5 hover:bg-brand-neon shadow-lime-sm transition-all active:scale-95"
+              >
+                <Sparkles className="w-3.5 h-3.5 fill-current" />
+                <span>REMEDIATE WEAK AREAS WITH AI</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                if (soundEnabled) sound.playKeyClick();
+                setTrapLogOpen(false);
+              }}
+              className="px-4 py-2 rounded-lg bg-[#18181B] text-white hover:text-brand-lime border border-[#3F3F46]"
+            >
+              CLOSE
+            </button>
+          </div>
         </div>
 
       </div>

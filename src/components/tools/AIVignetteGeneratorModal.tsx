@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Sparkles, Wand2, Play, AlertCircle, Loader2 } from "lucide-react";
+import { X, Sparkles, Wand2, Play, AlertCircle, Loader2, Layers, Check } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
@@ -15,6 +15,8 @@ export const AIVignetteGeneratorModal: React.FC = () => {
     inProgressTopicId,
     activeTopicId,
     weakAreaTargetTopic,
+    drillQuestionCount,
+    setDrillQuestionCount,
     soundEnabled,
   } = useCFAStore();
   
@@ -22,8 +24,12 @@ export const AIVignetteGeneratorModal: React.FC = () => {
     weakAreaTargetTopic || activeTopicId || inProgressTopicId || "01"
   );
   const [difficulty, setDifficulty] = useState<"Standard" | "High Trap" | "Institutional">("High Trap");
+  const [questionCount, setQuestionCount] = useState<2 | 5 | 10>(
+    (drillQuestionCount === 15 ? 10 : (drillQuestionCount as 2 | 5 | 10)) || 5
+  );
   const [customPrompt, setCustomPrompt] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (weakAreaTargetTopic) {
@@ -38,6 +44,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
   const handleGenerate = async () => {
     if (soundEnabled) sound.playKeyClick();
     setIsGenerating(true);
+    setErrorMessage(null);
 
     try {
       const res = await fetch("/api/generate-vignette", {
@@ -47,16 +54,21 @@ export const AIVignetteGeneratorModal: React.FC = () => {
           topicId: selectedTopicId,
           difficulty,
           customPrompt,
+          questionCount,
         }),
       });
 
       const data = await res.json();
       if (data.vignette) {
         if (soundEnabled) sound.playNodeSwitch();
+        setDrillQuestionCount(questionCount === 10 ? 10 : (questionCount as 2 | 5));
         addCustomVignette(data.vignette as VignetteSet);
+      } else {
+        setErrorMessage(data.error || "Failed to generate scenario. Please try again.");
       }
     } catch (err) {
       console.error(err);
+      setErrorMessage("Network error during scenario generation. Please retry.");
     } finally {
       setIsGenerating(false);
     }
@@ -74,10 +86,10 @@ export const AIVignetteGeneratorModal: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                ON-DEMAND AI VIGNETTE GENERATOR
+                ON-DEMAND AI SCENARIO LAB
               </h3>
               <span className="font-mono text-xs text-zinc-400">
-                SYNTHESIZE REALISTIC 2-QUESTION INSTITUTIONAL VIGNETTE SETS
+                SYNTHESIZE INSTITUTIONAL CFA CASE VIGNETTES WITH TARGETED TRAPS
               </span>
             </div>
           </div>
@@ -94,7 +106,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
         </div>
 
         {/* Modal Form */}
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 overflow-y-auto max-h-[75vh]">
           
           {/* Target Track Selector */}
           <div>
@@ -114,27 +126,55 @@ export const AIVignetteGeneratorModal: React.FC = () => {
             </select>
           </div>
 
-          {/* Difficulty Setting */}
-          <div>
-            <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
-              2. Trap Rigor &amp; Difficulty:
-            </label>
-            <div className="grid grid-cols-3 gap-2 font-mono text-xs">
-              {(["Standard", "High Trap", "Institutional"] as const).map((diff) => (
-                <button
-                  key={diff}
-                  type="button"
-                  onClick={() => setDifficulty(diff)}
-                  className={`py-2 px-3 rounded-lg border text-center font-semibold transition-all ${
-                    difficulty === diff
-                      ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
-                      : "bg-[#121215] text-zinc-400 border-[#27272A] hover:text-white"
-                  }`}
-                >
-                  {diff}
-                </button>
-              ))}
+          {/* Question Count & Difficulty Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            {/* Question Count */}
+            <div>
+              <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
+                2. Question Count:
+              </label>
+              <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                {([2, 5, 10] as const).map((cnt) => (
+                  <button
+                    key={cnt}
+                    type="button"
+                    onClick={() => setQuestionCount(cnt)}
+                    className={`py-2 px-3 rounded-lg border text-center font-semibold transition-all ${
+                      questionCount === cnt
+                        ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
+                        : "bg-[#121215] text-zinc-400 border-[#27272A] hover:text-white"
+                    }`}
+                  >
+                    {cnt}Q SET
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Difficulty Setting */}
+            <div>
+              <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
+                3. Trap Rigor:
+              </label>
+              <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                {(["Standard", "High Trap", "Institutional"] as const).map((diff) => (
+                  <button
+                    key={diff}
+                    type="button"
+                    onClick={() => setDifficulty(diff)}
+                    className={`py-2 px-2 rounded-lg border text-center font-semibold transition-all text-[11px] truncate ${
+                      difficulty === diff
+                        ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
+                        : "bg-[#121215] text-zinc-400 border-[#27272A] hover:text-white"
+                    }`}
+                  >
+                    {diff}
+                  </button>
+                ))}
+              </div>
+            </div>
+
           </div>
 
           {/* Trap Area Context Banner */}
@@ -142,7 +182,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-mono text-xs font-bold text-amber-400 block">
-                PRIMARY TARGET TRAP IN FOCUS:
+                PRIMARY TARGET TRAP IN FOCUS ({topic.shortName.toUpperCase()}):
               </span>
               <p className="text-zinc-200 text-xs mt-0.5 leading-relaxed">
                 {topic.highYieldTrapArea}
@@ -153,16 +193,27 @@ export const AIVignetteGeneratorModal: React.FC = () => {
           {/* Optional Prompt Refinement */}
           <div>
             <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
-              3. Custom Scenario Focus (Optional):
+              4. Custom Scenario Focus (Tailor the scenario &amp; questions):
             </label>
             <input
               type="text"
-              placeholder="e.g. Callable bond yield shock, LIFO liquidation in high inflation, put-call parity..."
+              placeholder="e.g. Callable bond yield shock, LIFO liquidation, put-call parity arbitrage..."
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
               className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-lime font-mono"
             />
+            <span className="text-[11px] text-zinc-500 font-mono mt-1 block">
+              Leave blank for a comprehensive high-yield track drill, or specify custom asset classes / market conditions.
+            </span>
           </div>
+
+          {/* Error message banner */}
+          {errorMessage && (
+            <div className="p-3 rounded-lg bg-red-950/40 border border-red-900/50 text-red-300 text-xs font-mono flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
         </div>
 
@@ -183,7 +234,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
             {isGenerating ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>GENERATING VIGNETTE...</span>
+                <span>SYNTHESIZING {questionCount}Q VIGNETTE...</span>
               </>
             ) : (
               <>

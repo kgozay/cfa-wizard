@@ -256,10 +256,14 @@ export const useCFAStore = create<CFAState>()(
       },
 
       addCustomVignette: (vignette: VignetteSet) => {
+        const qCount = vignette.questions.length;
         set((state) => ({
           customVignettes: [vignette, ...state.customVignettes],
           activeVignetteId: vignette.id,
+          activeTopicId: vignette.topicId,
+          inProgressTopicId: vignette.topicId,
           isAIGeneratorOpen: false,
+          drillQuestionCount: qCount >= 10 ? 10 : qCount >= 5 ? 5 : (state.drillQuestionCount || 5),
         }));
       },
 
@@ -270,24 +274,30 @@ export const useCFAStore = create<CFAState>()(
         // Check if active vignette is in customVignettes or CFA_VIGNETTES
         const customIdx = customVignettes.findIndex((v) => v.id === activeVignetteId);
         if (customIdx >= 0) {
+          const updatedQuestions = [...customVignettes[customIdx].questions, ...questions];
           const updatedCustom = [...customVignettes];
           updatedCustom[customIdx] = {
             ...updatedCustom[customIdx],
-            questions: [...updatedCustom[customIdx].questions, ...questions],
+            questions: updatedQuestions,
           };
-          set({ customVignettes: updatedCustom });
+          set({
+            customVignettes: updatedCustom,
+            drillQuestionCount: updatedQuestions.length >= 15 ? 15 : updatedQuestions.length >= 10 ? 10 : updatedQuestions.length >= 5 ? 5 : 2,
+          });
         } else {
           // Clone base vignette into customVignettes with added questions
           const baseV = CFA_VIGNETTES.find((v) => v.id === activeVignetteId);
           if (baseV) {
+            const updatedQuestions = [...baseV.questions, ...questions];
             const newVignette: VignetteSet = {
               ...baseV,
               id: `${baseV.id}-expanded-${Date.now()}`,
-              questions: [...baseV.questions, ...questions],
+              questions: updatedQuestions,
             };
             set({
               customVignettes: [newVignette, ...customVignettes],
               activeVignetteId: newVignette.id,
+              drillQuestionCount: updatedQuestions.length >= 15 ? 15 : updatedQuestions.length >= 10 ? 10 : updatedQuestions.length >= 5 ? 5 : 2,
             });
           }
         }

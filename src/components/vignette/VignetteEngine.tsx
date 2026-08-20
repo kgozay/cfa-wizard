@@ -69,8 +69,11 @@ export const VignetteEngine: React.FC = () => {
     [allVignettes, activeVignetteId]
   );
 
-  // Slice questions based on active preference (or all available if fewer)
+  // Slice questions based on active preference (or all available if custom scenario)
   const activeQuestions: VignetteQuestion[] = useMemo(() => {
+    if (vignette.id.startsWith("ai-vignette-")) {
+      return vignette.questions;
+    }
     return vignette.questions.slice(0, drillQuestionCount);
   }, [vignette, drillQuestionCount]);
 

@@ -204,8 +204,9 @@ export const TrapLogModal: React.FC = () => {
                     )}
 
                     {taxonomy && (
-                      <div className="text-xs text-zinc-300 font-mono">
-                        💡 <strong>Remediation:</strong> <FormattedMathText text={taxonomy.recommendedRemediation} />
+                      <div className="text-xs text-zinc-300 font-mono flex items-start gap-1.5">
+                        <span className="text-brand-lime font-bold shrink-0">REMEDIATION:</span>
+                        <FormattedMathText text={taxonomy.recommendedRemediation} />
                       </div>
                     )}
                   </div>

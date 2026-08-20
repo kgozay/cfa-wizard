@@ -13,12 +13,17 @@ import {
   Settings,
   AlertTriangle,
   ArrowLeft,
+  Award,
+  BookOpen,
+  Cloud,
+  BarChart2,
 } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
 import { CurrentAssignmentCard } from "@/components/dashboard/CurrentAssignmentCard";
 import { CurriculumTracksGrid } from "@/components/dashboard/CurriculumTracksGrid";
 import { ScenarioSimulatorStudio } from "@/components/dashboard/ScenarioSimulatorStudio";
 import { SpacedRecallSprintsView } from "@/components/dashboard/SpacedRecallSprintsView";
+import { AnalyticsDashboardView } from "@/components/analytics/AnalyticsDashboardView";
 import { VignetteEngine } from "@/components/vignette/VignetteEngine";
 import { ExecutiveBriefingModal } from "@/components/briefing/ExecutiveBriefingModal";
 import { VirtualTIBAIIPLUS } from "@/components/calculator/VirtualTIBAIIPLUS";
@@ -28,6 +33,9 @@ import { AIVignetteGeneratorModal } from "@/components/tools/AIVignetteGenerator
 import { InterleavedSprintModal } from "@/components/sprint/InterleavedSprintModal";
 import { LeitnerTrapDeckModal } from "@/components/spaced/LeitnerTrapDeckModal";
 import { KeyboardShortcutsModal } from "@/components/common/KeyboardShortcutsModal";
+import { MockExamModal } from "@/components/mock/MockExamModal";
+import { TopicLearningHubModal } from "@/components/learn/TopicLearningHubModal";
+import { AuthSyncModal } from "@/components/auth/AuthSyncModal";
 import { useCFAStore } from "@/store/useCFAStore";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { sound } from "@/components/common/SoundEffects";
@@ -50,6 +58,12 @@ export default function DiagnosticCockpitPage() {
     isSprintModalOpen,
     isLeitnerDeckOpen,
     isShortcutsOpen,
+    isMockExamOpen,
+    isLearnHubOpen,
+    isAuthSyncOpen,
+    setMockExamOpen,
+    setLearnHubOpen,
+    setAuthSyncOpen,
     setSprintModalOpen,
     setLeitnerDeckOpen,
     setCalculatorOpen,
@@ -64,8 +78,9 @@ export default function DiagnosticCockpitPage() {
     resetProgress,
   } = useCFAStore();
 
-  const [activeTab, setActiveTab] = useState<"tracks" | "simulator" | "recall">("tracks");
+  const [activeTab, setActiveTab] = useState<"tracks" | "simulator" | "recall" | "analytics">("tracks");
   const [simulatorInitialTopicId, setSimulatorInitialTopicId] = useState<string>("01");
+  const [learnHubInitialTopicId, setLearnHubInitialTopicId] = useState<string>("01");
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const settingsRef = React.useRef<HTMLDivElement>(null);
@@ -286,6 +301,33 @@ export default function DiagnosticCockpitPage() {
               <span>{isPacingTimerEnabled ? "90s" : "OFF"}</span>
             </button>
 
+            {/* Official Mock Exam Button */}
+            <button
+              onClick={() => {
+                if (soundEnabled) sound.playNodeSwitch();
+                setMockExamOpen(true);
+              }}
+              className="flex items-center gap-1 px-3 py-1 rounded-lg bg-brand-lime text-black border border-brand-lime hover:bg-brand-neon text-xs font-extrabold shadow-lime-sm transition-all whitespace-nowrap active:scale-95"
+              title="Official CFA Level 1 Mock Exam Engine"
+            >
+              <Award className="w-3.5 h-3.5 shrink-0" />
+              <span>MOCK EXAM</span>
+            </button>
+
+            {/* Explanatory Learning Hub */}
+            <button
+              onClick={() => {
+                if (soundEnabled) sound.playNodeSwitch();
+                setLearnHubInitialTopicId(useCFAStore.getState().activeTopicId || "01");
+                setLearnHubOpen(true);
+              }}
+              className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-brand-lime border border-brand-lime/30 text-xs font-bold transition-all whitespace-nowrap"
+              title="First-Principles Learning Hub & Concept Proofs"
+            >
+              <BookOpen className="w-3.5 h-3.5 shrink-0" />
+              <span>LEARN</span>
+            </button>
+
             {/* BA II+ Calculator */}
             <button
               onClick={() => {
@@ -336,6 +378,22 @@ export default function DiagnosticCockpitPage() {
                   <div className="px-3 py-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-b border-[#1F1F23]">
                     STUDY TERMINAL SETTINGS
                   </div>
+
+                  {/* Progress Backup & Cloud Sync */}
+                  <button
+                    onClick={() => {
+                      if (soundEnabled) sound.playNodeSwitch();
+                      setIsSettingsOpen(false);
+                      setAuthSyncOpen(true);
+                    }}
+                    className="w-full px-3 py-2 rounded-lg flex items-center justify-between hover:bg-[#18181D] text-left text-brand-lime transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Cloud className="w-4 h-4" />
+                      <span>Data Backup & Sync</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 font-bold">1-CLICK</span>
+                  </button>
 
                   {/* Candidate Trap Radar */}
                   <button
@@ -436,14 +494,14 @@ export default function DiagnosticCockpitPage() {
               onOpenScenarioSimulator={handleOpenScenarioSimulator}
             />
 
-            {/* 2. Structured 3-Tab Segmented Navigation Bar */}
-            <div className="w-full bg-[#0B0B0E] border border-[#1F1F23] rounded-xl p-1.5 font-mono text-xs flex items-center gap-1 shadow-md">
+            {/* 2. Structured 4-Tab Segmented Navigation Bar */}
+            <div className="w-full bg-[#0B0B0E] border border-[#1F1F23] rounded-xl p-1.5 font-mono text-xs flex flex-wrap sm:flex-nowrap items-center gap-1 shadow-md">
               <button
                 onClick={() => {
                   if (soundEnabled) sound.playKeyClick();
                   setActiveTab("tracks");
                 }}
-                className={`flex-1 py-2.5 px-4 rounded-lg font-bold text-center transition-all ${
+                className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-center transition-all ${
                   activeTab === "tracks"
                     ? "bg-brand-lime text-black shadow-lime-sm"
                     : "text-zinc-400 hover:text-white hover:bg-[#141418]"
@@ -457,7 +515,7 @@ export default function DiagnosticCockpitPage() {
                   if (soundEnabled) sound.playKeyClick();
                   setActiveTab("simulator");
                 }}
-                className={`flex-1 py-2.5 px-4 rounded-lg font-bold text-center transition-all ${
+                className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-center transition-all ${
                   activeTab === "simulator"
                     ? "bg-brand-lime text-black shadow-lime-sm"
                     : "text-zinc-400 hover:text-white hover:bg-[#141418]"
@@ -471,13 +529,27 @@ export default function DiagnosticCockpitPage() {
                   if (soundEnabled) sound.playKeyClick();
                   setActiveTab("recall");
                 }}
-                className={`flex-1 py-2.5 px-4 rounded-lg font-bold text-center transition-all ${
+                className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-center transition-all ${
                   activeTab === "recall"
                     ? "bg-brand-lime text-black shadow-lime-sm"
                     : "text-zinc-400 hover:text-white hover:bg-[#141418]"
                 }`}
               >
                 03. SPACED RECALL &amp; SPRINTS
+              </button>
+
+              <button
+                onClick={() => {
+                  if (soundEnabled) sound.playKeyClick();
+                  setActiveTab("analytics");
+                }}
+                className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-center transition-all ${
+                  activeTab === "analytics"
+                    ? "bg-brand-lime text-black shadow-lime-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-[#141418]"
+                }`}
+              >
+                04. ANALYTICS &amp; READINESS
               </button>
             </div>
 
@@ -499,6 +571,17 @@ export default function DiagnosticCockpitPage() {
               {activeTab === "recall" && (
                 <SpacedRecallSprintsView
                   onOpenScenarioSimulator={handleOpenScenarioSimulator}
+                />
+              )}
+
+              {activeTab === "analytics" && (
+                <AnalyticsDashboardView
+                  onOpenScenarioSimulator={handleOpenScenarioSimulator}
+                  onOpenLearnHub={(topicId) => {
+                    if (soundEnabled) sound.playNodeSwitch();
+                    setLearnHubInitialTopicId(topicId);
+                    setLearnHubOpen(true);
+                  }}
                 />
               )}
             </div>
@@ -548,6 +631,13 @@ export default function DiagnosticCockpitPage() {
       <InterleavedSprintModal />
       <LeitnerTrapDeckModal />
       <KeyboardShortcutsModal />
+      <MockExamModal isOpen={isMockExamOpen} onClose={() => setMockExamOpen(false)} />
+      <TopicLearningHubModal
+        isOpen={isLearnHubOpen}
+        onClose={() => setLearnHubOpen(false)}
+        initialTopicId={learnHubInitialTopicId}
+      />
+      <AuthSyncModal isOpen={isAuthSyncOpen} onClose={() => setAuthSyncOpen(false)} />
 
       {/* Footer */}
       <Footer />

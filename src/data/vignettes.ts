@@ -157,19 +157,19 @@ export const CFA_VIGNETTES: VignetteSet[] = [
         losCode: "LOS 3.b",
         stem: "Over the past 4 years, a hedge fund generated annual returns of +12.0%, -8.0%, +15.0%, and +5.0%. The geometric mean annual compound return is closest to:",
         options: {
-          A: "5.53%",
+          A: "5.63%",
           B: "6.00%",
-          C: "5.85%"
+          C: "5.12%"
         },
         correctOption: "A",
-        algebraicSolution: "Product = (1 + 0.12) * (1 - 0.08) * (1 + 0.15) * (1 + 0.05) = 1.12 * 0.92 * 1.15 * 1.05 = 1.244796. Geometric Mean = (1.244796)^(1/4) - 1 = 1.05626 - 1 = 5.63% (or exact: 5.53%).",
-        calculatorKeystrokes: "1.12 [\\times] 0.92 [\\times] 1.15 [\\times] 1.05 [=] [y^x] 0.25 [-] 1 [=] 0.0553",
+        algebraicSolution: "Compound Return Factor = (1 + 0.12) * (1 - 0.08) * (1 + 0.15) * (1 + 0.05) = 1.12 * 0.92 * 1.15 * 1.05 = 1.244796. Geometric Mean R_G = (1.244796)^(1/4) - 1 = 1.05626 - 1 = 5.63%.",
+        calculatorKeystrokes: "1.12 [\\times] 0.92 [\\times] 1.15 [\\times] 1.05 [=] [y^x] 0.25 [-] 1 [=] 0.0563 (5.63%)",
         trapCategory: "Statistical Measures of Asset Returns",
         errorModeDefault: "CONCEPTUAL_CONFUSION",
         distractorAutopsy: {
-          A: "CORRECT: Geometric Mean = (1.12 * 0.92 * 1.15 * 1.05)^(0.25) - 1 = 5.53%.",
+          A: "CORRECT: Geometric Mean = (1.12 * 0.92 * 1.15 * 1.05)^(0.25) - 1 = 5.63%.",
           B: "Distractor B calculates simple arithmetic mean: (12 - 8 + 15 + 5)/4 = 6.00%, which overstates multi-period compounded wealth.",
-          C: "Distractor C computes harmonic mean incorrectly."
+          C: "Distractor C computes an unweighted harmonic average incorrectly."
         }
       },
       {

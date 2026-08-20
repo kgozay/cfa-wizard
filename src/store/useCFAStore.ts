@@ -40,6 +40,9 @@ interface CFAState {
   isSprintModalOpen: boolean;
   isLeitnerDeckOpen: boolean;
   isShortcutsOpen: boolean;
+  isMockExamOpen: boolean;
+  isLearnHubOpen: boolean;
+  isAuthSyncOpen: boolean;
   weakAreaTargetTopic: string | null;
   
   // Actions
@@ -72,6 +75,9 @@ interface CFAState {
   setSprintModalOpen: (open: boolean) => void;
   setLeitnerDeckOpen: (open: boolean) => void;
   setShortcutsOpen: (open: boolean) => void;
+  setMockExamOpen: (open: boolean) => void;
+  setLearnHubOpen: (open: boolean) => void;
+  setAuthSyncOpen: (open: boolean) => void;
   
   // Reset
   resetProgress: () => void;
@@ -103,6 +109,9 @@ export const useCFAStore = create<CFAState>()(
       isSprintModalOpen: false,
       isLeitnerDeckOpen: false,
       isShortcutsOpen: false,
+      isMockExamOpen: false,
+      isLearnHubOpen: false,
+      isAuthSyncOpen: false,
       weakAreaTargetTopic: null,
 
       selectTopic: (id: string) => {
@@ -329,6 +338,9 @@ export const useCFAStore = create<CFAState>()(
       setSprintModalOpen: (open: boolean) => set({ isSprintModalOpen: open }),
       setLeitnerDeckOpen: (open: boolean) => set({ isLeitnerDeckOpen: open }),
       setShortcutsOpen: (open: boolean) => set({ isShortcutsOpen: open }),
+      setMockExamOpen: (open: boolean) => set({ isMockExamOpen: open }),
+      setLearnHubOpen: (open: boolean) => set({ isLearnHubOpen: open }),
+      setAuthSyncOpen: (open: boolean) => set({ isAuthSyncOpen: open }),
 
       resetProgress: () => {
         set({

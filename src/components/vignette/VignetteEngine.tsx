@@ -69,13 +69,28 @@ export const VignetteEngine: React.FC = () => {
     [allVignettes, activeVignetteId]
   );
 
-  // Slice questions based on active preference (or all available if custom scenario)
-  const activeQuestions: VignetteQuestion[] = useMemo(() => {
+  // State-based randomized question selection
+  const [randomizedQuestions, setRandomizedQuestions] = useState<VignetteQuestion[]>([]);
+
+  // Shuffle and sample questions whenever vignette or drill count changes
+  useEffect(() => {
     if (vignette.id.startsWith("ai-vignette-")) {
-      return vignette.questions;
+      setRandomizedQuestions(vignette.questions);
+      return;
     }
-    return vignette.questions.slice(0, drillQuestionCount);
-  }, [vignette, drillQuestionCount]);
+
+    const pool = [...vignette.questions];
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    setRandomizedQuestions(pool.slice(0, Math.min(drillQuestionCount, pool.length)));
+    setSelectedAnswers({});
+    setHasSubmitted(false);
+    setElapsedSeconds(0);
+  }, [vignette.id, vignette.questions, drillQuestionCount]);
+
+  const activeQuestions = randomizedQuestions.length > 0 ? randomizedQuestions : vignette.questions.slice(0, drillQuestionCount);
 
   const isFormComplete = useMemo(
     () => activeQuestions.length > 0 && activeQuestions.every((q) => selectedAnswers[q.id]),

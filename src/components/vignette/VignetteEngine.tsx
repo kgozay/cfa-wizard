@@ -36,6 +36,7 @@ import { sound } from "@/components/common/SoundEffects";
 export const VignetteEngine: React.FC = () => {
   const {
     activeVignetteId,
+    activeTopicId,
     closeVignetteDrill,
     recordVignetteSubmission,
     vignetteResults,
@@ -67,8 +68,11 @@ export const VignetteEngine: React.FC = () => {
 
   const allVignettes = useMemo(() => [...CFA_VIGNETTES, ...customVignettes], [customVignettes]);
   const vignette = useMemo(
-    () => allVignettes.find((v) => v.id === activeVignetteId) || CFA_VIGNETTES[0],
-    [allVignettes, activeVignetteId]
+    () =>
+      allVignettes.find((v) => v.id === activeVignetteId || v.topicId === activeVignetteId) ||
+      allVignettes.find((v) => v.topicId === activeTopicId) ||
+      CFA_VIGNETTES[0],
+    [allVignettes, activeVignetteId, activeTopicId]
   );
 
   // State-based randomized question selection

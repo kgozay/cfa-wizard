@@ -38,7 +38,8 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
     if (e) e.stopPropagation();
     if (soundEnabled) sound.playNodeSwitch();
     selectTopic(topicId);
-    startVignetteDrill(topicId);
+    const baseVignette = CFA_VIGNETTES.find((v) => v.topicId === topicId);
+    startVignetteDrill(baseVignette?.id || topicId);
   };
 
   return (

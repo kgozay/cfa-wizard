@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   BookOpen,
   X,
@@ -43,10 +43,51 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
   const [activeLOSIndex, setActiveLOSIndex] = useState<number>(0);
   const [revealedSolutions, setRevealedSolutions] = useState<Record<string, boolean>>({});
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (initialTopicId) {
+      setActiveTopicId(initialTopicId);
+      setActiveLOSIndex(0);
+    }
+  }, [initialTopicId, isOpen]);
 
-  const currentGuide: TopicGuide =
-    CFA_TOPIC_GUIDES.find((g) => g.topicId === activeTopicId) || CFA_TOPIC_GUIDES[0];
+  const currentGuide: TopicGuide = useMemo(() => {
+    const found = CFA_TOPIC_GUIDES.find((g) => g.topicId === activeTopicId);
+    if (found) return found;
+
+    const cur = CFA_CURRICULUM.find((t) => t.id === activeTopicId);
+    if (!cur) return CFA_TOPIC_GUIDES[0];
+
+    return {
+      topicId: cur.id,
+      topicName: cur.name,
+      weight: cur.weight,
+      highYieldTheme: cur.highYieldTrapArea,
+      firstPrinciplesSummary: cur.executiveSummary[0] || cur.highYieldTrapArea,
+      losGuides: cur.subReadings.map((sr) => ({
+        losCode: sr.losCode || `LOS ${sr.readingNumber}`,
+        title: sr.title,
+        coreConcept: sr.losStatement || sr.title,
+        workedExample: {
+          scenario: `Assessment context focusing on ${sr.title}.`,
+          question: `How should a candidate apply principles for ${sr.title}?`,
+          solutionSteps: [
+            `Analyze the core framework: ${sr.losStatement || sr.title}`,
+            `Identify and eliminate common distractor trap: ${sr.coreTrap || "Unverified assumption"}`,
+          ],
+          finalAnswer: `Apply the explicit requirements specified under ${sr.losCode || "core LOS"}.`,
+        },
+        trapMatrix: [
+          {
+            trapName: "Core Curriculum Pitfall",
+            examinerDistractor: sr.coreTrap || "Common misinterpretation of rule or calculation",
+            remediationRule: `Review ${sr.title} principles and verify against LOS requirements.`,
+          },
+        ],
+      })),
+    };
+  }, [activeTopicId]);
+
+  if (!isOpen) return null;
 
   const currentCurriculumTopic = CFA_CURRICULUM.find((t) => t.id === activeTopicId);
   const currentLOS: LOSGuide = currentGuide.losGuides[activeLOSIndex] || currentGuide.losGuides[0];
@@ -64,16 +105,7 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
 
   const handleLaunchDrill = () => {
     if (soundEnabled) sound.playSuccessChime();
-    const vigId = `vignette-${activeTopicId}-${
-      activeTopicId === "01"
-        ? "quant"
-        : activeTopicId === "04"
-        ? "fsa"
-        : activeTopicId === "06"
-        ? "fixedinc"
-        : "ethics"
-    }`;
-    startVignetteDrill(vigId);
+    startVignetteDrill(activeTopicId);
     onClose();
   };
 

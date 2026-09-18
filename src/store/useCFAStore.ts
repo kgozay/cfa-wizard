@@ -142,10 +142,12 @@ export const useCFAStore = create<CFAState>()(
 
       startVignetteDrill: (vignetteId: string) => {
         const allVignettes = [...CFA_VIGNETTES, ...get().customVignettes];
-        const v = allVignettes.find((item) => item.id === vignetteId);
+        const v = allVignettes.find(
+          (item) => item.id === vignetteId || item.topicId === vignetteId
+        );
         if (v) {
           set({
-            activeVignetteId: vignetteId,
+            activeVignetteId: v.id,
             activeTopicId: v.topicId,
             inProgressTopicId: v.topicId,
             isBriefingModalOpen: false,
@@ -400,7 +402,16 @@ export const useCFAStore = create<CFAState>()(
     {
       name: "cfa-wizard-storage-v3",
       version: 4,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => {
+        if (typeof window !== "undefined" && typeof window.localStorage !== "undefined") {
+          return window.localStorage;
+        }
+        return {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {},
+        };
+      }),
       migrate: (persistedState: unknown, version: number) => migrateV3ToV4(persistedState, version),
       partialize: (state) => ({
         completedTopicIds: state.completedTopicIds,

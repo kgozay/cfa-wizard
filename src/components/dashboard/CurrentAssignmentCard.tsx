@@ -34,7 +34,7 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
 
   const handleStartDrill = () => {
     if (soundEnabled) sound.playNodeSwitch();
-    startVignetteDrill(topic.id);
+    startVignetteDrill(baseVignette?.id || topic.id);
   };
 
   return (

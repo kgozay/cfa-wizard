@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Wand2, Loader2, AlertCircle, Play, CheckCircle2, ArrowRight } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { useCFAStore } from "@/store/useCFAStore";
@@ -37,6 +37,12 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
   const [selectedTopicId, setSelectedTopicId] = useState<string>(
     initialTopicId || weakAreaTargetTopic || activeTopicId || inProgressTopicId || "01"
   );
+
+  useEffect(() => {
+    if (initialTopicId) {
+      setSelectedTopicId(initialTopicId);
+    }
+  }, [initialTopicId]);
   const [difficulty, setDifficulty] = useState<"Standard" | "High Trap" | "Institutional">("High Trap");
   const [questionCount, setQuestionCount] = useState<2 | 5 | 10>(
     (drillQuestionCount === 15 ? 10 : (drillQuestionCount as 2 | 5 | 10)) || 5

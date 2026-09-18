@@ -266,7 +266,7 @@ export function gradeMockExam(
       accuracy: acc,
       status,
     };
-  });
+  }).sort((a, b) => a.topicId.localeCompare(b.topicId));
 
   const gradedSession: MockExamSession = {
     ...session,

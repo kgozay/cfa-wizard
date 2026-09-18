@@ -152,7 +152,7 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
       <div className="space-y-6">
         <div className="flex items-center justify-between font-mono text-xs text-editorial-dim border-b border-[#1F1F23] pb-2">
           <span className="uppercase tracking-wider">
-            STEP-BY-STEP DISTRACTOR AUTOPSY // {vignette.questions.length} QUESTIONS
+            STEP-BY-STEP MISTAKE DIAGNOSIS & DISTRACTOR REVIEW // {vignette.questions.length} QUESTIONS
           </span>
           <span className="text-[11px] text-editorial-muted">
             TAG YOUR ERROR MODE TO CALIBRATE SPACED REPETITION

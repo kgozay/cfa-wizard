@@ -119,7 +119,7 @@ export default function LandingPage() {
           <div className="relative z-10 max-w-5xl mx-auto w-full text-center pt-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121215]/90 border border-[#222226] font-mono text-[11px] text-brand-lime">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
-              <span>OFFICIAL 2026/2027 CURRICULUM ARCHITECTURE</span>
+              <span>2026/2027 CURRICULUM ARCHITECTURE</span>
             </div>
           </div>
 
@@ -139,7 +139,7 @@ export default function LandingPage() {
                 <span className="text-brand-lime block sm:inline">from first principles.</span>
               </h1>
               <p className="text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
-                10 Official Tracks. 150 Learning Outcome Modules. Build profound financial intuition through structured, step-by-step conceptual deconstruction.
+                10 Curriculum Tracks. 150 Learning Outcome Modules. Build profound financial intuition through structured, step-by-step conceptual deconstruction.
               </p>
             </motion.div>
 
@@ -455,10 +455,10 @@ export default function LandingPage() {
               {"//"} COMPLETE CURRICULUM SYLLABUS
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
-              All 10 Official CFA Level 1 Tracks
+              All 10 CFA Level 1 Curriculum Tracks
             </h2>
             <p className="text-sm text-editorial-steely leading-relaxed">
-              Every volume from the 2026/2027 curriculum is fully integrated with official Learning Modules, command-word Learning Outcome Statements (LOS), and step-by-step calculation guides.
+              Every volume from the 2026/2027 curriculum is fully integrated with Learning Modules, command-word Learning Outcome Statements (LOS), and step-by-step calculation guides.
             </p>
           </div>
 

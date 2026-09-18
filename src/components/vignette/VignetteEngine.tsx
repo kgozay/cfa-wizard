@@ -439,7 +439,7 @@ export const VignetteEngine: React.FC = () => {
             {/* Vignette Case Stem Text (Clean font-sans) */}
             <h2 className="text-xs font-mono font-bold text-zinc-400 tracking-wider uppercase mb-3 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
-              INSTITUTIONAL CASE VIGNETTE
+              PRACTICE CASE SCENARIO
             </h2>
             <div className="text-sm sm:text-base text-zinc-100 leading-relaxed font-sans font-normal border-l-2 border-brand-lime/40 pl-4 py-1">
               <FormattedMathText text={vignette.vignetteStem} />
@@ -560,7 +560,7 @@ export const VignetteEngine: React.FC = () => {
               onClick={handleResetForRetake}
               className="w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider bg-[#141418] hover:bg-[#1A1A20] text-zinc-300 border border-[#27272A] transition-all"
             >
-              RE-DRILL THIS VIGNETTE (RESET)
+              RE-DRILL THIS PRACTICE SET (RESET)
             </button>
           )}
         </div>

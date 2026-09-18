@@ -190,7 +190,7 @@ export const CurriculumIndexTable: React.FC = () => {
                   {/* Sub-Readings List with LOS Codes */}
                   <div className="space-y-2 font-mono text-xs">
                     <div className="text-xs text-zinc-400 font-bold tracking-wider uppercase mb-1">
-                      OFFICIAL LEARNING MODULES &amp; LOS TAXONOMY:
+                      CURRICULUM LEARNING MODULES &amp; LOS TAXONOMY:
                     </div>
                     {topic.subReadings.map((sr) => (
                       <div

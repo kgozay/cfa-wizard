@@ -148,17 +148,19 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
           <div className="my-3 flex items-baseline gap-2">
             <span
               className={`text-3xl sm:text-4xl font-black font-mono ${
-                weightedReadinessScore >= 70
+                totalQuestionsSolved === 0
+                  ? "text-zinc-500"
+                  : weightedReadinessScore >= 70
                   ? "text-brand-lime"
                   : weightedReadinessScore >= 50
                   ? "text-amber-300"
                   : "text-zinc-400"
               }`}
             >
-              {weightedReadinessScore}%
+              {totalQuestionsSolved > 0 ? `${weightedReadinessScore}%` : "—"}
             </span>
             <span className="text-xs text-zinc-500 font-mono">
-              (Benchmark: ≥70% MPS)
+              {totalQuestionsSolved > 0 ? "(Target: ≥70%)" : "No study data yet"}
             </span>
           </div>
           <div className="w-full bg-[#18181D] h-1.5 rounded-full overflow-hidden">
@@ -166,7 +168,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
               className={`h-full rounded-full ${
                 weightedReadinessScore >= 70 ? "bg-brand-lime" : "bg-amber-400"
               }`}
-              style={{ width: `${weightedReadinessScore}%` }}
+              style={{ width: `${totalQuestionsSolved > 0 ? weightedReadinessScore : 0}%` }}
             />
           </div>
         </div>
@@ -179,14 +181,16 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
           </div>
           <div className="my-3 flex items-baseline gap-2">
             <span className="text-3xl sm:text-4xl font-black font-mono text-white">
-              {overallAccuracy}%
+              {totalQuestionsSolved > 0 ? `${overallAccuracy}%` : "—"}
             </span>
             <span className="text-xs text-zinc-500 font-mono">
               {totalCorrect}/{totalQuestionsSolved} Qs
             </span>
           </div>
           <span className="text-[11px] font-mono text-zinc-400">
-            Across {resultsList.length} completed diagnostic sessions
+            {resultsList.length > 0
+              ? `Across ${resultsList.length} completed practice sessions`
+              : "No practice sets completed yet"}
           </span>
         </div>
 
@@ -198,14 +202,16 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
           </div>
           <div className="my-3 flex items-baseline gap-2">
             <span className="text-3xl sm:text-4xl font-black font-mono text-brand-lime">
-              {trapImmunityPct}%
+              {totalQuestionsSolved > 0 ? `${trapImmunityPct}%` : "—"}
             </span>
             <span className="text-xs text-zinc-500 font-mono">
               {trapLogs.length} logged traps
             </span>
           </div>
           <span className="text-[11px] font-mono text-zinc-400">
-            Immunity against examiner distractor pitfalls
+            {totalQuestionsSolved > 0
+              ? "Immunity against examiner distractor pitfalls"
+              : "Complete practice sets to evaluate"}
           </span>
         </div>
 
@@ -287,7 +293,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
               <span>Curriculum Mastery Matrix & Topic Heatmap</span>
             </h2>
             <p className="text-xs text-zinc-400 font-sans mt-0.5">
-              Live tracking across all 10 CFA Level 1 tracks relative to official exam weights.
+              Live tracking across all 10 CFA Level 1 tracks relative to curriculum exam weights.
             </p>
           </div>
 
@@ -355,7 +361,18 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
                           : "text-zinc-500"
                       }`}
                     >
-                      {t.totalQ > 0 ? `${t.accuracy}%` : "Untested"}
+                      {t.totalQ > 0 ? (
+                        <span>
+                          {t.accuracy}%
+                          {t.totalQ < 5 && (
+                            <span className="text-[10px] font-normal text-zinc-500 ml-1">
+                              (n={t.totalQ})
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        "Untested"
+                      )}
                     </span>
                   </div>
 

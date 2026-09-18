@@ -341,8 +341,8 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
 
         {/* Footer Security Transparency Banner */}
         <div className="p-3 bg-[#0A0A0D] border border-white/5 rounded-xl flex items-center justify-between font-mono text-[10px] text-zinc-500">
-          <span>ENCRYPTION: TLS 1.3 / AES-256</span>
-          <span>ZERO-KNOWLEDGE PROGRESS STORE</span>
+          <span>TRANSPORT: TLS 1.3 / HTTPS ENCRYPTION</span>
+          <span>CLIENT-SIDE FIRST LOCAL STORAGE</span>
         </div>
       </div>
     </div>

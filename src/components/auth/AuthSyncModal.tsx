@@ -18,6 +18,7 @@ import {
 import { useCFAStore } from "@/store/useCFAStore";
 import { supabaseRest, isSupabaseConfigured } from "@/lib/supabase/client";
 import { sound } from "@/components/common/SoundEffects";
+import { validateBackupPayload } from "@/lib/backup/schema";
 
 interface AuthSyncModalProps {
   isOpen: boolean;
@@ -27,7 +28,11 @@ interface AuthSyncModalProps {
 export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose }) => {
   const {
     completedTopicIds,
+    inProgressTopicId,
     vignetteResults,
+    practiceAttempts,
+    practiceSessions,
+    activePracticeSessionId,
     trapLogs,
     customVignettes,
     leitnerCards,
@@ -49,10 +54,14 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
   const handleExportJSON = () => {
     if (soundEnabled) sound.playSuccessChime();
     const backupData = {
-      exportVersion: "3.0",
+      exportVersion: "4.0",
       exportedAt: new Date().toISOString(),
       completedTopicIds,
+      inProgressTopicId,
       vignetteResults,
+      practiceAttempts,
+      practiceSessions,
+      activePracticeSessionId,
       trapLogs,
       customVignettes,
       leitnerCards,
@@ -85,28 +94,48 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
     reader.onload = (event) => {
       try {
         const content = event.target?.result as string;
-        const parsed = JSON.parse(content);
-
-        if (parsed && typeof parsed === "object") {
-          // Restore into store
-          useCFAStore.setState({
-            completedTopicIds: parsed.completedTopicIds || [],
-            vignetteResults: parsed.vignetteResults || {},
-            trapLogs: parsed.trapLogs || [],
-            customVignettes: parsed.customVignettes || [],
-            leitnerCards: parsed.leitnerCards || [],
-          });
-
-          if (soundEnabled) sound.playSuccessChime();
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(content);
+        } catch {
           setStatusMessage({
-            type: "success",
-            text: "Study progress and flashcards successfully restored from backup!",
+            type: "error",
+            text: "Invalid JSON syntax. Please check the backup file.",
           });
+          return;
         }
+
+        const validation = validateBackupPayload(parsed);
+        if (!validation.success || !validation.data) {
+          setStatusMessage({
+            type: "error",
+            text: validation.error || "Invalid backup envelope structure.",
+          });
+          return;
+        }
+
+        const valid = validation.data;
+        useCFAStore.setState({
+          completedTopicIds: valid.completedTopicIds,
+          inProgressTopicId: valid.inProgressTopicId || "01",
+          vignetteResults: valid.vignetteResults,
+          practiceAttempts: valid.practiceAttempts,
+          practiceSessions: valid.practiceSessions,
+          activePracticeSessionId: valid.activePracticeSessionId,
+          trapLogs: valid.trapLogs,
+          customVignettes: valid.customVignettes,
+          leitnerCards: valid.leitnerCards,
+        });
+
+        if (soundEnabled) sound.playSuccessChime();
+        setStatusMessage({
+          type: "success",
+          text: `Study progress and flashcards successfully restored from backup (v${valid.exportVersion})!`,
+        });
       } catch (err) {
         setStatusMessage({
           type: "error",
-          text: "Invalid backup file format. Please choose a valid JSON file.",
+          text: "Unexpected error restoring backup. Please verify the file.",
         });
       }
     };
@@ -274,11 +303,14 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
         {/* Tab 2: Supabase Cloud Sync */}
         {activeTab === "cloud" && (
           <div className="space-y-4">
-            <div className="p-3 bg-[#121216] border border-[#222228] rounded-xl flex items-center gap-2 font-mono text-[11px] text-zinc-300">
-              <ShieldCheck className="w-4 h-4 text-brand-lime shrink-0" />
-              <span>
-                PostgreSQL Row Level Security (RLS) active: Only your verified account can read/write your study data.
-              </span>
+            <div className="p-3 bg-[#121216] border border-[#222228] rounded-xl space-y-1 font-mono text-[11px] text-zinc-300">
+              <div className="flex items-center gap-2 font-bold text-white">
+                <ShieldCheck className="w-4 h-4 text-brand-lime shrink-0" />
+                <span>Cloud Sync Scope & Local-First Storage</span>
+              </div>
+              <p className="text-[11px] font-sans text-zinc-400 leading-relaxed">
+                Supabase cloud sync secures topic completions across devices with PostgreSQL RLS. Detailed attempt records, distractor autopsies, and Leitner flashcards remain securely stored on your device and can be backed up via the JSON Export tab.
+              </p>
             </div>
 
             <form onSubmit={handleCloudAuth} className="space-y-3 font-mono text-xs">

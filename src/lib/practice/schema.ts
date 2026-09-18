@@ -93,3 +93,67 @@ export const PracticeItemsArraySchema = z.array(PracticeItemSchema).refine(
     message: "All items in a set must have unique IDs",
   }
 );
+
+export const ItemAttemptSchema = z.object({
+  id: z.string(),
+  sessionId: z.string(),
+  sessionItemId: z.string(),
+  sourceItemId: z.string(),
+  topicId: z.string(),
+  selectedOption: OptionKeySchema.nullable(),
+  correctOption: OptionKeySchema,
+  isCorrect: z.boolean(),
+  timedOut: z.boolean(),
+  timeSpentSeconds: z.number().nonnegative(),
+  submittedAt: z.string(),
+  trapCategory: z.string().optional(),
+  errorMode: ErrorModeSchema.optional(),
+});
+
+export const PracticeAttemptSchema = z.object({
+  id: z.string(),
+  sessionId: z.string(),
+  mode: z.enum(["practice", "sprint", "mock", "review"]),
+  startedAt: z.string(),
+  submittedAt: z.string(),
+  totalTimeSeconds: z.number().nonnegative(),
+  itemAttempts: z.array(ItemAttemptSchema),
+  score: z.number().nonnegative(),
+  total: z.number().positive(),
+  topicIds: z.array(z.string()),
+});
+
+export const PresentedPracticeItemSchema = z.object({
+  sourceItemId: z.string(),
+  sessionItemId: z.string(),
+  displayIndex: z.number().int().nonnegative(),
+  topicId: z.string(),
+  topicName: z.string(),
+  subReading: z.string().optional(),
+  losCode: z.string().optional(),
+  mode: PracticeModeSchema,
+  caseStem: z.string().optional(),
+  stem: z.string(),
+  options: OptionsMapSchema,
+  correctOption: OptionKeySchema,
+  solution: z.string(),
+  calculatorKeystrokes: z.string().optional(),
+  trapCategory: z.string(),
+  errorModeDefault: ErrorModeSchema.optional(),
+  distractorFeedback: DistractorFeedbackMapSchema,
+  optionPermutation: z.record(OptionKeySchema, OptionKeySchema),
+});
+
+export const PracticeSessionSchema = z.object({
+  id: z.string(),
+  mode: z.enum(["practice", "sprint", "mock", "review"]),
+  topicIds: z.array(z.string()),
+  sourceSetIds: z.array(z.string()),
+  seed: z.string(),
+  itemIds: z.array(z.string()),
+  presentedItems: z.array(PresentedPracticeItemSchema),
+  startedAt: z.string(),
+  completedAt: z.string().optional(),
+  timerMode: z.enum(["timed", "untimed"]),
+  targetSecondsPerItem: z.number().positive().optional(),
+});

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Calculator,
-  Clock,
   Volume2,
   VolumeX,
   FileText,
@@ -12,11 +11,9 @@ import {
   Keyboard,
   Settings,
   AlertTriangle,
-  ArrowLeft,
   Award,
   BookOpen,
   Cloud,
-  BarChart2,
 } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
 import { CurrentAssignmentCard } from "@/components/dashboard/CurrentAssignmentCard";
@@ -37,24 +34,16 @@ import { MockExamModal } from "@/components/mock/MockExamModal";
 import { TopicLearningHubModal } from "@/components/learn/TopicLearningHubModal";
 import { AuthSyncModal } from "@/components/auth/AuthSyncModal";
 import { useCFAStore } from "@/store/useCFAStore";
-import { CFA_CURRICULUM } from "@/data/curriculum";
 import { sound } from "@/components/common/SoundEffects";
 
 export default function DiagnosticCockpitPage() {
   const {
     activeVignetteId,
-    completedTopicIds,
-    vignetteResults,
     trapLogs,
-    drillQuestionCount,
-    setDrillQuestionCount,
-    isPacingTimerEnabled,
-    togglePacingTimer,
     isCalculatorOpen,
     isFormulaSheetOpen,
     isTrapLogOpen,
     isAIGeneratorOpen,
-    isBriefingModalOpen,
     isSprintModalOpen,
     isLeitnerDeckOpen,
     isShortcutsOpen,
@@ -95,18 +84,6 @@ export default function DiagnosticCockpitPage() {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
-
-  const totalCompleted = completedTopicIds.length;
-  const resultsList = Object.values(vignetteResults);
-  const totalQuestionsSolved = resultsList.reduce((acc, r) => acc + (r.total || (r.submissions ? r.submissions.length : 5)), 0);
-  const totalCorrect = resultsList.reduce((acc, r) => acc + r.score, 0);
-  const accuracy = totalQuestionsSolved > 0 ? Math.round((totalCorrect / totalQuestionsSolved) * 100) : 0;
-  
-  // Calculate Trap Immunity Index
-  const trapImmunityPct =
-    totalQuestionsSolved > 0
-      ? Math.max(0, 100 - Math.round((trapLogs.length / totalQuestionsSolved) * 100))
-      : 100;
 
   // Global Keyboard Shortcuts Listener for zero-latency ergonomics
   useEffect(() => {
@@ -211,349 +188,250 @@ export default function DiagnosticCockpitPage() {
     setActiveTab("simulator");
   };
 
-  const handleReturnToMatrix = () => {
-    if (soundEnabled) sound.playKeyClick();
-    useCFAStore.setState({ activeVignetteId: null });
-  };
-
   return (
-    <main className="min-h-screen flex flex-col bg-[#09090B] text-white selection:bg-brand-lime selection:text-black font-sans">
-      
-      {/* Institutional Top Navbar (56px) */}
-      <div className="w-full bg-[#0B0B0E]/95 backdrop-blur-md border-b border-[#1F1F23] sticky top-0 z-40">
-        <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-6 h-14 flex items-center justify-between font-mono text-xs gap-2">
-          
-          {/* Left: Brand / Terminal Indicator */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-85 transition-opacity">
-              <span className="w-2.5 h-2.5 rounded-full bg-brand-lime animate-pulse shadow-lime-sm shrink-0" />
-              <span className="font-extrabold tracking-tight text-white text-sm sm:text-base whitespace-nowrap">
-                CFA WIZARD
-              </span>
-            </Link>
-            <span className="text-zinc-600 select-none hidden md:inline">//</span>
-            <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded bg-[#141418] border border-[#27272A] text-[10px] text-zinc-300 uppercase tracking-wider font-bold whitespace-nowrap">
-              STUDY TERMINAL
-            </span>
-          </div>
+    <main className="min-h-screen flex flex-col bg-[#0F1213] text-white selection:bg-brand-lime selection:text-black font-sans">
+      <header className="sticky top-0 z-40 w-full border-b border-[#252B2C] bg-[#0F1213]/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex min-h-11 items-center gap-3 rounded-lg pr-2 text-white">
+            <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-brand-lime" />
+            <span className="text-base font-semibold tracking-[-0.01em]">CFA Wizard</span>
+            <span className="hidden text-sm text-[#8E9894] sm:inline">Level I study</span>
+          </Link>
 
-          {/* Center: Real-Time Telemetry Data Pill */}
-          <div className="hidden lg:flex items-center gap-3 xl:gap-4 text-xs whitespace-nowrap px-3.5 py-1.5 rounded-lg bg-[#0E0E12] border border-[#1F1F23] shadow-sm shrink-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-zinc-400 text-xs font-semibold">PROGRESS:</span>
-              <span className="text-brand-lime font-bold">{totalCompleted}/10 TRACKS</span>
-            </div>
-
-            <span className="text-[#27272A]">|</span>
-
-            <div className="flex items-center gap-1.5" title="Target Benchmark: 70%">
-              <span className="text-zinc-400 text-xs font-semibold">ACCURACY:</span>
-              <span className={`font-bold ${accuracy >= 70 ? "text-brand-lime" : accuracy > 0 ? "text-amber-400" : "text-zinc-400"}`}>
-                {accuracy}%
-              </span>
-            </div>
-
-            <span className="text-[#27272A]">|</span>
-
-            <div className="flex items-center gap-1.5">
-              <span className="text-zinc-400 text-xs font-semibold">RETENTION:</span>
-              <span className="text-brand-lime font-bold">{trapImmunityPct}%</span>
-            </div>
-          </div>
-
-          {/* Right: Core Tools & Settings */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            
-            {/* Question Count Selector */}
-            <div className="flex items-center bg-[#141418] border border-[#27272A] p-0.5 rounded-lg text-xs whitespace-nowrap">
-              {([2, 5, 10, 15] as const).map((cnt) => (
-                <button
-                  key={cnt}
-                  onClick={() => {
-                    if (soundEnabled) sound.playKeyClick();
-                    setDrillQuestionCount(cnt);
-                  }}
-                  className={`px-2 py-0.5 rounded font-bold transition-all text-xs ${
-                    drillQuestionCount === cnt
-                      ? "bg-brand-lime text-black shadow-lime-sm"
-                      : "text-zinc-400 hover:text-white"
-                  }`}
-                >
-                  {cnt}Q
-                </button>
-              ))}
-            </div>
-
-            {/* Pacing Timer Toggle */}
-            <button
-              onClick={() => {
-                if (soundEnabled) sound.playKeyClick();
-                togglePacingTimer();
-              }}
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs border font-bold transition-all whitespace-nowrap ${
-                isPacingTimerEnabled
-                  ? "bg-brand-lime/10 text-brand-lime border-brand-lime/40"
-                  : "bg-[#141418] text-zinc-400 border-[#27272A] hover:text-white"
-              }`}
-              title="Toggle 90-second exam pacing timer"
-            >
-              <Clock className="w-3.5 h-3.5 shrink-0" />
-              <span>{isPacingTimerEnabled ? "90s" : "OFF"}</span>
-            </button>
-
-            {/* Official Mock Exam Button */}
-            <button
-              onClick={() => {
-                if (soundEnabled) sound.playNodeSwitch();
-                setMockExamOpen(true);
-              }}
-              className="flex items-center gap-1 px-3 py-1 rounded-lg bg-brand-lime text-black border border-brand-lime hover:bg-brand-neon text-xs font-extrabold shadow-lime-sm transition-all whitespace-nowrap active:scale-95"
-              title="Official CFA Level 1 Mock Exam Engine"
-            >
-              <Award className="w-3.5 h-3.5 shrink-0" />
-              <span>MOCK EXAM</span>
-            </button>
-
-            {/* Explanatory Learning Hub */}
+          <nav aria-label="Study tools" className="hidden items-center gap-1 md:flex">
             <button
               onClick={() => {
                 if (soundEnabled) sound.playNodeSwitch();
                 setLearnHubInitialTopicId(useCFAStore.getState().activeTopicId || "01");
                 setLearnHubOpen(true);
               }}
-              className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-brand-lime border border-brand-lime/30 text-xs font-bold transition-all whitespace-nowrap"
-              title="First-Principles Learning Hub & Concept Proofs"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#C1C7C4] hover:bg-[#1A1F20] hover:text-white"
             >
-              <BookOpen className="w-3.5 h-3.5 shrink-0" />
-              <span>LEARN</span>
+              <BookOpen className="h-4 w-4" />
+              Learn
             </button>
+            <button
+              onClick={() => setCalculatorOpen(true)}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#C1C7C4] hover:bg-[#1A1F20] hover:text-white"
+            >
+              <Calculator className="h-4 w-4" />
+              Calculator
+            </button>
+            <button
+              onClick={() => setFormulaSheetOpen(true)}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#C1C7C4] hover:bg-[#1A1F20] hover:text-white"
+            >
+              <FileText className="h-4 w-4" />
+              Formulas
+            </button>
+          </nav>
 
-            {/* BA II+ Calculator */}
+          <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => {
                 if (soundEnabled) sound.playNodeSwitch();
-                setCalculatorOpen(true);
+                setMockExamOpen(true);
               }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-amber-300 border border-[#27272A] hover:border-amber-400/40 text-xs font-bold transition-all whitespace-nowrap"
-              title="TI BA II Plus Calculator (Hotkey: K)"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#343B3B] px-3 text-sm font-semibold text-white transition-colors hover:bg-[#1A1F20]"
             >
-              <Calculator className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">BA II+</span>
-              <span className="text-[10px] px-1 rounded bg-[#222228] text-amber-400/90 border border-[#2D2D35]">K</span>
+              <Award className="h-4 w-4" />
+              <span className="hidden sm:inline">Mock exam</span>
+              <span className="sm:hidden">Mock</span>
             </button>
 
-            {/* Formula Reference */}
-            <button
-              onClick={() => {
-                if (soundEnabled) sound.playNodeSwitch();
-                setFormulaSheetOpen(true);
-              }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-cyan-300 border border-[#27272A] hover:border-cyan-400/40 text-xs font-bold transition-all whitespace-nowrap"
-              title="Formula Sheet & Equation Reference (Hotkey: F)"
-            >
-              <FileText className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">FORMULAS</span>
-              <span className="text-[10px] px-1 rounded bg-[#222228] text-cyan-400/90 border border-[#2D2D35]">F</span>
-            </button>
-
-            {/* Settings & Utilities Menu */}
             <div className="relative" ref={settingsRef}>
               <button
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                className={`p-1.5 rounded-lg border transition-all flex items-center gap-1 ${
+                aria-expanded={isSettingsOpen}
+                aria-controls="study-tools-menu"
+                aria-label="Open study tools and settings"
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-colors ${
                   isSettingsOpen
-                    ? "bg-[#1C1C22] text-brand-lime border-brand-lime/40"
-                    : "bg-[#141418] text-zinc-300 border-[#27272A] hover:text-white"
+                    ? "border-brand-lime/50 bg-brand-lime/10 text-brand-lime"
+                    : "border-[#343B3B] text-[#C1C7C4] hover:bg-[#1A1F20] hover:text-white"
                 }`}
-                title="Settings & Study Utilities"
               >
-                <Settings className="w-4 h-4" />
-                {trapLogs.length > 0 && (
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                )}
+                <Settings className="h-5 w-5" />
               </button>
 
               {isSettingsOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-[#0E0E12] border border-[#27272A] rounded-xl shadow-2xl p-2 z-50 font-mono text-xs space-y-1 animate-in fade-in duration-150">
-                  <div className="px-3 py-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-b border-[#1F1F23]">
-                    STUDY TERMINAL SETTINGS
-                  </div>
+                <div id="study-tools-menu" className="absolute right-0 z-50 mt-2 w-72 space-y-1 rounded-2xl border border-[#343B3B] bg-[#171B1C] p-2 text-sm shadow-2xl">
+                  <p className="px-3 py-2 text-sm font-semibold text-white">Study tools</p>
 
-                  {/* Progress Backup & Cloud Sync */}
                   <button
                     onClick={() => {
-                      if (soundEnabled) sound.playNodeSwitch();
                       setIsSettingsOpen(false);
-                      setAuthSyncOpen(true);
+                      setLearnHubInitialTopicId(useCFAStore.getState().activeTopicId || "01");
+                      setLearnHubOpen(true);
                     }}
-                    className="w-full px-3 py-2 rounded-lg flex items-center justify-between hover:bg-[#18181D] text-left text-brand-lime transition-colors"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526] md:hidden"
                   >
-                    <div className="flex items-center gap-2">
-                      <Cloud className="w-4 h-4" />
-                      <span>Data Backup & Sync</span>
-                    </div>
-                    <span className="text-[10px] text-zinc-400 font-bold">1-CLICK</span>
+                    <BookOpen className="h-4 w-4" />
+                    Learning hub
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsSettingsOpen(false);
+                      setCalculatorOpen(true);
+                    }}
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526] md:hidden"
+                  >
+                    <Calculator className="h-4 w-4" />
+                    BA II Plus calculator
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsSettingsOpen(false);
+                      setFormulaSheetOpen(true);
+                    }}
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526] md:hidden"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Formula reference
                   </button>
 
-                  {/* Candidate Trap Radar */}
                   <button
                     onClick={() => {
-                      if (soundEnabled) sound.playNodeSwitch();
                       setIsSettingsOpen(false);
                       setTrapLogOpen(true);
                     }}
-                    className="w-full px-3 py-2 rounded-lg flex items-center justify-between hover:bg-[#18181D] text-left text-zinc-200 transition-colors"
+                    className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526]"
                   >
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-amber-400" />
-                      <span>Candidate Trap Radar</span>
-                    </div>
-                    <span className="px-1.5 py-0.5 rounded bg-[#18181B] text-amber-400 font-bold text-[10px]">
-                      {trapLogs.length}
-                    </span>
+                    <span className="flex items-center gap-3"><AlertTriangle className="h-4 w-4" />Mistake review</span>
+                    <span className="text-sm text-[#A8B0AD]">{trapLogs.length}</span>
                   </button>
-
-                  {/* Keyboard Shortcuts */}
                   <button
                     onClick={() => {
-                      if (soundEnabled) sound.playNodeSwitch();
                       setIsSettingsOpen(false);
                       setShortcutsOpen(true);
                     }}
-                    className="w-full px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-[#18181D] text-left text-zinc-200 transition-colors"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526]"
                   >
-                    <Keyboard className="w-4 h-4 text-brand-lime" />
-                    <span>Keyboard Speed Keys [?]</span>
+                    <Keyboard className="h-4 w-4" />
+                    Keyboard shortcuts
                   </button>
-
-                  {/* Sound Audio Toggle */}
+                  <button
+                    onClick={toggleSound}
+                    className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526]"
+                  >
+                    <span className="flex items-center gap-3">
+                      {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                      Sound
+                    </span>
+                    <span className="text-sm text-[#A8B0AD]">{soundEnabled ? "On" : "Off"}</span>
+                  </button>
                   <button
                     onClick={() => {
-                      toggleSound();
+                      setIsSettingsOpen(false);
+                      setAuthSyncOpen(true);
                     }}
-                    className="w-full px-3 py-2 rounded-lg flex items-center justify-between hover:bg-[#18181D] text-left text-zinc-200 transition-colors"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526]"
                   >
-                    <div className="flex items-center gap-2">
-                      {soundEnabled ? (
-                        <Volume2 className="w-4 h-4 text-brand-lime" />
-                      ) : (
-                        <VolumeX className="w-4 h-4 text-zinc-400" />
-                      )}
-                      <span>Audio Feedback</span>
-                    </div>
-                    <span className={`text-[10px] font-bold ${soundEnabled ? "text-brand-lime" : "text-zinc-400"}`}>
-                      {soundEnabled ? "ON" : "MUTED"}
-                    </span>
+                    <Cloud className="h-4 w-4" />
+                    Backup and sync
                   </button>
 
-                  <div className="border-t border-[#1F1F23] my-1" />
-
-                  {/* Reset Session */}
+                  <div className="my-1 border-t border-[#2A3031]" />
                   <button
                     onClick={() => {
                       setIsSettingsOpen(false);
                       setIsResetConfirmOpen(true);
                     }}
-                    className="w-full px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-red-950/30 text-left text-red-400 transition-colors"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-red-300 hover:bg-red-950/30"
                   >
-                    <RefreshCw className="w-4 h-4" />
-                    <span>Reset Progress Session</span>
+                    <RefreshCw className="h-4 w-4" />
+                    Reset study progress
                   </button>
                 </div>
               )}
             </div>
-
           </div>
-
         </div>
-      </div>
+      </header>
 
       {/* Main Content Area */}
       <div className="flex-1">
         {activeVignetteId ? (
-          /* Active Vignette Problem & Diagnostic Autopsy Session */
           <div className="w-full">
-            <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 pt-4">
-              <button
-                onClick={handleReturnToMatrix}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 hover:text-white border border-[#27272A] font-mono text-xs font-bold transition-all mb-3"
-              >
-                <ArrowLeft className="w-4 h-4 text-brand-lime" />
-                <span>RETURN TO STUDY TERMINAL</span>
-              </button>
-            </div>
             <VignetteEngine />
           </div>
         ) : (
-          /* Structured Study Terminal Dashboard */
-          <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-6 space-y-6">
-            
-            {/* 1. Hero "Current Assignment" Command Card */}
+          <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
             <CurrentAssignmentCard
               onOpenBriefing={handleOpenBriefing}
               onOpenScenarioSimulator={handleOpenScenarioSimulator}
             />
 
-            {/* 2. Structured 4-Tab Segmented Navigation Bar */}
-            <div className="w-full bg-[#0B0B0E] border border-[#1F1F23] rounded-xl p-1.5 font-mono text-xs flex flex-wrap sm:flex-nowrap items-center gap-1 shadow-md">
+            <div
+              role="tablist"
+              aria-label="Study views"
+              className="grid w-full grid-cols-2 gap-1 rounded-2xl border border-[#293031] bg-[#15191A] p-1.5 sm:grid-cols-4"
+            >
               <button
+                role="tab"
+                aria-selected={activeTab === "tracks"}
                 onClick={() => {
                   if (soundEnabled) sound.playKeyClick();
                   setActiveTab("tracks");
                 }}
-                className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-center transition-all ${
+                className={`min-h-11 rounded-xl px-3 text-sm font-semibold text-center transition-colors ${
                   activeTab === "tracks"
-                    ? "bg-brand-lime text-black shadow-lime-sm"
-                    : "text-zinc-400 hover:text-white hover:bg-[#141418]"
+                    ? "bg-[#E4E9E6] text-[#111515]"
+                    : "text-[#AAB2AE] hover:bg-[#202627] hover:text-white"
                 }`}
               >
-                01. CURRICULUM TRACKS (10)
+                Study
               </button>
 
               <button
+                role="tab"
+                aria-selected={activeTab === "simulator"}
                 onClick={() => {
                   if (soundEnabled) sound.playKeyClick();
                   setActiveTab("simulator");
                 }}
-                className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-center transition-all ${
+                className={`min-h-11 rounded-xl px-3 text-sm font-semibold text-center transition-colors ${
                   activeTab === "simulator"
-                    ? "bg-brand-lime text-black shadow-lime-sm"
-                    : "text-zinc-400 hover:text-white hover:bg-[#141418]"
+                    ? "bg-[#E4E9E6] text-[#111515]"
+                    : "text-[#AAB2AE] hover:bg-[#202627] hover:text-white"
                 }`}
               >
-                02. SCENARIO SIMULATOR
+                Custom practice
               </button>
 
               <button
+                role="tab"
+                aria-selected={activeTab === "recall"}
                 onClick={() => {
                   if (soundEnabled) sound.playKeyClick();
                   setActiveTab("recall");
                 }}
-                className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-center transition-all ${
+                className={`min-h-11 rounded-xl px-3 text-sm font-semibold text-center transition-colors ${
                   activeTab === "recall"
-                    ? "bg-brand-lime text-black shadow-lime-sm"
-                    : "text-zinc-400 hover:text-white hover:bg-[#141418]"
+                    ? "bg-[#E4E9E6] text-[#111515]"
+                    : "text-[#AAB2AE] hover:bg-[#202627] hover:text-white"
                 }`}
               >
-                03. SPACED RECALL &amp; SPRINTS
+                Review
               </button>
 
               <button
+                role="tab"
+                aria-selected={activeTab === "analytics"}
                 onClick={() => {
                   if (soundEnabled) sound.playKeyClick();
                   setActiveTab("analytics");
                 }}
-                className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-center transition-all ${
+                className={`min-h-11 rounded-xl px-3 text-sm font-semibold text-center transition-colors ${
                   activeTab === "analytics"
-                    ? "bg-brand-lime text-black shadow-lime-sm"
-                    : "text-zinc-400 hover:text-white hover:bg-[#141418]"
+                    ? "bg-[#E4E9E6] text-[#111515]"
+                    : "text-[#AAB2AE] hover:bg-[#202627] hover:text-white"
                 }`}
               >
-                04. ANALYTICS &amp; READINESS
+                Progress
               </button>
             </div>
 
-            {/* 3. Active Tab View Switcher */}
             <div>
               {activeTab === "tracks" && (
                 <CurriculumTracksGrid
@@ -592,30 +470,35 @@ export default function DiagnosticCockpitPage() {
 
       {/* Confirmation Modal for Reset Session */}
       {isResetConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150 font-mono">
-          <div className="bg-[#0E0E12] border border-[#27272A] rounded-xl p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <div className="flex items-center gap-2 text-xs text-red-400 font-bold uppercase">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-progress-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+        >
+          <div className="w-full max-w-md space-y-4 rounded-2xl border border-[#343B3B] bg-[#171B1C] p-6 shadow-2xl">
+            <div id="reset-progress-title" className="flex items-center gap-2 font-semibold text-red-300">
               <AlertTriangle className="w-4 h-4" />
-              <span>RESET SESSION PROGRESS</span>
+              <span>Reset study progress?</span>
             </div>
-            <p className="text-xs text-zinc-300 font-sans leading-relaxed">
-              Are you sure you want to reset all completed tracks, diagnostic scores, error logs, and Leitner flashcard boxes? This action cannot be undone.
+            <p className="text-sm leading-relaxed text-[#BCC4C0]">
+              This removes completed topics, practice scores, mistake history, and review cards. This action cannot be undone.
             </p>
-            <div className="flex items-center justify-end gap-2 text-xs pt-2">
+            <div className="flex items-center justify-end gap-2 pt-2 text-sm">
               <button
                 onClick={() => setIsResetConfirmOpen(false)}
-                className="px-3 py-1.5 rounded-lg bg-[#18181B] text-zinc-300 border border-[#27272A] hover:text-white"
+                className="min-h-11 rounded-xl border border-[#343B3B] px-4 font-medium text-[#D4D9D6] hover:bg-[#202627] hover:text-white"
               >
-                CANCEL
+                Cancel
               </button>
               <button
                 onClick={() => {
                   resetProgress();
                   setIsResetConfirmOpen(false);
                 }}
-                className="px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold"
+                className="min-h-11 rounded-xl bg-red-600 px-4 font-semibold text-white hover:bg-red-500"
               >
-                CONFIRM RESET
+                Reset progress
               </button>
             </div>
           </div>

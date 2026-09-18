@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#09090B",
+        background: "#0F1213",
         surface: {
           DEFAULT: "#0D0D0F",
           card: "#121215",
@@ -22,10 +22,10 @@ const config: Config = {
           muted: "#3F3F46",
         },
         brand: {
-          lime: "#D8FF3E",
-          neon: "#CCFF00",
-          dim: "#A3E635",
-          glow: "rgba(216, 255, 62, 0.25)",
+          lime: "#B8D878",
+          neon: "#C8E68A",
+          dim: "#9FBE61",
+          glow: "rgba(184, 216, 120, 0.18)",
         },
         editorial: {
           white: "#FFFFFF",
@@ -36,12 +36,12 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        mono: ["var(--font-jetbrains-mono)", "ui-monospace", "monospace"],
+        sans: ["-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "system-ui", "sans-serif"],
+        mono: ['"SFMono-Regular"', "Consolas", '"Liberation Mono"', "monospace"],
       },
       boxShadow: {
-        "lime-glow": "0 0 25px -4px rgba(216, 255, 62, 0.4)",
-        "lime-sm": "0 0 12px -2px rgba(216, 255, 62, 0.3)",
+        "lime-glow": "0 8px 24px -12px rgba(184, 216, 120, 0.35)",
+        "lime-sm": "0 4px 12px -8px rgba(184, 216, 120, 0.3)",
         "panel-dark": "0 20px 40px -15px rgba(0, 0, 0, 0.8)",
       },
       animation: {

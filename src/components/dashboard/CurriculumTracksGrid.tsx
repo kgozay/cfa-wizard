@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Play, BookOpen, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, FileText, ArrowRight } from "lucide-react";
+import { Play, BookOpen, ChevronDown, CheckCircle2, ArrowRight } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { useCFAStore } from "@/store/useCFAStore";
@@ -42,26 +42,18 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
   };
 
   return (
-    <div className="space-y-4 font-mono">
-      
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#1F1F23]">
-        <div className="flex items-center gap-2">
-          <span className="text-white text-xs font-bold uppercase tracking-wider">
-            OFFICIAL 10 CFA LEVEL 1 CURRICULUM TRACKS
-          </span>
-          <span className="text-zinc-600">//</span>
-          <span className="text-zinc-400 text-xs">
-            150 INSTITUTIONAL DIAGNOSTIC QUESTIONS
-          </span>
+    <section className="space-y-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold tracking-[-0.01em] text-white">Choose a topic</h2>
+          <p className="mt-1 text-sm text-[#A8B0AD]">Open a topic for its modules, review notes, or start a practice set.</p>
         </div>
-        <div className="text-[11px] text-zinc-400">
-          COMPLETED: <strong className="text-brand-lime">{completedTopicIds.length}</strong> / 10 TRACKS
-        </div>
+        <p className="text-sm text-[#A8B0AD]">
+          <span className="font-semibold text-white">{completedTopicIds.length}</span> of 10 completed
+        </p>
       </div>
 
-      {/* Grid of 10 Institutional Track Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-3.5">
+      <div className="overflow-hidden rounded-2xl border border-[#2A3031] bg-[#15191A] divide-y divide-[#272D2E]">
         {CFA_CURRICULUM.map((topic) => {
           const isCompleted = completedTopicIds.includes(topic.id);
           const isCurrent = (activeTopicId || inProgressTopicId) === topic.id;
@@ -70,140 +62,98 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
           const result = baseVignette ? vignetteResults[baseVignette.id] : undefined;
 
           return (
-            <div
+            <article
               key={topic.id}
-              className={`rounded-xl border transition-all duration-150 overflow-hidden flex flex-col justify-between ${
-                isCurrent
-                  ? "bg-[#0E0E12] border-brand-lime/40 shadow-lg shadow-black/40 ring-1 ring-brand-lime/20"
-                  : isCompleted
-                  ? "bg-[#0B0B0E] border-brand-lime/20 hover:border-brand-lime/40"
-                  : "bg-[#0B0B0E] border-[#1F1F23] hover:border-[#2E2E36]"
-              }`}
+              className={isCurrent ? "bg-brand-lime/[0.035]" : "bg-transparent"}
             >
-              {/* Card Header */}
-              <div className="p-4 sm:p-5 flex items-start justify-between gap-3">
-                <div className="space-y-1.5 flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 rounded bg-[#18181D] border border-[#27272A] text-[11px] font-bold text-brand-lime">
-                      [{topic.id}]
-                    </span>
-                    <span className="text-xs text-zinc-400 font-semibold">
-                      WEIGHT: <strong className="text-white">{topic.weight}</strong>
-                    </span>
-                    {topic.weightCategory === "HIGH" && (
-                      <span className="px-1.5 py-0.5 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime text-[10px] font-bold">
-                        HIGH YIELD
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 className="text-base font-bold text-white font-sans tracking-tight truncate">
-                    {topic.name}
-                  </h3>
-
-                  <p className="text-xs text-zinc-400 font-sans line-clamp-1">
-                    {topic.subReadings.length} Modules &bull; {topic.formulas.length} Formulas &bull; {topic.highYieldTrapArea}
-                  </p>
-                </div>
-
-                {/* Status Indicator Badge */}
-                <div className="shrink-0 flex items-center gap-1.5">
-                  {isCompleted ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime text-[10px] font-bold">
-                      <CheckCircle2 className="w-3 h-3" />
-                      MASTERED
-                    </span>
-                  ) : isCurrent ? (
-                    <span className="px-2 py-1 rounded bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[10px] font-bold">
-                      ACTIVE
-                    </span>
-                  ) : (
-                    <span className="px-2 py-1 rounded bg-[#141418] border border-[#27272A] text-zinc-400 text-[10px] font-semibold">
-                      READY
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Action Toolbar */}
-              <div className="px-4 sm:px-5 py-3 bg-[#08080A] border-t border-[#18181B] flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 p-3 sm:p-4">
                 <button
+                  type="button"
                   onClick={() => toggleExpand(topic.id)}
-                  className="text-zinc-400 hover:text-white flex items-center gap-1 text-[11px] font-semibold transition-colors"
+                  aria-expanded={isExpanded}
+                  aria-controls={`topic-details-${topic.id}`}
+                  className="flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-[#1A1F20]"
                 >
-                  <span>{isExpanded ? "HIDE DETAILS" : "INSPECT MODULES"}</span>
-                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />}
-                </button>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => onOpenBriefing(topic.id)}
-                    className="px-2.5 py-1 rounded bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 hover:text-white border border-[#27272A] text-[11px] font-semibold transition-colors"
-                    title="2-Min Executive Briefing"
-                  >
-                    BRIEFING
-                  </button>
-
-                  <button
-                    onClick={(e) => handleStartDrill(topic.id, e)}
-                    className="px-3.5 py-1.5 rounded-lg bg-brand-lime hover:bg-brand-neon text-black font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-lime-sm active:scale-95"
-                  >
-                    <Play className="w-3 h-3 fill-black" />
-                    <span>DRILL {drillQuestionCount}Q</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Expandable Module Drawer */}
-              {isExpanded && (
-                <div className="p-4 sm:p-5 bg-[#070709] border-t border-[#18181B] space-y-3 animate-in fade-in duration-150">
-                  <div className="p-3 rounded-lg bg-[#101014] border border-amber-400/20 text-xs">
-                    <span className="font-bold text-amber-300 block mb-0.5">
-                      TARGET TRAP CLASSIFICATION:
-                    </span>
-                    <p className="text-zinc-300 font-sans text-xs">
-                      {topic.highYieldTrapArea}
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold ${
+                    isCurrent ? "bg-brand-lime text-[#111510]" : "bg-[#202526] text-[#C1C7C4]"
+                  }`}>
+                    {topic.id}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <h3 className="truncate text-base font-semibold text-white">{topic.name}</h3>
+                      {isCompleted && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-brand-lime">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Completed
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 truncate text-sm text-[#A8B0AD]">
+                      {topic.subReadings.length} modules · {topic.formulas.length} formulas · {topic.weight} exam weight
+                      {result ? ` · Last score ${result.score}/${result.total}` : ""}
                     </p>
                   </div>
+                  <ChevronDown className={`h-5 w-5 shrink-0 text-[#8E9894] transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Start ${topic.name} practice`}
+                  onClick={(e) => handleStartDrill(topic.id, e)}
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#3A4241] text-sm font-semibold text-white transition-colors hover:border-brand-lime/60 hover:bg-brand-lime/10 sm:w-auto sm:px-3.5"
+                >
+                  <Play className="h-4 w-4 fill-current" />
+                  <span className="hidden sm:inline">Practice {drillQuestionCount}</span>
+                </button>
+              </div>
 
-                  <div>
-                    <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">
-                      CURRICULUM LEARNING MODULES ({topic.subReadings.length}):
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
-                      {topic.subReadings.map((sub, idx) => (
+              {isExpanded && (
+                <div id={`topic-details-${topic.id}`} className="space-y-4 border-t border-[#272D2E] bg-[#121617] px-5 py-5 sm:px-7">
+                  <p className="max-w-[75ch] text-sm leading-6 text-[#B7BEBA]">
+                    <span className="font-medium text-white">Common difficulty:</span> {topic.highYieldTrapArea}
+                  </p>
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold text-white">Learning modules</h4>
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {topic.subReadings.map((sub) => (
                         <div
-                          key={idx}
-                          className="px-2.5 py-1.5 rounded bg-[#0E0E12] border border-[#1F1F23] flex items-center gap-2 text-zinc-300 font-sans"
+                          key={sub.id}
+                          className="flex items-start gap-3 rounded-lg bg-[#191E1F] px-3 py-2.5 text-sm text-[#D4D9D6]"
                         >
-                          <span className="font-mono text-[10px] font-bold text-brand-lime shrink-0">
-                            [{sub.losCode || sub.id}]
+                          <span className="shrink-0 font-mono text-xs text-brand-lime">
+                            {sub.losCode || sub.id}
                           </span>
-                          <span className="truncate text-xs">{sub.title}</span>
+                          <span>{sub.title}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="pt-2 flex items-center justify-between text-xs font-mono">
-                    <span className="text-zinc-400">
-                      {topic.formulas.length} Official Formulas Documented
-                    </span>
+                  <div className="flex flex-col gap-2 pt-1 sm:flex-row">
                     <button
-                      onClick={() => onOpenScenarioSimulator(topic.id)}
-                      className="text-brand-lime hover:underline font-semibold flex items-center gap-1"
+                      type="button"
+                      onClick={() => onOpenBriefing(topic.id)}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#343B3B] px-4 py-2 text-sm font-medium text-[#DDE2DF] hover:bg-[#1D2223]"
                     >
-                      <span>Launch Scenario Simulator for Track [{topic.id}]</span>
-                      <ArrowRight className="w-3 h-3" />
+                      <BookOpen className="h-4 w-4" />
+                      Review topic notes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onOpenScenarioSimulator(topic.id)}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-brand-lime hover:bg-brand-lime/10"
+                    >
+                      <span>Create custom practice</span>
+                      <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
               )}
-            </div>
+            </article>
           );
         })}
       </div>
-
-    </div>
+    </section>
   );
 };

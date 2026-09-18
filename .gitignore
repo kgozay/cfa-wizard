@@ -36,3 +36,7 @@ next-env.d.ts
 # local materials & scratch
 /CFA material/
 /scratch/
+
+# local UI review tooling and generated visual artifacts
+/.impeccable/
+/output/playwright/

@@ -5,47 +5,52 @@
 @tailwind utilities;
 
 :root {
-  --background: #09090B;
-  --foreground: #FFFFFF;
+  --background: #0f1213;
+  --foreground: #f4f6f3;
+  --surface: #15191a;
+  --surface-muted: #1a1f20;
+  --border: #2a3031;
+  --muted: #a8b0ad;
+  --accent: #b8d878;
+
+  --text-caption: 0.75rem;
+  --text-secondary: 0.875rem;
+  --text-body: 1rem;
+  --text-subheading: 1.125rem;
+  --text-heading: 1.5rem;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  scrollbar-width: thin;
-  scrollbar-color: #27272A #09090B;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: var(--text-body);
+  line-height: 1.55;
+  font-kerning: normal;
+  font-optical-sizing: auto;
+  letter-spacing: 0.005em;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 0),
-    radial-gradient(rgba(216, 255, 62, 0.015) 1px, transparent 0);
-  background-size: 32px 32px;
-  background-position: 0 0, 16px 16px;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 /* Custom selection */
 ::selection {
-  background-color: #D8FF3E;
-  color: #000000;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #09090B;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #27272A;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3F3F46;
+  background-color: var(--accent);
+  color: #101310;
 }
 
 /* KaTeX custom dark overrides */
@@ -56,4 +61,15 @@ body {
 
 .katex-display {
   margin: 0.5em 0 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

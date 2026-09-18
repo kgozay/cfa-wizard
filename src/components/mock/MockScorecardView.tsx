@@ -72,7 +72,7 @@ export const MockScorecardView: React.FC<MockScorecardViewProps> = ({
                     : "bg-red-500/20 text-red-400 border border-red-500/40"
                 }`}
               >
-                {isPassed ? "MPS PASS HEURISTIC EXCEEDED" : "BELOW MINIMUM PASSING SCORE"}
+                {isPassed ? "70% STUDY TARGET ACHIEVED" : "BELOW 70% STUDY TARGET"}
               </span>
               <span className="text-xs font-mono text-zinc-400">
                 {session.title}
@@ -80,13 +80,13 @@ export const MockScorecardView: React.FC<MockScorecardViewProps> = ({
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              {isPassed ? "Institutional Pass Level Achieved" : "Rigorous Remediation Recommended"}
+              {isPassed ? "Target Performance Achieved" : "Remediation Recommended"}
             </h1>
 
             <p className="text-xs sm:text-sm text-zinc-300 max-w-2xl leading-relaxed">
               {isPassed
-                ? `You scored ${session.score} out of ${session.totalQuestions} (${session.accuracy}%), clearing the estimated 70% CFA Institute Minimum Passing Score (MPS) threshold.`
-                : `You scored ${session.score} out of ${session.totalQuestions} (${session.accuracy}%). Review distractor autopsies below to resolve trapped error modes before actual exam day.`}
+                ? `You scored ${session.score} out of ${session.totalQuestions} (${session.accuracy}%), clearing the recommended 70% study target.`
+                : `You scored ${session.score} out of ${session.totalQuestions} (${session.accuracy}%). Review mistake diagnoses below to resolve trapped error modes before test day.`}
             </p>
           </div>
 
@@ -144,7 +144,7 @@ export const MockScorecardView: React.FC<MockScorecardViewProps> = ({
       <div className="bg-[#0B0B0E] border border-[#1F1F23] rounded-2xl p-6 space-y-4">
         <h2 className="text-sm font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
           <Award className="w-4 h-4 text-brand-lime" />
-          <span>Curriculum Topic Breakdown & Official Weights</span>
+          <span>Curriculum Topic Breakdown & Weights</span>
         </h2>
 
         <div className="overflow-x-auto">

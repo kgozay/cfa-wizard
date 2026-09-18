@@ -56,7 +56,7 @@ export function generateMockExamSession(
   if (examType === "quick_diagnostic_45") {
     totalTarget = 45;
     allocatedMinutes = 68;
-    title = "CFA Level 1 Diagnostic Half-Speed Mock (45 Questions)";
+    title = "Level 1 Diagnostic Practice Mock (45 Questions)";
     targetCounts = {
       "10": 8, // Ethics (18%)
       "01": 5, // Quant (11%)
@@ -72,7 +72,7 @@ export function generateMockExamSession(
   } else if (examType === "half_session_1") {
     totalTarget = 90;
     allocatedMinutes = 135;
-    title = "Official Mock: Session 1 (Ethics, Quant, Econ, FSA)";
+    title = "Level 1 Mock Exam: Session 1 (Ethics, Quant, Econ, FSA)";
     targetCounts = {
       "10": 26, // Ethics
       "01": 20, // Quant
@@ -82,7 +82,7 @@ export function generateMockExamSession(
   } else if (examType === "half_session_2") {
     totalTarget = 90;
     allocatedMinutes = 135;
-    title = "Official Mock: Session 2 (Corp Issuers, Equity, FI, Derivs, Alts, PM)";
+    title = "Level 1 Mock Exam: Session 2 (Corp Issuers, Equity, FI, Derivs, Alts, PM)";
     targetCounts = {
       "03": 14, // Corp Issuers
       "05": 20, // Equity
@@ -95,7 +95,7 @@ export function generateMockExamSession(
     // full_180
     totalTarget = 180;
     allocatedMinutes = 270;
-    title = "CFA Level 1 Full Simulation Mock (180 Questions)";
+    title = "Level 1 Full Simulation Mock (180 Questions)";
     targetCounts = {
       "10": 30, // Ethics ~16.7%
       "01": 20, // Quant ~11%
@@ -110,7 +110,7 @@ export function generateMockExamSession(
     };
   }
 
-  // Sample questions according to target counts
+  // Sample questions according to target counts without repeating questions
   const selectedRawQuestions: {
     topicId: string;
     topicName: string;
@@ -121,8 +121,7 @@ export function generateMockExamSession(
   Object.entries(targetCounts).forEach(([topicId, count]) => {
     const pool = topicQuestionPool[topicId] || [];
     const shuffledPool = shuffleArray(pool);
-    
-    // Pick required amount (cycle if pool is smaller than target)
+    // Pick required amount (cycle if pool is smaller than target, giving each instance a unique sessionItemId)
     for (let i = 0; i < count; i++) {
       if (shuffledPool.length > 0) {
         selectedRawQuestions.push(shuffledPool[i % shuffledPool.length]);

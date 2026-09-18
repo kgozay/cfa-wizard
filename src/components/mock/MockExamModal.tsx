@@ -200,10 +200,10 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white tracking-wide font-sans">
-                  Official CFA® Level 1 Mock Exam Engine
+                  Level 1 Mock Exam Simulation Engine
                 </h2>
                 <p className="text-xs text-zinc-400 font-mono">
-                  Standardized Timing • 10-Topic Weighting • MPS Benchmark Simulation
+                  Standardized Timing • 10-Topic Weighting • 70% Study Target
                 </p>
               </div>
             </div>

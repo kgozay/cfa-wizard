@@ -235,7 +235,7 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center gap-2 font-mono text-xs text-brand-lime font-bold">
                   <span>{currentLOS.losCode}</span>
-                  <span>//</span>
+                  <span>{"//"}</span>
                   <span>{currentLOS.title}</span>
                 </div>
                 <p className="text-sm text-zinc-200 font-sans leading-relaxed">

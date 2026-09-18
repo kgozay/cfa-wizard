@@ -4,6 +4,8 @@ Date: 18 September 2026
 
 Scope: product strategy, CFA Level I fidelity, vignette and question generation, scoring and analytics, mock exams, persistence, accessibility, mobile usability, UI/UX, security, and engineering quality.
 
+Implementation runbook: `REFINEMENT_IMPLEMENTATION_PLAN.md`
+
 ## Executive summary
 
 CFA Wizard has a strong amount of domain-specific functionality: curriculum navigation, drills, answer autopsies, a BA II Plus workflow, mock exams, spaced repetition, analytics, and targeted generation are all represented. The strongest part of the product is the actual study workspace, where a candidate can read an item, choose an answer, use a calculator or scratchpad, and inspect the reasoning afterward.

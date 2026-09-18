@@ -408,7 +408,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
                   QUESTION {currentQuestion.globalIndex} OF {session.totalQuestions}
                 </span>
                 <span className="px-2 py-0.5 rounded bg-[#18181D] text-zinc-300 border border-[#27272A]">
-                  TOPIC {currentQuestion.topicId} // {currentQuestion.topicName}
+                  TOPIC {currentQuestion.topicId} {"//"} {currentQuestion.topicName}
                 </span>
                 {currentQuestion.losCode && (
                   <span className="text-editorial-dim text-[11px]">

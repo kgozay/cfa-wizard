@@ -42,8 +42,9 @@ export const supabaseRest = {
         return { error: data.error_description || data.msg || "Authentication failed." };
       }
       return { session: data };
-    } catch (err: any) {
-      return { error: err.message || "Network error." };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Network error.";
+      return { error: message };
     }
   },
 
@@ -65,12 +66,13 @@ export const supabaseRest = {
         return { error: data.error_description || data.msg || "Signup failed." };
       }
       return { user: data.user || data };
-    } catch (err: any) {
-      return { error: err.message || "Network error." };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Network error.";
+      return { error: message };
     }
   },
 
-  async syncUserData(accessToken: string, payload: Record<string, any>): Promise<{ success: boolean; error?: string }> {
+  async syncUserData(accessToken: string, payload: Record<string, unknown>): Promise<{ success: boolean; error?: string }> {
     if (!isSupabaseConfigured) {
       return { success: false, error: "Supabase not configured." };
     }
@@ -90,8 +92,9 @@ export const supabaseRest = {
         return { success: false, error: data.message || "Failed to sync progress." };
       }
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message || "Sync network error." };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Sync network error.";
+      return { success: false, error: message };
     }
   },
 };

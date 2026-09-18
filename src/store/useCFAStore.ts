@@ -195,7 +195,7 @@ export const useCFAStore = create<CFAState>()(
         }
 
         // If high score, mark topic completed
-        let updatedCompleted = [...get().completedTopicIds];
+        const updatedCompleted = [...get().completedTopicIds];
         if (result.score >= Math.ceil(result.total * 0.7) && !updatedCompleted.includes(result.topicId)) {
           updatedCompleted.push(result.topicId);
         }

@@ -399,7 +399,7 @@ export const VignetteEngine: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime font-mono text-xs font-bold uppercase tracking-wider">
-                  TOPIC {vignette.topicId} // {vignette.topicName}
+                  TOPIC {vignette.topicId} {"//"} {vignette.topicName}
                 </span>
                 <span className="text-xs font-mono text-zinc-400">
                   {vignette.subReading}

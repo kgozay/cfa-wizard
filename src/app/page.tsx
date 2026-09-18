@@ -79,7 +79,7 @@ export default function LandingPage() {
             <span className="font-mono text-sm font-black tracking-widest text-white">
               CFA WIZARD
             </span>
-            <span className="hidden sm:inline text-editorial-dim text-xs font-mono select-none">//</span>
+            <span className="hidden sm:inline text-editorial-dim text-xs font-mono select-none">{"//"}</span>
             <span className="hidden sm:inline font-mono text-[11px] text-editorial-muted tracking-wider uppercase">
               INSTITUTIONAL LEARNING SUITE
             </span>
@@ -218,7 +218,7 @@ export default function LandingPage() {
           
           <div className="max-w-3xl space-y-3">
             <span className="font-mono text-xs text-brand-lime uppercase tracking-widest font-bold">
-              // CORE LEARNING PILLARS
+              {"//"} CORE LEARNING PILLARS
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
               Engineered for Deep Mathematical & Conceptual Mastery
@@ -337,7 +337,7 @@ export default function LandingPage() {
           
           <div className="text-center space-y-3">
             <span className="font-mono text-xs text-brand-lime uppercase tracking-widest font-bold">
-              // INTERACTIVE FORMULA LAB
+              {"//"} INTERACTIVE FORMULA LAB
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
               Experience the Diagnostic Learning Engine
@@ -452,7 +452,7 @@ export default function LandingPage() {
           
           <div className="max-w-3xl space-y-3">
             <span className="font-mono text-xs text-brand-lime uppercase tracking-widest font-bold">
-              // COMPLETE CURRICULUM SYLLABUS
+              {"//"} COMPLETE CURRICULUM SYLLABUS
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
               All 10 Official CFA Level 1 Tracks

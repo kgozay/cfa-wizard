@@ -4,6 +4,7 @@
  */
 
 export const SAMPLE_VALID_GENERATED_SET = {
+  id: "ai-vignette-test-quant-001",
   requestId: "req-test-quant-001",
   topicId: "01",
   topicName: "Quantitative Methods",

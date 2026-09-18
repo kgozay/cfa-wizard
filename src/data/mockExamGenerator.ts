@@ -22,7 +22,8 @@ export function generateMockExamSession(
   examType: MockExamType,
   customVignettes: import("@/types/cfa").VignetteSet[] = []
 ): MockExamSession {
-  const allVignettes = [...CFA_VIGNETTES, ...customVignettes];
+  // Approved authored content only for mock exams (quarantine unapproved generated drafts)
+  const allVignettes = CFA_VIGNETTES;
   
   // Topic Pools
   const topicQuestionPool: Record<string, {

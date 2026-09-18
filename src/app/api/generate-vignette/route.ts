@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { VignetteSet, VignetteQuestion, OptionKey, ErrorMode } from "@/types/cfa";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
+import { GenerationRequestSchema } from "@/lib/generation/requestSchema";
+import { createAIDraftProvenance, createFallbackProvenance } from "@/lib/generation/provenance";
+import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 
 interface GenerationRequest {
   topicId?: string;
@@ -1274,10 +1277,13 @@ Generate a JSON object matching this exact schema:
 Return ONLY pure JSON. No markdown backticks, no markdown fence.`;
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
@@ -1294,8 +1300,29 @@ Return ONLY pure JSON. No markdown backticks, no markdown fence.`;
     if (!rawText) return null;
 
     const parsed = JSON.parse(rawText);
-    if (parsed && parsed.questions && Array.isArray(parsed.questions)) {
-      return parsed as VignetteSet;
+    if (parsed && Array.isArray(parsed.questions) && parsed.questions.length > 0) {
+      const validQuestions = parsed.questions.filter((q: unknown) => {
+        if (!q || typeof q !== "object") return false;
+        const item = q as Record<string, unknown>;
+        const options = item.options as Record<string, string> | undefined;
+        return (
+          typeof item.stem === "string" &&
+          item.stem.trim().length > 0 &&
+          options &&
+          typeof options.A === "string" &&
+          typeof options.B === "string" &&
+          typeof options.C === "string" &&
+          typeof item.correctOption === "string" &&
+          ["A", "B", "C"].includes(item.correctOption)
+        );
+      });
+
+      if (validQuestions.length === parsed.questions.length) {
+        return {
+          ...parsed,
+          questions: validQuestions,
+        } as VignetteSet;
+      }
     }
     return null;
   } catch (err) {
@@ -1306,28 +1333,72 @@ Return ONLY pure JSON. No markdown backticks, no markdown fence.`;
 
 export async function POST(req: NextRequest) {
   try {
-    const body: GenerationRequest = await req.json();
-    const {
-      topicId = "01",
-      difficulty = "High Trap",
-      customPrompt = "",
-      questionCount = 5,
-    } = body;
+    const rawBody = await req.json();
 
-    const topic = CFA_CURRICULUM.find((t) => t.id === topicId) || CFA_CURRICULUM[0];
+    // Map and validate request strictly with Zod
+    const normalizedDifficulty = typeof rawBody.difficulty === "string"
+      ? rawBody.difficulty.toLowerCase().replace(/\s+/g, "-")
+      : "standard";
+
+    const requestParsed = GenerationRequestSchema.safeParse({
+      topicId: rawBody.topicId,
+      mode: rawBody.mode || "standalone",
+      difficulty: ["standard", "high-trap", "institutional"].includes(normalizedDifficulty)
+        ? normalizedDifficulty
+        : "standard",
+      questionCount: Number(rawBody.questionCount) || 5,
+      focus: rawBody.customPrompt || rawBody.focus,
+      excludeItemIds: rawBody.excludeItemIds,
+    });
+
+    if (!requestParsed.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid generation request parameters",
+          issues: requestParsed.error.issues.map((i) => ({
+            path: i.path.join("."),
+            message: i.message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+
+    const { topicId, difficulty, questionCount, focus } = requestParsed.data;
+    const topic = CFA_CURRICULUM.find((t) => t.id === topicId);
+    if (!topic) {
+      return NextResponse.json({ error: `Topic ${topicId} not found` }, { status: 404 });
+    }
+
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-
     let vignette: VignetteSet | null = null;
+    let isAiGenerated = false;
 
     if (apiKey) {
-      vignette = await generateWithGemini(apiKey, topic, difficulty, customPrompt, questionCount);
+      vignette = await generateWithGemini(apiKey, topic, difficulty, focus || "", questionCount);
+      if (vignette) {
+        isAiGenerated = true;
+      }
     }
 
     if (!vignette) {
-      vignette = generateProceduralVignette(topic.id, difficulty, customPrompt, questionCount);
+      const diffLabel = difficulty === "high-trap" ? "High Trap" : difficulty === "institutional" ? "Institutional" : "Standard";
+      vignette = generateProceduralVignette(topic.id, diffLabel, focus || "", questionCount);
     }
 
-    return NextResponse.json({ vignette, success: true });
+    const provenance = isAiGenerated
+      ? createAIDraftProvenance({ sourceIds: [topic.id], model: "gemini-2.5-flash" })
+      : createFallbackProvenance({ sourceIds: [topic.id] });
+
+    const items = legacyVignetteToPracticeItems(vignette, provenance);
+
+    return NextResponse.json({
+      success: true,
+      vignette,
+      items,
+      provenance,
+      warnings: isAiGenerated ? [] : ["Procedural fallback used. AI API key not configured or generation failed."],
+    });
   } catch (error) {
     console.error("AI Generation Error:", error);
     return NextResponse.json({ error: "Failed to generate dynamic vignette" }, { status: 500 });

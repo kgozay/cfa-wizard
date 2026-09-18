@@ -19,17 +19,18 @@ export function legacyVignetteToPracticeItems(
   vignette: VignetteSet,
   overrideProvenance?: Partial<ContentProvenance>
 ): PracticeItem[] {
-  const isCustom = vignette.id.includes("custom") || vignette.id.includes("ai-vignette");
+  const setId = vignette?.id || "vignette-set";
+  const isCustom = setId.includes("custom") || setId.includes("ai-vignette") || setId.includes("req-");
   const defaultProvenance: ContentProvenance = {
     origin: isCustom ? "procedural-fallback" : "authored",
     status: isCustom ? "draft" : "approved",
-    sourceIds: [vignette.id],
+    sourceIds: [setId],
     createdAt: new Date().toISOString(),
     ...overrideProvenance,
   };
 
-  return vignette.questions.map((q) => {
-    const canonicalId = makeAuthoredSourceId(vignette.id, q.id);
+  return (vignette?.questions || []).map((q) => {
+    const canonicalId = makeAuthoredSourceId(setId, q.id);
 
     return {
       id: canonicalId,

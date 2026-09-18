@@ -511,7 +511,7 @@ export const VignetteEngine: React.FC = () => {
                         type="button"
                         onClick={() => handleSelectOption(q.id, opt)}
                         disabled={hasSubmitted}
-                        className={`w-full text-left p-3 rounded-lg border transition-all flex items-start gap-3 select-none ${
+                        className={`w-full text-left p-3 rounded-lg border transition-all flex items-start gap-3 select-none min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
                           isSelected
                             ? "bg-brand-lime/10 border-brand-lime text-white shadow-[0_0_12px_rgba(216,255,62,0.15)]"
                             : "bg-[#121215] border-[#222226] text-zinc-300 hover:border-[#3F3F46] hover:bg-[#16161A]"

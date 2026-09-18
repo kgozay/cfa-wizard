@@ -66,7 +66,12 @@ export const LeitnerTrapDeckModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="leitner-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans"
+    >
       <div className="bg-[#0B0B0E] border border-[#27272A] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         
         {/* Header */}
@@ -76,7 +81,7 @@ export const LeitnerTrapDeckModal: React.FC = () => {
               <Layers className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-mono font-bold text-white tracking-wide uppercase">
+              <h2 id="leitner-modal-title" className="text-sm font-mono font-bold text-white tracking-wide uppercase">
                 SPACED REPETITION TRAP VAULT (LEITNER SYSTEM)
               </h2>
               <p className="text-[11px] font-mono text-editorial-dim">
@@ -87,7 +92,8 @@ export const LeitnerTrapDeckModal: React.FC = () => {
 
           <button
             onClick={() => setLeitnerDeckOpen(false)}
-            className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A]"
+            aria-label="Close Leitner deck"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A]"
           >
             <X className="w-4 h-4" />
           </button>

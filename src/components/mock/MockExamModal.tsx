@@ -191,7 +191,12 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   // Render Setup Screen if no session active
   if (!session) {
     return (
-      <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mock-exam-title"
+        className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+      >
         <div className="bg-[#0D0D11] border border-[#27272A] rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-[0_25px_60px_rgba(0,0,0,0.9)] animate-in fade-in zoom-in-95 duration-150">
           <div className="flex items-center justify-between pb-4 border-b border-[#1F1F23]">
             <div className="flex items-center gap-2.5">
@@ -199,7 +204,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
                 CFA
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white tracking-wide font-sans">
+                <h2 id="mock-exam-title" className="text-lg font-bold text-white tracking-wide font-sans">
                   Level 1 Mock Exam Simulation Engine
                 </h2>
                 <p className="text-xs text-zinc-400 font-mono">
@@ -209,7 +214,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1A1A20]"
+              aria-label="Close mock exam dialog"
+              className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1A1A20] min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               <X className="w-5 h-5" />
             </button>
@@ -332,7 +338,12 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   const currentChoice = session.userAnswers[currentQuestion.id];
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#09090B] text-white flex flex-col font-sans overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={session.title}
+      className="fixed inset-0 z-50 bg-[#09090B] text-white flex flex-col font-sans overflow-hidden"
+    >
       
       {/* Top Standardized Exam Navbar */}
       <header className="h-14 px-4 sm:px-6 bg-[#0E0E12] border-b border-[#1F1F23] flex items-center justify-between select-none shrink-0">
@@ -445,7 +456,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
                   <button
                     key={opt}
                     onClick={() => handleSelectAnswer(currentQuestion.id, opt)}
-                    className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 select-none ${
+                    className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 select-none min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
                       isSelected
                         ? "bg-brand-lime/10 border-brand-lime text-white shadow-[0_0_15px_rgba(216,255,62,0.15)]"
                         : "bg-[#121215] border-[#222226] text-zinc-300 hover:border-[#3F3F46] hover:bg-[#16161A]"

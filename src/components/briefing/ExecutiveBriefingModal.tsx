@@ -38,7 +38,12 @@ export const ExecutiveBriefingModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="executive-briefing-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200"
+    >
       <div className="w-full max-w-4xl bg-[#0B0B0E] border border-[#27272A] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[90vh]">
         
         {/* Top Header */}
@@ -48,7 +53,7 @@ export const ExecutiveBriefingModal: React.FC = () => {
               TRACK {topic.id}
             </span>
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+              <h2 id="executive-briefing-title" className="text-lg sm:text-xl font-bold text-white tracking-tight">
                 {topic.name}
               </h2>
               <span className="text-xs font-mono text-editorial-dim">
@@ -58,7 +63,8 @@ export const ExecutiveBriefingModal: React.FC = () => {
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
+            aria-label="Close executive briefing"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

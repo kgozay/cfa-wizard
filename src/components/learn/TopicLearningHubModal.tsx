@@ -78,7 +78,12 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="learn-hub-title"
+      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
+    >
       <div className="bg-[#0A0A0D] border border-[#27272A] rounded-2xl max-w-6xl w-full h-[92vh] flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden font-sans">
         
         {/* Top Header Bar */}
@@ -89,7 +94,7 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                <span id="learn-hub-title" className="font-mono text-xs font-bold text-white uppercase tracking-wider">
                   CFA® INSTITUTIONAL LEARNING HUB
                 </span>
                 <span className="px-1.5 py-0.2 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime font-mono text-[10px] font-bold">
@@ -116,7 +121,8 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1A1A20] transition-colors"
+              aria-label="Close learning hub"
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-[#1A1A20] transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

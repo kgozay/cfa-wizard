@@ -34,7 +34,12 @@ export const FormulaSheetModal: React.FC = () => {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="formula-sheet-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200"
+    >
       <div className="w-full max-w-4xl bg-[#0B0B0E] border border-[#27272A] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[90vh]">
         
         {/* Header */}
@@ -44,7 +49,7 @@ export const FormulaSheetModal: React.FC = () => {
               <BookOpen className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
+              <h3 id="formula-sheet-title" className="text-base sm:text-lg font-bold text-white tracking-tight">
                 HIGH-YIELD FORMULA & KEYSTROKE MATRIX
               </h3>
               <span className="font-mono text-xs text-editorial-dim">
@@ -58,7 +63,8 @@ export const FormulaSheetModal: React.FC = () => {
               if (soundEnabled) sound.playKeyClick();
               setFormulaSheetOpen(false);
             }}
-            className="p-1.5 rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
+            aria-label="Close formula matrix"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

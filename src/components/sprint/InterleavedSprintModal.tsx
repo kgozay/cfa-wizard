@@ -219,7 +219,12 @@ export const InterleavedSprintModal: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sprint-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans"
+    >
       <div className="bg-[#0B0B0E] border border-[#27272A] rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         
         {/* Sprint Header */}
@@ -229,7 +234,7 @@ export const InterleavedSprintModal: React.FC = () => {
               <Zap className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-mono font-bold text-white tracking-wide uppercase">
+              <h2 id="sprint-modal-title" className="text-sm font-mono font-bold text-white tracking-wide uppercase">
                 CROSS-TRACK INTERLEAVED SPRINT // {sprintLength} QUESTIONS
               </h2>
               <p className="text-[11px] font-mono text-editorial-dim">
@@ -261,7 +266,8 @@ export const InterleavedSprintModal: React.FC = () => {
             )}
             <button
               onClick={() => setSprintModalOpen(false)}
-              className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A]"
+              aria-label="Close sprint modal"
+              className="p-2 rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A] min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               <X className="w-4 h-4" />
             </button>
@@ -309,7 +315,7 @@ export const InterleavedSprintModal: React.FC = () => {
                   <button
                     key={opt}
                     onClick={() => handleAdvance(opt)}
-                    className="w-full text-left p-3.5 rounded-lg border border-[#222226] bg-[#121215] hover:bg-[#18181C] hover:border-brand-lime/50 text-zinc-200 transition-all flex items-start gap-3 active:scale-[0.99]"
+                    className="w-full text-left p-3.5 rounded-lg border border-[#222226] bg-[#121215] hover:bg-[#18181C] hover:border-brand-lime/50 text-zinc-200 transition-all flex items-start gap-3 active:scale-[0.99] min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
                   >
                     <span className="w-6 h-6 rounded bg-[#1A1A20] border border-[#2A2A30] flex items-center justify-center font-bold text-xs shrink-0 text-brand-lime">
                       {opt}

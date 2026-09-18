@@ -60,7 +60,12 @@ export const KeyboardShortcutsModal: React.FC = () => {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="shortcuts-hud-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans"
+    >
       <div className="bg-[#0B0B0E] border border-[#27272A] rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
         
         {/* Header */}
@@ -70,7 +75,7 @@ export const KeyboardShortcutsModal: React.FC = () => {
               <Keyboard className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-mono font-bold text-white tracking-wide uppercase flex items-center gap-2">
+              <h2 id="shortcuts-hud-title" className="text-sm font-mono font-bold text-white tracking-wide uppercase flex items-center gap-2">
                 <span>KEYBOARD ERGONOMICS HUD</span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-lime/10 text-brand-lime border border-brand-lime/30">
                   SPEED KEYS
@@ -84,7 +89,8 @@ export const KeyboardShortcutsModal: React.FC = () => {
 
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A] transition-colors"
+            aria-label="Close shortcuts HUD"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

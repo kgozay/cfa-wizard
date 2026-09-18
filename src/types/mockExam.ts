@@ -8,6 +8,8 @@ export type MockExamType =
 
 export interface MockQuestionItem {
   id: number;
+  sourceItemId?: string;
+  sessionItemId?: string;
   globalIndex: number; // 1-based index in mock (1 to 45/90/180)
   topicId: string;
   topicName: string;

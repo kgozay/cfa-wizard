@@ -59,6 +59,7 @@ export interface DistractorAutopsyMap {
   C: string;
 }
 
+/** @deprecated Use canonical PracticeItem from @/types/practice instead */
 export interface VignetteQuestion {
   id: number;
   stem: string;
@@ -76,6 +77,7 @@ export interface VignetteQuestion {
   distractorAutopsy: DistractorAutopsyMap;
 }
 
+/** @deprecated Use PracticeSession or CasePractice from @/types/practice instead */
 export interface VignetteSet {
   id: string;
   topicId: string;
@@ -86,6 +88,7 @@ export interface VignetteSet {
   questions: VignetteQuestion[];
 }
 
+/** @deprecated Use ItemAttempt from @/types/practice instead */
 export interface QuestionSubmission {
   questionId: number;
   selectedOption: OptionKey;
@@ -95,6 +98,7 @@ export interface QuestionSubmission {
   timeSpentSeconds?: number;
 }
 
+/** @deprecated Use PracticeAttempt from @/types/practice instead */
 export interface VignetteSessionResult {
   vignetteId: string;
   topicId: string;

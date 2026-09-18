@@ -2,6 +2,8 @@ import { CFA_VIGNETTES } from "./vignettes";
 import { CFA_CURRICULUM } from "./curriculum";
 import { MockExamSession, MockExamType, MockQuestionItem, MockTopicScore } from "@/types/mockExam";
 import { OptionKey, TrapLogEntry } from "@/types/cfa";
+import { createOptionPermutation } from "@/lib/practice/presentItem";
+import { makeAuthoredSourceId, makeSessionItemId } from "@/lib/practice/ids";
 
 // Fisher-Yates in-place shuffle helper
 export function shuffleArray<T>(array: T[]): T[] {
@@ -129,23 +131,44 @@ export function generateMockExamSession(
 
   // Shuffle all questions so topics are interleaved realistically
   const randomizedMockList = shuffleArray(selectedRawQuestions);
+  const mockSessionId = `mock-${examType}-${Date.now()}`;
 
-  const mockQuestions: MockQuestionItem[] = randomizedMockList.map((item, index) => ({
-    id: item.question.id * 1000 + index, // unique ID in this mock
-    globalIndex: index + 1,
-    topicId: item.topicId,
-    topicName: item.topicName,
-    subReading: item.subReading,
-    losCode: item.question.losCode,
-    stem: item.question.stem,
-    options: item.question.options,
-    correctOption: item.question.correctOption,
-    algebraicSolution: item.question.algebraicSolution,
-    calculatorKeystrokes: item.question.calculatorKeystrokes,
-    trapCategory: item.question.trapCategory,
-    errorModeDefault: item.question.errorModeDefault,
-    distractorAutopsy: item.question.distractorAutopsy,
-  }));
+  const mockQuestions: MockQuestionItem[] = randomizedMockList.map((item, index) => {
+    const perm = createOptionPermutation();
+    const sourceItemId = makeAuthoredSourceId(item.topicId, item.question.id);
+    const sessionItemId = makeSessionItemId(mockSessionId, index + 1, sourceItemId);
+
+    const displayedOptions = {
+      A: item.question.options[perm.displayedToAuthoring.A],
+      B: item.question.options[perm.displayedToAuthoring.B],
+      C: item.question.options[perm.displayedToAuthoring.C],
+    };
+    const displayedCorrectOption = perm.authoringToDisplayed[item.question.correctOption];
+    const displayedAutopsy = {
+      A: item.question.distractorAutopsy[perm.displayedToAuthoring.A] || "",
+      B: item.question.distractorAutopsy[perm.displayedToAuthoring.B] || "",
+      C: item.question.distractorAutopsy[perm.displayedToAuthoring.C] || "",
+    };
+
+    return {
+      id: item.question.id * 1000 + index, // unique numeric ID in this mock for legacy views
+      sourceItemId,
+      sessionItemId,
+      globalIndex: index + 1,
+      topicId: item.topicId,
+      topicName: item.topicName,
+      subReading: item.subReading,
+      losCode: item.question.losCode,
+      stem: item.question.stem,
+      options: displayedOptions,
+      correctOption: displayedCorrectOption,
+      algebraicSolution: item.question.algebraicSolution,
+      calculatorKeystrokes: item.question.calculatorKeystrokes,
+      trapCategory: item.question.trapCategory,
+      errorModeDefault: item.question.errorModeDefault,
+      distractorAutopsy: displayedAutopsy,
+    };
+  });
 
   const initialTopicScores: MockTopicScore[] = CFA_CURRICULUM.map((topic) => ({
     topicId: topic.id,

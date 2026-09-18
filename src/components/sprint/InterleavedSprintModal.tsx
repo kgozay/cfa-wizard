@@ -4,40 +4,67 @@ import React, { useState, useEffect } from "react";
 import { X, Zap, Clock, CheckCircle, XCircle, ArrowRight, RotateCcw, Award, ChevronDown, ChevronUp, Cpu, Sparkles } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { CFA_VIGNETTES } from "@/data/vignettes";
-import { OptionKey, VignetteQuestion, TrapLogEntry } from "@/types/cfa";
+import { OptionKey, VignetteQuestion, TrapLogEntry, QuestionSubmission } from "@/types/cfa";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
+import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
+import { createPracticeSession } from "@/lib/practice/createSession";
+
+export interface SprintQuestionItem {
+  uniqueKey: string;
+  topicId: string;
+  topicName: string;
+  question: VignetteQuestion;
+}
 
 export const InterleavedSprintModal: React.FC = () => {
   const { isSprintModalOpen, setSprintModalOpen, soundEnabled, recordVignetteSubmission } = useCFAStore();
 
   const [sprintLength, setSprintLength] = useState<5 | 10 | 15>(10);
-  const [sprintQuestions, setSprintQuestions] = useState<{ question: VignetteQuestion; topicId: string; topicName: string }[]>([]);
+  const [sprintQuestions, setSprintQuestions] = useState<SprintQuestionItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, OptionKey>>({});
-  const [questionTimes, setQuestionTimes] = useState<Record<number, number>>({});
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, OptionKey>>({});
+  const [questionTimes, setQuestionTimes] = useState<Record<string, number>>({});
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(90);
-  const [expandedAutopsyId, setExpandedAutopsyId] = useState<number | null>(null);
+  const [expandedAutopsyId, setExpandedAutopsyId] = useState<string | null>(null);
 
   // Generate randomized interleaved set
   const initSprint = (length: 5 | 10 | 15 = sprintLength) => {
-    const pool: { question: VignetteQuestion; topicId: string; topicName: string }[] = [];
-    CFA_VIGNETTES.forEach((v) => {
-      v.questions.forEach((q) => {
-        pool.push({
-          question: q,
-          topicId: v.topicId,
-          topicName: v.topicName,
-        });
-      });
+    const allPracticeItems = CFA_VIGNETTES.flatMap((v) => legacyVignetteToPracticeItems(v));
+    const session = createPracticeSession({
+      mode: "sprint",
+      items: allPracticeItems,
+      requestedCount: length,
+      shuffleQuestions: true,
     });
 
-    // Shuffle pool
-    const shuffled = [...pool].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, length);
+    const items: SprintQuestionItem[] = session.presentedItems.map((pi, index) => {
+      const sourceItem = allPracticeItems.find((item) => item.id === pi.sourceItemId) || allPracticeItems[index];
+      return {
+        uniqueKey: pi.sessionItemId,
+        topicId: sourceItem.topicId,
+        topicName: sourceItem.topicName,
+        question: {
+          id: index + 1,
+          stem: pi.stem,
+          options: pi.options,
+          correctOption: pi.correctOption,
+          algebraicSolution: sourceItem.solution,
+          calculatorKeystrokes: sourceItem.calculatorKeystrokes || "",
+          trapCategory: sourceItem.trapCategory,
+          errorModeDefault: sourceItem.errorModeDefault,
+          losCode: sourceItem.losCode,
+          distractorAutopsy: {
+            A: pi.distractorFeedback.A,
+            B: pi.distractorFeedback.B,
+            C: pi.distractorFeedback.C,
+          },
+        },
+      };
+    });
 
-    setSprintQuestions(selected);
+    setSprintQuestions(items);
     setCurrentIndex(0);
     setSelectedAnswers({});
     setQuestionTimes({});
@@ -97,14 +124,18 @@ export const InterleavedSprintModal: React.FC = () => {
 
   const handleAdvance = (chosenOption: OptionKey | null) => {
     if (soundEnabled) sound.playKeyClick();
-    const qId = q.id;
+    if (!currentItem) return;
+
+    const qKey = currentItem.uniqueKey;
+    const timeSpent = Math.max(1, 90 - secondsRemaining);
 
     const updatedAnswers = { ...selectedAnswers };
     if (chosenOption) {
-      updatedAnswers[qId] = chosenOption;
+      updatedAnswers[qKey] = chosenOption;
       setSelectedAnswers(updatedAnswers);
     }
-    setQuestionTimes((prev) => ({ ...prev, [qId]: 90 - secondsRemaining }));
+    const updatedTimes = { ...questionTimes, [qKey]: timeSpent };
+    setQuestionTimes(updatedTimes);
 
     if (currentIndex < sprintQuestions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
@@ -113,13 +144,18 @@ export const InterleavedSprintModal: React.FC = () => {
       setIsFinished(true);
       if (soundEnabled) sound.playSuccessChime();
 
-      // Log missed sprint questions into trap logs
+      let score = 0;
       const trapEntries: TrapLogEntry[] = [];
+      const submissions: QuestionSubmission[] = [];
+
       sprintQuestions.forEach((item) => {
-        const userChoice = updatedAnswers[item.question.id];
-        if (userChoice && userChoice !== item.question.correctOption) {
+        const userChoice = updatedAnswers[item.uniqueKey];
+        const isCorrect = userChoice === item.question.correctOption;
+        if (isCorrect) {
+          score++;
+        } else if (userChoice) {
           trapEntries.push({
-            id: `sprint-trap-${item.question.id}-${Date.now()}`,
+            id: `sprint-trap-${item.uniqueKey}-${Date.now()}`,
             timestamp: new Date().toISOString(),
             topicId: item.topicId,
             topicName: item.topicName,
@@ -127,6 +163,7 @@ export const InterleavedSprintModal: React.FC = () => {
             questionStem: item.question.stem,
             options: item.question.options,
             userChoice,
+            selectedOption: userChoice,
             correctOption: item.question.correctOption,
             trapCategory: item.question.trapCategory,
             trapName: item.question.trapCategory,
@@ -135,24 +172,32 @@ export const InterleavedSprintModal: React.FC = () => {
             calculatorKeystrokes: item.question.calculatorKeystrokes,
           });
         }
+
+        submissions.push({
+          questionId: item.question.id,
+          selectedOption: userChoice || "A",
+          isCorrect,
+          trapTriggered: isCorrect ? undefined : item.question.trapCategory,
+          errorModeLogged: isCorrect ? undefined : item.question.errorModeDefault,
+          timeSpentSeconds: updatedTimes[item.uniqueKey] || 0,
+        });
       });
 
-      if (trapEntries.length > 0) {
-        recordVignetteSubmission(
-          {
-            vignetteId: `sprint-${Date.now()}`,
-            topicId: "00",
-            score: sprintQuestions.length - trapEntries.length,
-            total: sprintQuestions.length,
-            submittedAt: new Date().toISOString(),
-            userAnswers: updatedAnswers,
-            submissions: [],
-            trapsTriggered: trapEntries.map((t) => t.trapName),
-            totalTimeSeconds: Object.values(questionTimes).reduce((a, b) => a + b, 0),
-          },
-          trapEntries
-        );
-      }
+      // Always save sprint attempts (including perfect 100% scores)
+      recordVignetteSubmission(
+        {
+          vignetteId: `sprint-${Date.now()}`,
+          topicId: "00",
+          score,
+          total: sprintQuestions.length,
+          submittedAt: new Date().toISOString(),
+          userAnswers: {},
+          submissions,
+          trapsTriggered: trapEntries.map((t) => t.trapName),
+          totalTimeSeconds: Object.values(updatedTimes).reduce((a, b) => a + b, 0),
+        },
+        trapEntries
+      );
     }
   };
 
@@ -162,7 +207,7 @@ export const InterleavedSprintModal: React.FC = () => {
 
   if (isFinished) {
     sprintQuestions.forEach((item) => {
-      const isCorrect = selectedAnswers[item.question.id] === item.question.correctOption;
+      const isCorrect = selectedAnswers[item.uniqueKey] === item.question.correctOption;
       if (isCorrect) correctCount += 1;
 
       if (!topicStats[item.topicId]) {
@@ -333,13 +378,13 @@ export const InterleavedSprintModal: React.FC = () => {
                 </span>
                 <div className="space-y-2">
                   {sprintQuestions.map((item, idx) => {
-                    const userPick = selectedAnswers[item.question.id];
+                    const userPick = selectedAnswers[item.uniqueKey];
                     const isCorrect = userPick === item.question.correctOption;
-                    const isExpanded = expandedAutopsyId === item.question.id;
+                    const isExpanded = expandedAutopsyId === item.uniqueKey;
 
                     return (
                       <div
-                        key={item.question.id}
+                        key={item.uniqueKey}
                         className={`rounded-lg border transition-all ${
                           isCorrect
                             ? "bg-[#0E0E12] border-[#1F1F23]"
@@ -347,7 +392,7 @@ export const InterleavedSprintModal: React.FC = () => {
                         }`}
                       >
                         <button
-                          onClick={() => setExpandedAutopsyId(isExpanded ? null : item.question.id)}
+                          onClick={() => setExpandedAutopsyId(isExpanded ? null : item.uniqueKey)}
                           className="w-full p-3 flex items-center justify-between text-left"
                         >
                           <div className="flex items-center gap-2">

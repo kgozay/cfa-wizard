@@ -28,6 +28,8 @@ import { CFA_VIGNETTES } from "@/data/vignettes";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { useCFAStore } from "@/store/useCFAStore";
 import { DiagnosticAutopsyView } from "@/components/diagnostic/DiagnosticAutopsyView";
+import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
+import { createPracticeSession } from "@/lib/practice/createSession";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
 
@@ -72,25 +74,49 @@ export const VignetteEngine: React.FC = () => {
   // State-based randomized question selection
   const [randomizedQuestions, setRandomizedQuestions] = useState<VignetteQuestion[]>([]);
 
-  // Shuffle and sample questions whenever vignette or drill count changes
+  // Shuffle, permute options, and sample questions whenever vignette or drill count changes
   useEffect(() => {
-    if (vignette.id.startsWith("ai-vignette-")) {
-      setRandomizedQuestions(vignette.questions);
-      return;
-    }
-
-    const pool = [...vignette.questions];
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    setRandomizedQuestions(pool.slice(0, Math.min(drillQuestionCount, pool.length)));
+    // 1. Reset state unconditionally
     setSelectedAnswers({});
     setHasSubmitted(false);
     setElapsedSeconds(0);
+
+    // 2. Convert to canonical items
+    const items = legacyVignetteToPracticeItems(vignette);
+
+    // 3. Create session with deterministic option permutation and requested question count
+    const session = createPracticeSession({
+      mode: "practice",
+      items,
+      requestedCount: drillQuestionCount,
+      shuffleQuestions: true,
+    });
+
+    // 4. Map presented items into question format for display
+    const mappedQuestions: VignetteQuestion[] = session.presentedItems.map((pi, idx) => {
+      const sourceItem = items.find((item) => item.id === pi.sourceItemId) || items[idx];
+      return {
+        id: idx + 1,
+        stem: pi.stem,
+        options: pi.options,
+        correctOption: pi.correctOption,
+        algebraicSolution: sourceItem.solution,
+        calculatorKeystrokes: sourceItem.calculatorKeystrokes || "",
+        trapCategory: sourceItem.trapCategory,
+        errorModeDefault: sourceItem.errorModeDefault,
+        losCode: sourceItem.losCode,
+        distractorAutopsy: {
+          A: pi.distractorFeedback.A,
+          B: pi.distractorFeedback.B,
+          C: pi.distractorFeedback.C,
+        },
+      };
+    });
+
+    setRandomizedQuestions(mappedQuestions);
   }, [vignette.id, vignette.questions, drillQuestionCount]);
 
-  const activeQuestions = randomizedQuestions.length > 0 ? randomizedQuestions : vignette.questions.slice(0, drillQuestionCount);
+  const activeQuestions = randomizedQuestions;
 
   const isFormComplete = useMemo(
     () => activeQuestions.length > 0 && activeQuestions.every((q) => selectedAnswers[q.id]),

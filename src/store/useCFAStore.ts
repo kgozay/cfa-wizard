@@ -9,8 +9,11 @@ import {
   VignetteSet,
   InterleavedSprintSession
 } from "@/types/cfa";
+import { PracticeAttempt, PracticeSession } from "@/types/practice";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { CFA_CURRICULUM } from "@/data/curriculum";
+import { legacyResultToPracticeAttempt } from "@/lib/practice/adapters";
+import { migrateV3ToV4 } from "./migrations";
 
 interface CFAState {
   // Curriculum tracking
@@ -25,6 +28,9 @@ interface CFAState {
   
   // Submissions & Error Logging
   vignetteResults: Record<string, VignetteSessionResult>;
+  practiceAttempts: PracticeAttempt[];
+  practiceSessions: Record<string, PracticeSession>;
+  activePracticeSessionId: string | null;
   trapLogs: TrapLogEntry[];
   customVignettes: VignetteSet[];
   leitnerCards: LeitnerCard[];
@@ -55,6 +61,8 @@ interface CFAState {
   setPacingTimerEnabled: (enabled: boolean) => void;
   togglePacingTimer: () => void;
   recordVignetteSubmission: (result: VignetteSessionResult, trapEntries?: TrapLogEntry[]) => void;
+  recordPracticeAttempt: (attempt: PracticeAttempt, trapEntries?: TrapLogEntry[]) => void;
+  getLatestAttemptForTopic: (topicId: string) => PracticeAttempt | undefined;
   logErrorMode: (trapEntryId: string, errorMode: ErrorMode) => void;
   updateLeitnerCard: (cardId: string, isCorrect: boolean) => void;
   deleteLeitnerCard: (cardId: string) => void;
@@ -95,6 +103,9 @@ export const useCFAStore = create<CFAState>()(
       isPacingTimerEnabled: true,
 
       vignetteResults: {},
+      practiceAttempts: [],
+      practiceSessions: {},
+      activePracticeSessionId: null,
       trapLogs: [],
       customVignettes: [],
       leitnerCards: [],
@@ -166,6 +177,11 @@ export const useCFAStore = create<CFAState>()(
         const currentResults = { ...get().vignetteResults, [result.vignetteId]: result };
         const currentTraps = [...(trapEntries || []), ...get().trapLogs];
 
+        // Create and append canonical PracticeAttempt
+        const topicName = CFA_CURRICULUM.find((t) => t.id === result.topicId)?.name || "Topic " + result.topicId;
+        const newAttempt = legacyResultToPracticeAttempt(result, topicName);
+        const currentAttempts = [...get().practiceAttempts, newAttempt];
+
         // Also add new Leitner flashcards for missed questions with authentic options & keystrokes
         const currentLeitner = [...get().leitnerCards];
         if (trapEntries && trapEntries.length > 0) {
@@ -202,10 +218,33 @@ export const useCFAStore = create<CFAState>()(
 
         set({
           vignetteResults: currentResults,
+          practiceAttempts: currentAttempts,
           trapLogs: currentTraps,
           leitnerCards: currentLeitner,
           completedTopicIds: updatedCompleted,
         });
+      },
+
+      recordPracticeAttempt: (attempt: PracticeAttempt, trapEntries?: TrapLogEntry[]) => {
+        const currentAttempts = [...get().practiceAttempts, attempt];
+        const currentTraps = [...(trapEntries || []), ...get().trapLogs];
+
+        const primaryTopicId = attempt.topicIds[0] || "01";
+        const updatedCompleted = [...get().completedTopicIds];
+        if (attempt.score >= Math.ceil(attempt.total * 0.7) && !updatedCompleted.includes(primaryTopicId)) {
+          updatedCompleted.push(primaryTopicId);
+        }
+
+        set({
+          practiceAttempts: currentAttempts,
+          trapLogs: currentTraps,
+          completedTopicIds: updatedCompleted,
+        });
+      },
+
+      getLatestAttemptForTopic: (topicId: string) => {
+        const attempts = get().practiceAttempts.filter((a) => a.topicIds.includes(topicId));
+        return attempts.length > 0 ? attempts[attempts.length - 1] : undefined;
       },
 
       logErrorMode: (trapEntryId: string, errorMode: ErrorMode) => {
@@ -349,6 +388,9 @@ export const useCFAStore = create<CFAState>()(
           activeTopicId: "01",
           activeVignetteId: null,
           vignetteResults: {},
+          practiceAttempts: [],
+          practiceSessions: {},
+          activePracticeSessionId: null,
           trapLogs: [],
           customVignettes: [],
           leitnerCards: [],
@@ -357,11 +399,16 @@ export const useCFAStore = create<CFAState>()(
     }),
     {
       name: "cfa-wizard-storage-v3",
+      version: 4,
       storage: createJSONStorage(() => localStorage),
+      migrate: (persistedState: unknown, version: number) => migrateV3ToV4(persistedState, version),
       partialize: (state) => ({
         completedTopicIds: state.completedTopicIds,
         inProgressTopicId: state.inProgressTopicId,
         vignetteResults: state.vignetteResults,
+        practiceAttempts: state.practiceAttempts,
+        practiceSessions: state.practiceSessions,
+        activePracticeSessionId: state.activePracticeSessionId,
         trapLogs: state.trapLogs,
         customVignettes: state.customVignettes,
         leitnerCards: state.leitnerCards,

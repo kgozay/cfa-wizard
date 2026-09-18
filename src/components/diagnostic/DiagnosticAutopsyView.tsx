@@ -64,8 +64,13 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
   const handleSelectErrorMode = (questionId: number, errorMode: ErrorMode) => {
     if (soundEnabled) sound.playKeyClick();
     setTaggedErrors((prev) => ({ ...prev, [questionId]: errorMode }));
-    // Find matching trapLog
-    const log = trapLogs.find((l) => l.questionStem === vignette.questions.find((q) => q.id === questionId)?.stem);
+    // Find matching trapLog targeting this specific topic and attempt
+    const targetQ = vignette.questions.find((q) => q.id === questionId);
+    const log = trapLogs.find(
+      (l) => l.topicId === vignette.topicId && l.questionId === questionId
+    ) || trapLogs.find(
+      (l) => targetQ && l.questionStem === targetQ.stem
+    );
     if (log) {
       logErrorMode(log.id, errorMode);
     }

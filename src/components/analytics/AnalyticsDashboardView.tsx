@@ -31,30 +31,44 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
   onOpenLearnHub,
 }) => {
   const {
-    vignetteResults,
+    practiceAttempts,
     trapLogs,
     leitnerCards,
-    completedTopicIds,
     soundEnabled,
   } = useCFAStore();
 
-  const resultsList = useMemo(() => Object.values(vignetteResults), [vignetteResults]);
+  const eligibleAttempts = useMemo(
+    () => practiceAttempts.filter((attempt) => !attempt.containsDraftContent),
+    [practiceAttempts]
+  );
+  const eligibleItemAttempts = useMemo(
+    () => eligibleAttempts.flatMap((attempt) => attempt.itemAttempts),
+    [eligibleAttempts]
+  );
+  const eligibleAttemptIds = useMemo(
+    () => new Set(eligibleAttempts.map((attempt) => attempt.id)),
+    [eligibleAttempts]
+  );
+  const eligibleTrapLogs = useMemo(
+    () => trapLogs.filter((trap) => !trap.attemptId || eligibleAttemptIds.has(trap.attemptId)),
+    [eligibleAttemptIds, trapLogs]
+  );
 
   // Total telemetry
   const totalQuestionsSolved = useMemo(
-    () => resultsList.reduce((acc, r) => acc + (r.total || 5), 0),
-    [resultsList]
+    () => eligibleItemAttempts.length,
+    [eligibleItemAttempts]
   );
   const totalCorrect = useMemo(
-    () => resultsList.reduce((acc, r) => acc + r.score, 0),
-    [resultsList]
+    () => eligibleItemAttempts.filter((item) => item.isCorrect).length,
+    [eligibleItemAttempts]
   );
   const overallAccuracy =
     totalQuestionsSolved > 0 ? Math.round((totalCorrect / totalQuestionsSolved) * 100) : 0;
 
-  const trapImmunityPct =
+  const avoidedMistakePct =
     totalQuestionsSolved > 0
-      ? Math.max(0, 100 - Math.round((trapLogs.length / totalQuestionsSolved) * 100))
+      ? Math.max(0, 100 - Math.round((eligibleItemAttempts.filter((item) => !item.isCorrect).length / totalQuestionsSolved) * 100))
       : 100;
 
   // Due flashcards count
@@ -67,15 +81,15 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
   // Topic-level stats
   const topicAnalytics = useMemo(() => {
     return CFA_CURRICULUM.map((topic) => {
-      const topicSessions = resultsList.filter((r) => r.topicId === topic.id);
-      const totalQ = topicSessions.reduce((acc, r) => acc + (r.total || 5), 0);
-      const correctQ = topicSessions.reduce((acc, r) => acc + r.score, 0);
+      const topicItems = eligibleItemAttempts.filter((item) => item.topicId === topic.id);
+      const totalQ = topicItems.length;
+      const correctQ = topicItems.filter((item) => item.isCorrect).length;
       const accuracy = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0;
-      const topicTraps = trapLogs.filter((t) => t.topicId === topic.id).length;
+      const topicTraps = eligibleTrapLogs.filter((t) => t.topicId === topic.id).length;
 
       let masteryLevel: "MASTERED" | "COMPETENT" | "NEEDS_WORK" | "CRITICAL" | "UNTESTED" =
         "UNTESTED";
-      if (totalQ > 0) {
+      if (totalQ >= 5) {
         if (accuracy >= 80) masteryLevel = "MASTERED";
         else if (accuracy >= 70) masteryLevel = "COMPETENT";
         else if (accuracy >= 55) masteryLevel = "NEEDS_WORK";
@@ -83,7 +97,8 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
       }
 
       // Weight multiplier for overall readiness (approx mid-weight)
-      const weightParsed = parseFloat(topic.weight.replace(/[^0-9.]/g, "")) || 10;
+      const weightValues = topic.weight.match(/\d+(?:\.\d+)?/g)?.map(Number) || [10];
+      const weightParsed = weightValues.reduce((sum, value) => sum + value, 0) / weightValues.length;
 
       return {
         topic,
@@ -95,7 +110,10 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
         weightNum: weightParsed,
       };
     });
-  }, [resultsList, trapLogs]);
+  }, [eligibleItemAttempts, eligibleTrapLogs]);
+
+  const testedTopicCount = topicAnalytics.filter((topic) => topic.totalQ >= 5).length;
+  const hasReadinessEvidence = totalQuestionsSolved >= 20 && testedTopicCount >= 3;
 
   // Overall Weighted CFA Readiness Score (0-100)
   const weightedReadinessScore = useMemo(() => {
@@ -103,7 +121,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
     let weightedAccSum = 0;
 
     topicAnalytics.forEach((t) => {
-      if (t.totalQ > 0) {
+      if (t.totalQ >= 5) {
         totalWeightTested += t.weightNum;
         weightedAccSum += t.accuracy * t.weightNum;
       }
@@ -111,14 +129,14 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
 
     if (totalWeightTested === 0) return 0;
     const baseReadiness = Math.round(weightedAccSum / totalWeightTested);
-    const coveragePenalty = Math.round((completedTopicIds.length / 10) * 100);
-    return Math.round(baseReadiness * 0.7 + coveragePenalty * 0.3);
-  }, [completedTopicIds.length, topicAnalytics]);
+    const coverageScore = Math.round((testedTopicCount / 10) * 100);
+    return Math.round(baseReadiness * 0.7 + coverageScore * 0.3);
+  }, [testedTopicCount, topicAnalytics]);
 
   // Detect top 3 weak areas
   const weakAreas = useMemo(() => {
     return topicAnalytics
-      .filter((t) => t.totalQ > 0 && t.accuracy < 70)
+      .filter((t) => t.totalQ >= 5 && t.accuracy < 70)
       .sort((a, b) => a.accuracy - b.accuracy)
       .slice(0, 3);
   }, [topicAnalytics]);
@@ -126,12 +144,12 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
   // Error Mode distribution
   const errorModeStats = useMemo(() => {
     const counts: Record<string, number> = {};
-    trapLogs.forEach((t) => {
+    eligibleTrapLogs.forEach((t) => {
       const mode = t.errorMode || "UNSPECIFIED";
       counts[mode] = (counts[mode] || 0) + 1;
     });
     return counts;
-  }, [trapLogs]);
+  }, [eligibleTrapLogs]);
 
   return (
     <div className="space-y-8 font-sans animate-in fade-in duration-200">
@@ -148,7 +166,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
           <div className="my-3 flex items-baseline gap-2">
             <span
               className={`text-3xl sm:text-4xl font-black font-mono ${
-                totalQuestionsSolved === 0
+                !hasReadinessEvidence
                   ? "text-zinc-500"
                   : weightedReadinessScore >= 70
                   ? "text-brand-lime"
@@ -157,10 +175,10 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
                   : "text-zinc-400"
               }`}
             >
-              {totalQuestionsSolved > 0 ? `${weightedReadinessScore}%` : "—"}
+              {hasReadinessEvidence ? `${weightedReadinessScore}%` : "—"}
             </span>
             <span className="text-xs text-zinc-500 font-mono">
-              {totalQuestionsSolved > 0 ? "(Target: ≥70%)" : "No study data yet"}
+              {hasReadinessEvidence ? "Study target: ≥70%" : `${Math.min(totalQuestionsSolved, 20)}/20 items · ${testedTopicCount}/3 topics`}
             </span>
           </div>
           <div className="w-full bg-[#18181D] h-1.5 rounded-full overflow-hidden">
@@ -168,7 +186,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
               className={`h-full rounded-full ${
                 weightedReadinessScore >= 70 ? "bg-brand-lime" : "bg-amber-400"
               }`}
-              style={{ width: `${totalQuestionsSolved > 0 ? weightedReadinessScore : 0}%` }}
+              style={{ width: `${hasReadinessEvidence ? weightedReadinessScore : 0}%` }}
             />
           </div>
         </div>
@@ -188,8 +206,8 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
             </span>
           </div>
           <span className="text-[11px] font-mono text-zinc-400">
-            {resultsList.length > 0
-              ? `Across ${resultsList.length} completed practice sessions`
+            {eligibleAttempts.length > 0
+              ? `Across ${eligibleAttempts.length} eligible practice sessions`
               : "No practice sets completed yet"}
           </span>
         </div>
@@ -197,20 +215,20 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
         {/* Candidate Trap Immunity */}
         <div className="p-5 rounded-2xl bg-[#0E0E12] border border-[#1F1F23] shadow-md flex flex-col justify-between">
           <div className="flex items-center justify-between font-mono text-xs text-zinc-400">
-            <span className="font-bold uppercase tracking-wider">TRAP IMMUNITY RADAR</span>
+            <span className="font-bold uppercase tracking-wider">AVOIDED-MISTAKE RATE</span>
             <Shield className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="my-3 flex items-baseline gap-2">
             <span className="text-3xl sm:text-4xl font-black font-mono text-brand-lime">
-              {totalQuestionsSolved > 0 ? `${trapImmunityPct}%` : "—"}
+              {totalQuestionsSolved > 0 ? `${avoidedMistakePct}%` : "—"}
             </span>
             <span className="text-xs text-zinc-500 font-mono">
-              {trapLogs.length} logged traps
+              {eligibleTrapLogs.length} mistakes logged
             </span>
           </div>
           <span className="text-[11px] font-mono text-zinc-400">
             {totalQuestionsSolved > 0
-              ? "Immunity against examiner distractor pitfalls"
+              ? "Share of eligible answers completed without a logged mistake"
               : "Complete practice sets to evaluate"}
           </span>
         </div>
@@ -218,7 +236,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
         {/* Spaced Repetition Due */}
         <div className="p-5 rounded-2xl bg-[#0E0E12] border border-[#1F1F23] shadow-md flex flex-col justify-between">
           <div className="flex items-center justify-between font-mono text-xs text-zinc-400">
-            <span className="font-bold uppercase tracking-wider">RECALL VAULT QUEUE</span>
+            <span className="font-bold uppercase tracking-wider">REVIEW CARDS DUE</span>
             <Flame className="w-4 h-4 text-amber-400" />
           </div>
           <div className="my-3 flex items-baseline gap-2">
@@ -247,14 +265,14 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-400" />
                 <span className="font-mono text-xs font-bold text-red-400 uppercase tracking-wider">
-                  WEAK-AREA AUTO-DETECTION RADAR
+                  TOPICS TO REVIEW
                 </span>
               </div>
               <h2 className="text-lg font-bold text-white">
                 Targeted Remediation Recommended for {weakAreas.length} High-Yield Topic(s)
               </h2>
               <p className="text-xs text-zinc-300 font-sans leading-relaxed max-w-2xl">
-                The diagnostic engine detected scores below 70% in these tracks. Initiate a targeted AI remediation session to resolve trapped error modes.
+                Your eligible practice scores are below the 70% study target in these topics. Start targeted practice to address recurring errors.
               </p>
             </div>
 
@@ -396,15 +414,15 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
       </div>
 
       {/* Error Taxonomy Breakdown */}
-      {trapLogs.length > 0 && (
+      {eligibleTrapLogs.length > 0 && (
         <div className="bg-[#0B0B0E] border border-[#1F1F23] rounded-2xl p-6 space-y-4 shadow-md">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <PieChart className="w-4 h-4 text-cyan-400" />
-              <span>Candidate Error Taxonomy Breakdown</span>
+              <span>Common Error Types</span>
             </h2>
             <span className="font-mono text-xs text-zinc-400">
-              {trapLogs.length} Total Errors Cataloged
+              {eligibleTrapLogs.length} Total Errors Cataloged
             </span>
           </div>
 

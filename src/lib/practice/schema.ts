@@ -121,6 +121,8 @@ export const PracticeAttemptSchema = z.object({
   score: z.number().nonnegative(),
   total: z.number().positive(),
   topicIds: z.array(z.string()),
+  contentOrigins: z.array(ContentOriginSchema).optional(),
+  containsDraftContent: z.boolean().optional(),
 });
 
 export const PresentedPracticeItemSchema = z.object({
@@ -142,6 +144,8 @@ export const PresentedPracticeItemSchema = z.object({
   errorModeDefault: ErrorModeSchema.optional(),
   distractorFeedback: DistractorFeedbackMapSchema,
   optionPermutation: z.record(OptionKeySchema, OptionKeySchema),
+  origin: ContentOriginSchema,
+  contentStatus: ContentStatusSchema,
 });
 
 export const PracticeSessionSchema = z.object({

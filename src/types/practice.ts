@@ -43,12 +43,23 @@ export interface PresentedPracticeItem {
   sessionItemId: string;
   sourceItemId: string;
   displayIndex: number;
+  topicId: string;
+  topicName: string;
+  subReading?: string;
+  losCode?: string;
+  mode: PracticeMode;
   stem: string;
   caseStem?: string;
   options: Record<OptionKey, string>;
   correctOption: OptionKey;
+  solution: string;
+  calculatorKeystrokes?: string;
+  trapCategory: string;
+  errorModeDefault?: ErrorMode;
   distractorFeedback: Record<OptionKey, string>;
   optionPermutation: Record<OptionKey, OptionKey>;
+  origin: ContentOrigin;
+  contentStatus: ContentStatus;
 }
 
 export interface PracticeSession {
@@ -92,4 +103,6 @@ export interface PracticeAttempt {
   score: number;
   total: number;
   topicIds: string[];
+  contentOrigins?: ContentOrigin[];
+  containsDraftContent?: boolean;
 }

@@ -21,13 +21,13 @@ export function legacyVignetteToPracticeItems(
 ): PracticeItem[] {
   const setId = vignette?.id || "vignette-set";
   const isCustom = setId.includes("custom") || setId.includes("ai-vignette") || setId.includes("req-");
-  const defaultProvenance: ContentProvenance = {
+  const defaultProvenance: ContentProvenance = vignette.provenance || {
     origin: isCustom ? "procedural-fallback" : "authored",
     status: isCustom ? "draft" : "approved",
     sourceIds: [setId],
     createdAt: new Date().toISOString(),
-    ...overrideProvenance,
   };
+  const provenance = { ...defaultProvenance, ...overrideProvenance };
 
   return (vignette?.questions || []).map((q) => {
     const canonicalId = makeAuthoredSourceId(setId, q.id);
@@ -57,7 +57,7 @@ export function legacyVignetteToPracticeItems(
         B: q.distractorAutopsy?.B || "No feedback provided.",
         C: q.distractorAutopsy?.C || "No feedback provided.",
       },
-      provenance: defaultProvenance,
+      provenance,
     };
   });
 }

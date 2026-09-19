@@ -36,7 +36,7 @@ export function gradeAttempt(options: GradeAttemptOptions): PracticeAttempt {
       sessionId: session.id,
       sessionItemId: presented.sessionItemId,
       sourceItemId: presented.sourceItemId,
-      topicId: session.topicIds[0] || "01",
+      topicId: presented.topicId,
       selectedOption,
       correctOption: presented.correctOption,
       isCorrect,
@@ -59,5 +59,9 @@ export function gradeAttempt(options: GradeAttemptOptions): PracticeAttempt {
     score,
     total: session.presentedItems.length,
     topicIds: session.topicIds,
+    contentOrigins: Array.from(new Set(session.presentedItems.map((item) => item.origin))),
+    containsDraftContent: session.presentedItems.some(
+      (item) => item.contentStatus === "draft" || item.origin === "ai-draft"
+    ),
   };
 }

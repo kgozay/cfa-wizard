@@ -23,7 +23,7 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
     selectTopic,
     startVignetteDrill,
     drillQuestionCount,
-    vignetteResults,
+    practiceAttempts,
     soundEnabled,
   } = useCFAStore();
 
@@ -59,8 +59,11 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
           const isCompleted = completedTopicIds.includes(topic.id);
           const isCurrent = (activeTopicId || inProgressTopicId) === topic.id;
           const isExpanded = expandedTopicId === topic.id;
-          const baseVignette = CFA_VIGNETTES.find((v) => v.topicId === topic.id);
-          const result = baseVignette ? vignetteResults[baseVignette.id] : undefined;
+          const latestAttempt = [...practiceAttempts]
+            .reverse()
+            .find((attempt) => !attempt.containsDraftContent && attempt.itemAttempts.some((item) => item.topicId === topic.id));
+          const latestTopicItems = latestAttempt?.itemAttempts.filter((item) => item.topicId === topic.id) || [];
+          const latestTopicScore = latestTopicItems.filter((item) => item.isCorrect).length;
 
           return (
             <article
@@ -92,7 +95,7 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
                     </div>
                     <p className="mt-0.5 truncate text-sm text-[#A8B0AD]">
                       {topic.subReadings.length} modules · {topic.formulas.length} formulas · {topic.weight} exam weight
-                      {result ? ` · Last score ${result.score}/${result.total}` : ""}
+                      {latestAttempt ? ` · Last eligible score ${latestTopicScore}/${latestTopicItems.length}` : ""}
                     </p>
                   </div>
                   <ChevronDown className={`h-5 w-5 shrink-0 text-[#8E9894] transition-transform ${isExpanded ? "rotate-180" : ""}`} />

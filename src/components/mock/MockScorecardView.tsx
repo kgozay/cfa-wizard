@@ -54,7 +54,7 @@ export const MockScorecardView: React.FC<MockScorecardViewProps> = ({
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 font-sans space-y-8 animate-in fade-in duration-200">
       
-      {/* Top Banner: Score & MPS Benchmark */}
+      {/* Top Banner: Score and study target */}
       <div
         className={`p-6 sm:p-8 rounded-2xl border relative overflow-hidden ${
           isPassed
@@ -80,13 +80,13 @@ export const MockScorecardView: React.FC<MockScorecardViewProps> = ({
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              {isPassed ? "Target Performance Achieved" : "Remediation Recommended"}
+              {isPassed ? "Study Target Achieved" : "More Practice Recommended"}
             </h1>
 
             <p className="text-xs sm:text-sm text-zinc-300 max-w-2xl leading-relaxed">
               {isPassed
                 ? `You scored ${session.score} out of ${session.totalQuestions} (${session.accuracy}%), clearing the recommended 70% study target.`
-                : `You scored ${session.score} out of ${session.totalQuestions} (${session.accuracy}%). Review mistake diagnoses below to resolve trapped error modes before test day.`}
+                : `You scored ${session.score} out of ${session.totalQuestions} (${session.accuracy}%). Review the explanations below and practise the topics that need more work.`}
             </p>
           </div>
 

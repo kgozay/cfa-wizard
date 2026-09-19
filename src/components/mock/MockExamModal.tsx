@@ -22,6 +22,8 @@ import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { useCFAStore } from "@/store/useCFAStore";
 import { OptionKey } from "@/types/cfa";
 import { sound } from "@/components/common/SoundEffects";
+import { gradeAttempt } from "@/lib/practice/gradeAttempt";
+import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
 
 interface MockExamModalProps {
   isOpen: boolean;
@@ -32,7 +34,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   const {
     soundEnabled,
     customVignettes,
-    recordVignetteSubmission,
+    recordPracticeAttempt,
+    savePracticeSession,
     setCalculatorOpen,
     calculatorMode,
     setCalculatorMode,
@@ -44,21 +47,44 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   const [isNavigatorOpen, setIsNavigatorOpen] = useState<boolean>(false);
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState<boolean>(false);
   const [isGraded, setIsGraded] = useState<boolean>(false);
+  const [startError, setStartError] = useState<string | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const itemTimesRef = useRef<Record<string, number>>({});
+  const questionStartedAtRef = useRef<number>(Date.now());
+  const dialogRef = useAccessibleDialog<HTMLDivElement>(isOpen, onClose);
 
   // Initialize or start new mock exam
   const handleStartExam = useCallback(
     (type: MockExamType) => {
       if (soundEnabled) sound.playNodeSwitch();
-      const newSession = generateMockExamSession(type, customVignettes);
-      setSession(newSession);
-      setCurrentIndex(0);
-      setIsGraded(false);
-      setIsSubmitConfirmOpen(false);
+      try {
+        const newSession = generateMockExamSession(type, customVignettes);
+        savePracticeSession(newSession.practiceSession, false);
+        setSession(newSession);
+        setCurrentIndex(0);
+        setIsGraded(false);
+        setIsSubmitConfirmOpen(false);
+        setStartError(null);
+        itemTimesRef.current = {};
+        questionStartedAtRef.current = Date.now();
+      } catch (error) {
+        setStartError(error instanceof Error ? error.message : "Unable to assemble this mock.");
+      }
     },
-    [customVignettes, soundEnabled]
+    [customVignettes, savePracticeSession, soundEnabled]
   );
+
+  useEffect(() => {
+    if (!session || isGraded) return;
+    const sessionItemId = session.questions[currentIndex]?.sessionItemId;
+    questionStartedAtRef.current = Date.now();
+    return () => {
+      if (!sessionItemId) return;
+      const elapsed = Math.max(0, Math.round((Date.now() - questionStartedAtRef.current) / 1000));
+      itemTimesRef.current[sessionItemId] = (itemTimesRef.current[sessionItemId] || 0) + elapsed;
+    };
+  }, [currentIndex, isGraded, session?.id]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -80,7 +106,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isOpen, session, isGraded]);
+  }, [isOpen, session?.id, isGraded]);
 
   // Answer selection handler
   const handleSelectAnswer = useCallback(
@@ -127,33 +153,33 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     if (soundEnabled) sound.playSuccessChime();
 
     const { gradedSession, generatedTraps } = gradeMockExam(session);
+    const currentSessionItemId = session.questions[currentIndex]?.sessionItemId;
+    if (currentSessionItemId) {
+      itemTimesRef.current[currentSessionItemId] = (itemTimesRef.current[currentSessionItemId] || 0)
+        + Math.max(0, Math.round((Date.now() - questionStartedAtRef.current) / 1000));
+      questionStartedAtRef.current = Date.now();
+    }
+    const answers = Object.fromEntries(
+      session.questions.map((question) => [question.sessionItemId!, session.userAnswers[question.id] || null])
+    );
+    const attempt = gradeAttempt({
+      session: session.practiceSession,
+      answers,
+      timing: itemTimesRef.current,
+      trapCategories: Object.fromEntries(session.questions.map((question) => [question.sessionItemId!, question.trapCategory])),
+      errorModes: Object.fromEntries(session.questions.filter((question) => question.errorModeDefault).map((question) => [question.sessionItemId!, question.errorModeDefault!])),
+    });
+    const traceableTraps = generatedTraps.map((trap) => {
+      const question = session.questions.find((candidate) => candidate.id === trap.questionId)!;
+      const itemAttempt = attempt.itemAttempts.find((candidate) => candidate.sessionItemId === question.sessionItemId)!;
+      return { ...trap, id: crypto.randomUUID(), attemptId: attempt.id, itemAttemptId: itemAttempt.id, sessionItemId: question.sessionItemId, sourceItemId: question.sourceItemId };
+    });
     setSession(gradedSession);
     setIsGraded(true);
     setIsSubmitConfirmOpen(false);
 
-    // Feed session and traps into store for spaced repetition
-    recordVignetteSubmission(
-      {
-        vignetteId: gradedSession.id,
-        topicId: "MOCK",
-        submittedAt: gradedSession.submittedAt || new Date().toISOString(),
-        score: gradedSession.score,
-        total: gradedSession.totalQuestions,
-        userAnswers: gradedSession.userAnswers,
-        submissions: gradedSession.questions.map((q) => ({
-          questionId: q.id,
-          selectedOption: gradedSession.userAnswers[q.id] || "A",
-          isCorrect: gradedSession.userAnswers[q.id] === q.correctOption,
-          trapTriggered: q.trapCategory,
-          timeSpentSeconds: Math.round(gradedSession.timeSpentSeconds / gradedSession.totalQuestions),
-        })),
-        trapsTriggered: generatedTraps.map((t) => t.trapName),
-        totalTimeSeconds: gradedSession.timeSpentSeconds,
-        timerModeUsed: "timed_90s",
-      },
-      generatedTraps
-    );
-  }, [recordVignetteSubmission, session, soundEnabled]);
+    recordPracticeAttempt(attempt, traceableTraps);
+  }, [currentIndex, recordPracticeAttempt, session, soundEnabled]);
 
   // Keyboard navigation within active mock exam
   useEffect(() => {
@@ -192,6 +218,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   if (!session) {
     return (
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="mock-exam-title"
@@ -205,7 +233,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
               </div>
               <div>
                 <h2 id="mock-exam-title" className="text-lg font-bold text-white tracking-wide font-sans">
-                  Level 1 Mock Exam Simulation Engine
+                  Level I Practice Mock
                 </h2>
                 <p className="text-xs text-zinc-400 font-mono">
                   Standardized Timing • 10-Topic Weighting • 70% Study Target
@@ -286,6 +314,12 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
             </div>
           </div>
 
+          {startError && (
+            <div role="alert" className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-100">
+              {startError}
+            </div>
+          )}
+
           <div className="pt-4 border-t border-[#1F1F23] flex items-center justify-between gap-4">
             <button
               onClick={onClose}
@@ -339,6 +373,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-label={session.title}
@@ -608,7 +644,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
             </div>
 
             <p className="text-zinc-400 font-sans leading-relaxed">
-              Once submitted, your session will be locked, graded against the CFA Institute 70% MPS benchmark, and all missed items will be logged for autopsy.
+              Once submitted, this session will be locked and compared with a 70% study target. Missed items will be saved for review. This is not an official CFA Institute passing score.
             </p>
 
             <div className="flex gap-3 pt-2">

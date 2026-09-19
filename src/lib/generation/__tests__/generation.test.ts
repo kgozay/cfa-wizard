@@ -40,6 +40,17 @@ describe("Generation Request & Response Validation", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects unknown fields and invalid difficulty instead of normalizing them", () => {
+    const result = GenerationRequestSchema.safeParse({
+      topicId: "01",
+      mode: "case-study",
+      difficulty: "banana",
+      questionCount: 5,
+      unknown: true,
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("validates generation response contract", () => {
     const provenance = createAIDraftProvenance({ sourceIds: ["01"] });
     const items = legacyVignetteToPracticeItems(SAMPLE_VALID_GENERATED_SET as unknown as VignetteSet, provenance);

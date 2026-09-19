@@ -18,18 +18,18 @@ import {
 } from "lucide-react";
 import {
   OptionKey,
-  QuestionSubmission,
   TrapLogEntry,
   VignetteSessionResult,
-  VignetteSet,
   VignetteQuestion
 } from "@/types/cfa";
+import { PracticeSession } from "@/types/practice";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { useCFAStore } from "@/store/useCFAStore";
 import { DiagnosticAutopsyView } from "@/components/diagnostic/DiagnosticAutopsyView";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPracticeSession } from "@/lib/practice/createSession";
+import { gradeAttempt } from "@/lib/practice/gradeAttempt";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
 
@@ -38,8 +38,8 @@ export const VignetteEngine: React.FC = () => {
     activeVignetteId,
     activeTopicId,
     closeVignetteDrill,
-    recordVignetteSubmission,
-    vignetteResults,
+    recordPracticeAttempt,
+    savePracticeSession,
     setCalculatorOpen,
     setCalculatorMode,
     calculatorMode,
@@ -56,11 +56,17 @@ export const VignetteEngine: React.FC = () => {
     togglePacingTimer,
   } = useCFAStore();
 
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, OptionKey>>({});
+  const [practiceSession, setPracticeSession] = useState<PracticeSession | null>(null);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, OptionKey>>({});
+  const [, setItemTimes] = useState<Record<string, number>>({});
+  const itemTimesRef = useRef<Record<string, number>>({});
+  const lastAnswerAtRef = useRef<number>(Date.now());
+  const [reviewResult, setReviewResult] = useState<VignetteSessionResult | null>(null);
   const [scratchpadText, setScratchpadText] = useState<string>("");
   const [isScratchpadOpen, setIsScratchpadOpen] = useState<boolean>(false);
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
   const [isInjectingAI, setIsInjectingAI] = useState<boolean>(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   // Per-question elapsed time tracking
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
@@ -75,55 +81,72 @@ export const VignetteEngine: React.FC = () => {
     [allVignettes, activeVignetteId, activeTopicId]
   );
 
-  // State-based randomized question selection
-  const [randomizedQuestions, setRandomizedQuestions] = useState<VignetteQuestion[]>([]);
-
-  // Shuffle, permute options, and sample questions whenever vignette or drill count changes
-  useEffect(() => {
-    // 1. Reset state unconditionally
-    setSelectedAnswers({});
-    setHasSubmitted(false);
-    setElapsedSeconds(0);
-
-    // 2. Convert to canonical items
+  const startNewSession = useCallback(() => {
     const items = legacyVignetteToPracticeItems(vignette);
-
-    // 3. Create session with deterministic option permutation and requested question count
     const session = createPracticeSession({
       mode: "practice",
       items,
       requestedCount: drillQuestionCount,
+      timerMode: isPacingTimerEnabled ? "timed" : "untimed",
       shuffleQuestions: true,
     });
+    savePracticeSession(session, true);
+    setPracticeSession(session);
+    setSelectedAnswers({});
+    setItemTimes({});
+    itemTimesRef.current = {};
+    lastAnswerAtRef.current = Date.now();
+    setHasSubmitted(false);
+    setReviewResult(null);
+    setElapsedSeconds(0);
+  }, [drillQuestionCount, isPacingTimerEnabled, savePracticeSession, vignette]);
 
-    // 4. Map presented items into question format for display
-    const mappedQuestions: VignetteQuestion[] = session.presentedItems.map((pi, idx) => {
-      const sourceItem = items.find((item) => item.id === pi.sourceItemId) || items[idx];
-      return {
-        id: idx + 1,
-        stem: pi.stem,
-        options: pi.options,
-        correctOption: pi.correctOption,
-        algebraicSolution: sourceItem.solution,
-        calculatorKeystrokes: sourceItem.calculatorKeystrokes || "",
-        trapCategory: sourceItem.trapCategory,
-        errorModeDefault: sourceItem.errorModeDefault,
-        losCode: sourceItem.losCode,
-        distractorAutopsy: {
-          A: pi.distractorFeedback.A,
-          B: pi.distractorFeedback.B,
-          C: pi.distractorFeedback.C,
-        },
-      };
-    });
+  useEffect(() => {
+    const state = useCFAStore.getState();
+    const stored = state.activePracticeSessionId
+      ? state.practiceSessions[state.activePracticeSessionId]
+      : undefined;
+    const expectedCount = Math.min(drillQuestionCount, vignette.questions.length);
+    if (
+      stored &&
+      !stored.completedAt &&
+      stored.sourceSetIds.includes(vignette.id) &&
+      stored.presentedItems.length === expectedCount
+    ) {
+      setPracticeSession(stored);
+      setSelectedAnswers({});
+      setItemTimes({});
+      itemTimesRef.current = {};
+      lastAnswerAtRef.current = Date.now();
+      setHasSubmitted(false);
+      setReviewResult(null);
+      setElapsedSeconds(0);
+      return;
+    }
+    startNewSession();
+  }, [drillQuestionCount, startNewSession, vignette.id, vignette.questions.length]);
 
-    setRandomizedQuestions(mappedQuestions);
-  }, [vignette.id, vignette.questions, drillQuestionCount]);
-
-  const activeQuestions = randomizedQuestions;
+  const activeQuestions = useMemo(
+    () =>
+      (practiceSession?.presentedItems || []).map((item) => ({
+        id: item.displayIndex,
+        sessionItemId: item.sessionItemId,
+        sourceItemId: item.sourceItemId,
+        stem: item.stem,
+        options: item.options,
+        correctOption: item.correctOption,
+        algebraicSolution: item.solution,
+        calculatorKeystrokes: item.calculatorKeystrokes || "",
+        trapCategory: item.trapCategory,
+        errorModeDefault: item.errorModeDefault,
+        losCode: item.losCode,
+        distractorAutopsy: item.distractorFeedback,
+      })),
+    [practiceSession]
+  );
 
   const isFormComplete = useMemo(
-    () => activeQuestions.length > 0 && activeQuestions.every((q) => selectedAnswers[q.id]),
+    () => activeQuestions.length > 0 && activeQuestions.every((q) => selectedAnswers[q.sessionItemId]),
     [activeQuestions, selectedAnswers]
   );
 
@@ -143,82 +166,105 @@ export const VignetteEngine: React.FC = () => {
     };
   }, [hasSubmitted, isPacingTimerEnabled]);
 
-  const handleSelectOption = useCallback((questionId: number, option: OptionKey) => {
+  const handleSelectOption = useCallback((sessionItemId: string, option: OptionKey) => {
     if (hasSubmitted) return;
     if (soundEnabled) sound.playKeyClick();
+    if (!selectedAnswers[sessionItemId]) {
+      const now = Date.now();
+      const seconds = Math.max(1, Math.round((now - lastAnswerAtRef.current) / 1000));
+      lastAnswerAtRef.current = now;
+      itemTimesRef.current = { ...itemTimesRef.current, [sessionItemId]: seconds };
+      setItemTimes(itemTimesRef.current);
+    }
     setSelectedAnswers((prev) => ({
       ...prev,
-      [questionId]: option,
+      [sessionItemId]: option,
     }));
-  }, [hasSubmitted, soundEnabled]);
+  }, [hasSubmitted, selectedAnswers, soundEnabled]);
 
   const handleSubmitDiagnostic = useCallback(() => {
-    if (!isFormComplete) return;
+    if (!isFormComplete || !practiceSession) return;
 
-    let score = 0;
-    const submissions: QuestionSubmission[] = [];
-    const trapsTriggered: string[] = [];
-    const trapEntries: TrapLogEntry[] = [];
-
-    activeQuestions.forEach((q) => {
-      const chosen = selectedAnswers[q.id];
-      const isCorrect = chosen === q.correctOption;
-      if (isCorrect) {
-        score += 1;
-      } else {
-        trapsTriggered.push(q.trapCategory);
-        trapEntries.push({
-          id: `trap-${Date.now()}-${q.id}`,
-          topicId: vignette.topicId,
-          topicName: vignette.topicName,
-          subReading: vignette.subReading,
-          trapName: q.trapCategory,
-          questionId: q.id,
-          questionStem: q.stem,
-          options: q.options,
-          userChoice: chosen,
-          selectedOption: chosen,
-          correctOption: q.correctOption,
-          autopsyExplanation: q.distractorAutopsy[chosen] || q.algebraicSolution,
-          calculatorKeystrokes: q.calculatorKeystrokes,
-          errorMode: q.errorModeDefault || "UNSPECIFIED",
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      submissions.push({
-        questionId: q.id,
-        selectedOption: chosen,
-        isCorrect,
-        trapTriggered: isCorrect ? undefined : q.trapCategory,
-        errorModeLogged: isCorrect ? undefined : q.errorModeDefault,
-        timeSpentSeconds: elapsedSeconds,
-      });
+    const trapCategories = Object.fromEntries(
+      practiceSession.presentedItems.map((item) => [item.sessionItemId, item.trapCategory])
+    );
+    const errorModes = Object.fromEntries(
+      practiceSession.presentedItems
+        .filter((item) => item.errorModeDefault)
+        .map((item) => [item.sessionItemId, item.errorModeDefault!])
+    );
+    const attempt = gradeAttempt({
+      session: practiceSession,
+      answers: selectedAnswers,
+      timing: itemTimesRef.current,
+      trapCategories,
+      errorModes,
     });
 
+    const trapEntries: TrapLogEntry[] = attempt.itemAttempts
+      .filter((itemAttempt) => !itemAttempt.isCorrect)
+      .map((itemAttempt) => {
+        const item = practiceSession.presentedItems.find(
+          (candidate) => candidate.sessionItemId === itemAttempt.sessionItemId
+        )!;
+        const chosen = itemAttempt.selectedOption;
+        return {
+          id: crypto.randomUUID(),
+          topicId: item.topicId,
+          topicName: item.topicName,
+          subReading: item.subReading,
+          trapName: item.trapCategory,
+          questionId: item.displayIndex,
+          questionStem: item.stem,
+          options: item.options,
+          userChoice: chosen || undefined,
+          selectedOption: chosen || undefined,
+          correctOption: item.correctOption,
+          autopsyExplanation: chosen ? item.distractorFeedback[chosen] : item.solution,
+          calculatorKeystrokes: item.calculatorKeystrokes,
+          errorMode: item.errorModeDefault || "UNSPECIFIED",
+          timestamp: attempt.submittedAt,
+          attemptId: attempt.id,
+          itemAttemptId: itemAttempt.id,
+          sessionItemId: item.sessionItemId,
+          sourceItemId: item.sourceItemId,
+        };
+      });
+
+    recordPracticeAttempt(attempt, trapEntries);
+
+    const displayAnswers = Object.fromEntries(
+      activeQuestions.map((question) => [question.id, selectedAnswers[question.sessionItemId]])
+    ) as Record<number, OptionKey>;
     const result: VignetteSessionResult = {
       vignetteId: vignette.id,
       topicId: vignette.topicId,
-      submittedAt: new Date().toISOString(),
-      score,
-      total: activeQuestions.length,
-      userAnswers: selectedAnswers,
-      submissions,
-      trapsTriggered,
-      totalTimeSeconds: elapsedSeconds,
+      submittedAt: attempt.submittedAt,
+      score: attempt.score,
+      total: attempt.total,
+      userAnswers: displayAnswers,
+      submissions: attempt.itemAttempts.map((itemAttempt, index) => ({
+        questionId: index + 1,
+        selectedOption: itemAttempt.selectedOption!,
+        isCorrect: itemAttempt.isCorrect,
+        trapTriggered: itemAttempt.isCorrect ? undefined : itemAttempt.trapCategory,
+        errorModeLogged: itemAttempt.isCorrect ? undefined : itemAttempt.errorMode,
+        timeSpentSeconds: itemAttempt.timeSpentSeconds,
+      })),
+      trapsTriggered: trapEntries.map((entry) => entry.trapName),
+      totalTimeSeconds: attempt.totalTimeSeconds,
       timerModeUsed: isPacingTimerEnabled ? "timed_90s" : "untimed",
     };
-
-    recordVignetteSubmission(result, trapEntries);
+    setReviewResult(result);
     setHasSubmitted(true);
   }, [
     isFormComplete,
     activeQuestions,
     selectedAnswers,
+    practiceSession,
     vignette,
-    elapsedSeconds,
     isPacingTimerEnabled,
-    recordVignetteSubmission
+    recordPracticeAttempt
   ]);
 
   // Keyboard shortcut listener for rapid ergonomics (1/2/3, A/B/C, Space/Enter, K)
@@ -236,15 +282,15 @@ export const VignetteEngine: React.FC = () => {
 
       if (!hasSubmitted && activeQuestions.length > 0) {
         // Find the first unanswered question
-        const unanswered = activeQuestions.find((q) => !selectedAnswers[q.id]);
+        const unanswered = activeQuestions.find((q) => !selectedAnswers[q.sessionItemId]);
         const targetQ = unanswered || activeQuestions[activeQuestions.length - 1];
 
         if (key === "1" || key === "A") {
-          handleSelectOption(targetQ.id, "A");
+          handleSelectOption(targetQ.sessionItemId, "A");
         } else if (key === "2" || key === "B") {
-          handleSelectOption(targetQ.id, "B");
+          handleSelectOption(targetQ.sessionItemId, "B");
         } else if (key === "3" || key === "C") {
-          handleSelectOption(targetQ.id, "C");
+          handleSelectOption(targetQ.sessionItemId, "C");
         } else if ((e.key === "Enter" || e.key === " ") && isFormComplete) {
           e.preventDefault();
           handleSubmitDiagnostic();
@@ -266,39 +312,42 @@ export const VignetteEngine: React.FC = () => {
 
   if (!activeVignetteId) return null;
 
-  const existingResult = vignetteResults[vignette.id];
-
   const handleResetForRetake = () => {
-    setSelectedAnswers({});
-    setHasSubmitted(false);
-    setElapsedSeconds(0);
+    startNewSession();
   };
 
   const handleInjectAIQuestions = async () => {
     if (soundEnabled) sound.playKeyClick();
     setIsInjectingAI(true);
+    setGenerationError(null);
     try {
       const res = await fetch("/api/generate-vignette", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           topicId: vignette.topicId,
-          difficulty: vignette.difficulty,
-          customPrompt: `Additional high-yield drill questions for ${vignette.topicName}`,
+          mode: "case-study",
+          difficulty: vignette.difficulty === "High Trap" ? "high-trap" : "standard",
+          focus: `Additional high-yield practice questions for ${vignette.topicName}`,
+          questionCount: 5,
+          excludeItemIds: practiceSession?.itemIds || [],
         }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Unable to generate additional practice questions.");
+      }
       if (data.vignette && data.vignette.questions) {
         if (soundEnabled) sound.playSuccessChime();
-        // Give unique IDs to newly injected questions
-        const newQs = data.vignette.questions.map((q: VignetteQuestion, idx: number) => ({
-          ...q,
-          id: Date.now() + idx,
-        }));
+        const existingStems = new Set(activeQuestions.map((question) => question.stem.trim().toLowerCase()));
+        const newQs = data.vignette.questions
+          .filter((question: VignetteQuestion) => !existingStems.has(question.stem.trim().toLowerCase()))
+          .map((question: VignetteQuestion, idx: number) => ({ ...question, id: Date.now() + idx }));
+        if (newQs.length === 0) throw new Error("No new questions were returned.");
         addQuestionsToActiveVignette(newQs);
       }
     } catch (err) {
-      console.error(err);
+      setGenerationError(err instanceof Error ? err.message : "Unable to generate questions.");
     } finally {
       setIsInjectingAI(false);
     }
@@ -321,7 +370,7 @@ export const VignetteEngine: React.FC = () => {
           className="inline-flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>RETURN TO DIAGNOSTIC MATRIX</span>
+          <span>BACK TO STUDY DASHBOARD</span>
         </button>
 
         <div className="flex flex-wrap items-center gap-2.5 font-mono text-xs">
@@ -418,6 +467,12 @@ export const VignetteEngine: React.FC = () => {
         </div>
       </div>
 
+      {generationError && (
+        <div role="alert" className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {generationError}
+        </div>
+      )}
+
       {/* Main Grid: Vignette Header + Case Stem */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
@@ -439,6 +494,13 @@ export const VignetteEngine: React.FC = () => {
                 DIFFICULTY: {vignette.difficulty.toUpperCase()}
               </span>
             </div>
+
+            {vignette.provenance && (
+              <p className="mb-4 text-xs text-amber-200" role="status">
+                {vignette.provenance.origin === "ai-draft" ? "AI draft" : "Procedural fallback"}
+                {" · "}{vignette.provenance.status}. Generated content is excluded from readiness analytics and mock exams.
+              </p>
+            )}
 
             {/* Vignette Case Stem Text (Clean font-sans) */}
             <h2 className="text-xs font-mono font-bold text-zinc-400 tracking-wider uppercase mb-3 flex items-center gap-2">
@@ -480,10 +542,10 @@ export const VignetteEngine: React.FC = () => {
         {/* Right Column: Questions & Distractor Selection (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           {activeQuestions.map((q, idx) => {
-            const chosen = selectedAnswers[q.id];
+            const chosen = selectedAnswers[q.sessionItemId];
             return (
               <div
-                key={q.id}
+                key={q.sessionItemId}
                 className={`p-5 rounded-xl border transition-all ${
                   chosen ? "bg-[#0E0E12] border-brand-lime/40" : "bg-[#0B0B0E] border-[#1F1F23]"
                 }`}
@@ -513,7 +575,7 @@ export const VignetteEngine: React.FC = () => {
                       <button
                         key={opt}
                         type="button"
-                        onClick={() => handleSelectOption(q.id, opt)}
+                        onClick={() => handleSelectOption(q.sessionItemId, opt)}
                         disabled={hasSubmitted}
                         className={`w-full text-left p-3 rounded-lg border transition-all flex items-start gap-3 select-none min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
                           isSelected
@@ -555,7 +617,7 @@ export const VignetteEngine: React.FC = () => {
               <Send className="w-4 h-4" />
               <span>
                 {isFormComplete
-                  ? "EXECUTE SURGICAL DIAGNOSTIC AUTOPSY"
+                  ? "SUBMIT PRACTICE SET"
                   : `SELECT ALL ANSWERS (${Object.keys(selectedAnswers).length}/${activeQuestions.length})`}
               </span>
             </button>
@@ -572,11 +634,11 @@ export const VignetteEngine: React.FC = () => {
       </div>
 
       {/* Post-Submission Distractor Autopsy & Diagnostic Report */}
-      {hasSubmitted && existingResult && (
+      {hasSubmitted && reviewResult && (
         <div className="mt-12 pt-8 border-t border-[#1F1F23]">
           <DiagnosticAutopsyView
             vignette={{ ...vignette, questions: activeQuestions }}
-            result={existingResult}
+            result={reviewResult}
             onDrillAnother={() => {
               const other = allVignettes.find((v) => v.id !== vignette.id);
               if (other) startVignetteDrill(other.id);

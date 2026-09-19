@@ -5,12 +5,15 @@ import { LEGACY_STORAGE_V3_FIXTURE } from "@/test/fixtures/legacy-storage-v3";
 describe("Backup Envelope Validation", () => {
   it("validates a modern v4 backup payload correctly", () => {
     const v4Payload = {
-      exportVersion: "4.0",
+      product: "cfa-wizard",
+      schemaVersion: 4,
       exportedAt: new Date().toISOString(),
-      completedTopicIds: ["01", "02"],
-      inProgressTopicId: "03",
-      vignetteResults: {},
-      practiceAttempts: [
+      restoreMode: "replace",
+      data: {
+        completedTopicIds: ["01", "02"],
+        inProgressTopicId: "03",
+        vignetteResults: {},
+        practiceAttempts: [
         {
           id: "att-12345",
           sessionId: "sess-123",
@@ -37,18 +40,19 @@ describe("Backup Envelope Validation", () => {
             },
           ],
         },
-      ],
-      practiceSessions: {},
-      activePracticeSessionId: null,
-      trapLogs: [],
-      customVignettes: [],
-      leitnerCards: [],
+        ],
+        practiceSessions: {},
+        activePracticeSessionId: null,
+        trapLogs: [],
+        customVignettes: [],
+        leitnerCards: [],
+      },
     };
 
     const res = validateBackupPayload(v4Payload);
     expect(res.success).toBe(true);
-    expect(res.data?.practiceAttempts.length).toBe(1);
-    expect(res.data?.completedTopicIds).toEqual(["01", "02"]);
+    expect(res.data?.data.practiceAttempts.length).toBe(1);
+    expect(res.data?.data.completedTopicIds).toEqual(["01", "02"]);
   });
 
   it("validates a legacy v3 backup payload without practiceAttempts", () => {
@@ -64,9 +68,9 @@ describe("Backup Envelope Validation", () => {
 
     const res = validateBackupPayload(v3Payload);
     expect(res.success).toBe(true);
-    expect(res.data?.exportVersion).toBe("3.0");
-    expect(res.data?.completedTopicIds).toEqual(LEGACY_STORAGE_V3_FIXTURE.state.completedTopicIds);
-    expect(res.data?.practiceAttempts).toEqual([]);
+    expect(res.data?.schemaVersion).toBe(4);
+    expect(res.data?.data.completedTopicIds).toEqual(LEGACY_STORAGE_V3_FIXTURE.state.completedTopicIds);
+    expect(res.data?.data.practiceAttempts).toEqual([]);
   });
 
   it("rejects non-object or malformed backup payloads", () => {
@@ -82,5 +86,35 @@ describe("Backup Envelope Validation", () => {
     const res = validateBackupPayload(corruptPayload);
     expect(res.success).toBe(false);
     expect(res.error).toBeDefined();
+  });
+
+  it("rejects the wrong product and unsupported future schemas", () => {
+    const base = {
+      product: "cfa-wizard",
+      schemaVersion: 4,
+      exportedAt: new Date().toISOString(),
+      restoreMode: "replace",
+      data: {
+        completedTopicIds: [], inProgressTopicId: "01", vignetteResults: {}, practiceAttempts: [],
+        practiceSessions: {}, activePracticeSessionId: null, trapLogs: [], customVignettes: [], leitnerCards: [],
+      },
+    };
+    expect(validateBackupPayload({ ...base, product: "another-app" }).success).toBe(false);
+    expect(validateBackupPayload({ ...base, schemaVersion: 5 }).success).toBe(false);
+  });
+
+  it("rejects duplicate canonical attempt IDs", () => {
+    const attempt = {
+      id: "duplicate", sessionId: "session", mode: "practice", startedAt: new Date().toISOString(),
+      submittedAt: new Date().toISOString(), totalTimeSeconds: 0, itemAttempts: [], score: 0, total: 1, topicIds: ["01"],
+    };
+    const payload = {
+      product: "cfa-wizard", schemaVersion: 4, exportedAt: new Date().toISOString(), restoreMode: "replace",
+      data: {
+        completedTopicIds: [], inProgressTopicId: "01", vignetteResults: {}, practiceAttempts: [attempt, attempt],
+        practiceSessions: {}, activePracticeSessionId: null, trapLogs: [], customVignettes: [], leitnerCards: [],
+      },
+    };
+    expect(validateBackupPayload(payload).success).toBe(false);
   });
 });

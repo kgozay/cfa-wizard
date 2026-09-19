@@ -22,7 +22,7 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
     completedTopicIds,
     startVignetteDrill,
     drillQuestionCount,
-    vignetteResults,
+    practiceAttempts,
     soundEnabled,
   } = useCFAStore();
 
@@ -30,7 +30,11 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
   const topic = CFA_CURRICULUM.find((t) => t.id === currentTopicId) || CFA_CURRICULUM[0];
   const isCompleted = completedTopicIds.includes(topic.id);
   const baseVignette = CFA_VIGNETTES.find((v) => v.topicId === topic.id);
-  const result = baseVignette ? vignetteResults[baseVignette.id] : undefined;
+  const latestAttempt = [...practiceAttempts]
+    .reverse()
+    .find((attempt) => !attempt.containsDraftContent && attempt.itemAttempts.some((item) => item.topicId === topic.id));
+  const latestTopicItems = latestAttempt?.itemAttempts.filter((item) => item.topicId === topic.id) || [];
+  const latestTopicScore = latestTopicItems.filter((item) => item.isCorrect).length;
 
   const handleStartDrill = () => {
     if (soundEnabled) sound.playNodeSwitch();
@@ -69,9 +73,9 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
             {topic.highYieldTrapArea}
           </p>
 
-          {result && (
+          {latestAttempt && (
             <p className="text-sm text-[#A8B0AD]">
-              Last attempt: <span className="font-semibold text-white">{result.score}/{result.total}</span>
+              Last eligible attempt: <span className="font-semibold text-white">{latestTopicScore}/{latestTopicItems.length}</span>
             </p>
           )}
         </div>

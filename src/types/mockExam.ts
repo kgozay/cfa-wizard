@@ -1,4 +1,5 @@
 import { OptionKey, ErrorMode, DistractorAutopsyMap } from "./cfa";
+import type { PracticeSession } from "./practice";
 
 export type MockExamType =
   | "quick_diagnostic_45"
@@ -55,4 +56,5 @@ export interface MockExamSession {
   isPassedMps: boolean; // >= 70%
   topicBreakdowns: MockTopicScore[];
   questions: MockQuestionItem[];
+  practiceSession: PracticeSession;
 }

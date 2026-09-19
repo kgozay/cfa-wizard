@@ -64,14 +64,15 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           topicId: selectedTopicId,
-          difficulty,
-          customPrompt,
+          mode: "case-study",
+          difficulty: difficulty === "High Trap" ? "high-trap" : difficulty === "Institutional" ? "institutional" : "standard",
+          focus: customPrompt || undefined,
           questionCount,
         }),
       });
 
       const data = await res.json();
-      if (data.vignette) {
+      if (res.ok && data.vignette) {
         if (soundEnabled) sound.playNodeSwitch();
         setDrillQuestionCount(questionCount === 10 ? 10 : (questionCount as 2 | 5));
         addCustomVignette(data.vignette as VignetteSet);

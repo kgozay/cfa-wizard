@@ -11,8 +11,6 @@ import {
 } from "@/types/cfa";
 import { PracticeAttempt, PracticeSession } from "@/types/practice";
 import { CFA_VIGNETTES } from "@/data/vignettes";
-import { CFA_CURRICULUM } from "@/data/curriculum";
-import { legacyResultToPracticeAttempt } from "@/lib/practice/adapters";
 import { migrateV3ToV4 } from "./migrations";
 
 interface CFAState {
@@ -60,8 +58,9 @@ interface CFAState {
   setDrillQuestionCount: (count: 2 | 5 | 10 | 15) => void;
   setPacingTimerEnabled: (enabled: boolean) => void;
   togglePacingTimer: () => void;
-  recordVignetteSubmission: (result: VignetteSessionResult, trapEntries?: TrapLogEntry[]) => void;
   recordPracticeAttempt: (attempt: PracticeAttempt, trapEntries?: TrapLogEntry[]) => void;
+  savePracticeSession: (session: PracticeSession, makeActive?: boolean) => void;
+  clearActivePracticeSession: () => void;
   getLatestAttemptForTopic: (topicId: string) => PracticeAttempt | undefined;
   logErrorMode: (trapEntryId: string, errorMode: ErrorMode) => void;
   updateLeitnerCard: (cardId: string, isCorrect: boolean) => void;
@@ -148,6 +147,7 @@ export const useCFAStore = create<CFAState>()(
         if (v) {
           set({
             activeVignetteId: v.id,
+            activePracticeSessionId: null,
             activeTopicId: v.topicId,
             inProgressTopicId: v.topicId,
             isBriefingModalOpen: false,
@@ -175,74 +175,46 @@ export const useCFAStore = create<CFAState>()(
         set((state) => ({ isPacingTimerEnabled: !state.isPacingTimerEnabled }));
       },
 
-      recordVignetteSubmission: (result: VignetteSessionResult, trapEntries?: TrapLogEntry[]) => {
-        const currentResults = { ...get().vignetteResults, [result.vignetteId]: result };
-        const currentTraps = [...(trapEntries || []), ...get().trapLogs];
-
-        // Create and append canonical PracticeAttempt
-        const topicName = CFA_CURRICULUM.find((t) => t.id === result.topicId)?.name || "Topic " + result.topicId;
-        const newAttempt = legacyResultToPracticeAttempt(result, topicName);
-        const currentAttempts = [...get().practiceAttempts, newAttempt];
-
-        // Also add new Leitner flashcards for missed questions with authentic options & keystrokes
-        const currentLeitner = [...get().leitnerCards];
-        if (trapEntries && trapEntries.length > 0) {
-          trapEntries.forEach((entry) => {
-            const exists = currentLeitner.some((c) => c.trapLogId === entry.id);
-            if (!exists) {
-              const nextDate = new Date();
-              nextDate.setDate(nextDate.getDate() + 1); // 1-day interval
-              currentLeitner.push({
-                id: `card-${entry.id}`,
-                trapLogId: entry.id,
-                topicId: entry.topicId,
-                topicName: entry.topicName,
-                questionStem: entry.questionStem,
-                options: entry.options || { A: "Option A", B: "Option B", C: "Option C" },
-                correctOption: entry.correctOption,
-                solution: entry.autopsyExplanation,
-                keystrokes: entry.calculatorKeystrokes || "",
-                trapName: entry.trapName,
-                errorMode: entry.errorMode || "UNSPECIFIED",
-                box: 1,
-                nextReviewAt: nextDate.toISOString(),
-                reviewCount: 0,
-              });
-            }
-          });
-        }
-
-        // If high score, mark topic completed
-        const updatedCompleted = [...get().completedTopicIds];
-        if (result.score >= Math.ceil(result.total * 0.7) && !updatedCompleted.includes(result.topicId)) {
-          updatedCompleted.push(result.topicId);
-        }
-
-        set({
-          vignetteResults: currentResults,
-          practiceAttempts: currentAttempts,
-          trapLogs: currentTraps,
-          leitnerCards: currentLeitner,
-          completedTopicIds: updatedCompleted,
-        });
-      },
-
       recordPracticeAttempt: (attempt: PracticeAttempt, trapEntries?: TrapLogEntry[]) => {
         const currentAttempts = [...get().practiceAttempts, attempt];
         const currentTraps = [...(trapEntries || []), ...get().trapLogs];
 
-        const primaryTopicId = attempt.topicIds[0] || "01";
         const updatedCompleted = [...get().completedTopicIds];
-        if (attempt.score >= Math.ceil(attempt.total * 0.7) && !updatedCompleted.includes(primaryTopicId)) {
+        const primaryTopicId = attempt.topicIds[0];
+        if (
+          attempt.mode === "practice" &&
+          attempt.topicIds.length === 1 &&
+          primaryTopicId &&
+          attempt.score >= Math.ceil(attempt.total * 0.7) &&
+          !updatedCompleted.includes(primaryTopicId)
+        ) {
           updatedCompleted.push(primaryTopicId);
         }
 
+        const storedSession = get().practiceSessions[attempt.sessionId];
+        const practiceSessions = storedSession
+          ? {
+              ...get().practiceSessions,
+              [attempt.sessionId]: { ...storedSession, completedAt: attempt.submittedAt },
+            }
+          : get().practiceSessions;
+
         set({
           practiceAttempts: currentAttempts,
+          practiceSessions,
           trapLogs: currentTraps,
           completedTopicIds: updatedCompleted,
         });
       },
+
+      savePracticeSession: (session, makeActive = true) => {
+        set((state) => ({
+          practiceSessions: { ...state.practiceSessions, [session.id]: session },
+          activePracticeSessionId: makeActive ? session.id : state.activePracticeSessionId,
+        }));
+      },
+
+      clearActivePracticeSession: () => set({ activePracticeSessionId: null }),
 
       getLatestAttemptForTopic: (topicId: string) => {
         const attempts = get().practiceAttempts.filter((a) => a.topicIds.includes(topicId));
@@ -420,6 +392,7 @@ export const useCFAStore = create<CFAState>()(
         practiceAttempts: state.practiceAttempts,
         practiceSessions: state.practiceSessions,
         activePracticeSessionId: state.activePracticeSessionId,
+        activeVignetteId: state.activeVignetteId,
         trapLogs: state.trapLogs,
         customVignettes: state.customVignettes,
         leitnerCards: state.leitnerCards,

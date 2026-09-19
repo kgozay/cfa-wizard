@@ -3,16 +3,9 @@ import { VignetteSet, VignetteQuestion, OptionKey, ErrorMode } from "@/types/cfa
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { GenerationRequestSchema } from "@/lib/generation/requestSchema";
+import { GenerationResponseSchema } from "@/lib/generation/responseSchema";
 import { createAIDraftProvenance, createFallbackProvenance } from "@/lib/generation/provenance";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
-
-interface GenerationRequest {
-  topicId?: string;
-  difficulty?: "Standard" | "High Trap" | "Institutional";
-  customPrompt?: string;
-  questionCount?: number;
-  errorModeTarget?: string;
-}
 
 /**
  * Procedural Question Bank & Dynamic Generator
@@ -1335,21 +1328,7 @@ export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.json();
 
-    // Map and validate request strictly with Zod
-    const normalizedDifficulty = typeof rawBody.difficulty === "string"
-      ? rawBody.difficulty.toLowerCase().replace(/\s+/g, "-")
-      : "standard";
-
-    const requestParsed = GenerationRequestSchema.safeParse({
-      topicId: rawBody.topicId,
-      mode: rawBody.mode || "standalone",
-      difficulty: ["standard", "high-trap", "institutional"].includes(normalizedDifficulty)
-        ? normalizedDifficulty
-        : "standard",
-      questionCount: Number(rawBody.questionCount) || 5,
-      focus: rawBody.customPrompt || rawBody.focus,
-      excludeItemIds: rawBody.excludeItemIds,
-    });
+    const requestParsed = GenerationRequestSchema.safeParse(rawBody);
 
     if (!requestParsed.success) {
       return NextResponse.json(
@@ -1364,7 +1343,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { topicId, difficulty, questionCount, focus } = requestParsed.data;
+    const { topicId, difficulty, questionCount, focus, excludeItemIds = [] } = requestParsed.data;
     const topic = CFA_CURRICULUM.find((t) => t.id === topicId);
     if (!topic) {
       return NextResponse.json({ error: `Topic ${topicId} not found` }, { status: 404 });
@@ -1386,19 +1365,45 @@ export async function POST(req: NextRequest) {
       vignette = generateProceduralVignette(topic.id, diffLabel, focus || "", questionCount);
     }
 
+    if (vignette.questions.length !== questionCount) {
+      return NextResponse.json(
+        {
+          error: `Unable to produce exactly ${questionCount} unique questions for this topic.`,
+          available: vignette.questions.length,
+        },
+        { status: 422 }
+      );
+    }
+
+    const normalizedStems = vignette.questions.map((question) => question.stem.trim().toLowerCase());
+    if (new Set(normalizedStems).size !== normalizedStems.length) {
+      return NextResponse.json({ error: "Generated set contains duplicate question stems." }, { status: 422 });
+    }
+
     const provenance = isAiGenerated
       ? createAIDraftProvenance({ sourceIds: [topic.id], model: "gemini-2.5-flash" })
       : createFallbackProvenance({ sourceIds: [topic.id] });
 
+    vignette = { ...vignette, provenance };
     const items = legacyVignetteToPracticeItems(vignette, provenance);
+    if (items.some((item) => excludeItemIds.includes(item.id))) {
+      return NextResponse.json({ error: "Generated set repeated an excluded item." }, { status: 422 });
+    }
 
-    return NextResponse.json({
+    const response = GenerationResponseSchema.safeParse({
       success: true,
+      requestId: crypto.randomUUID(),
       vignette,
       items,
       provenance,
       warnings: isAiGenerated ? [] : ["Procedural fallback used. AI API key not configured or generation failed."],
     });
+    if (!response.success) {
+      console.error("Generated response failed contract validation", response.error.flatten());
+      return NextResponse.json({ error: "Generated content failed validation." }, { status: 422 });
+    }
+
+    return NextResponse.json(response.data);
   } catch (error) {
     console.error("AI Generation Error:", error);
     return NextResponse.json({ error: "Failed to generate dynamic vignette" }, { status: 500 });

@@ -6,6 +6,7 @@ import { CFA_CURRICULUM } from "@/data/curriculum";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
 import { VignetteSet } from "@/types/cfa";
+import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
 
 export const AIVignetteGeneratorModal: React.FC = () => {
   const {
@@ -30,6 +31,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
   const [customPrompt, setCustomPrompt] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const dialogRef = useAccessibleDialog<HTMLDivElement>(isAIGeneratorOpen, () => setAIGeneratorOpen(false));
 
   React.useEffect(() => {
     if (weakAreaTargetTopic) {
@@ -52,14 +54,15 @@ export const AIVignetteGeneratorModal: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           topicId: selectedTopicId,
-          difficulty,
-          customPrompt,
+          mode: "case-study",
+          difficulty: difficulty === "High Trap" ? "high-trap" : difficulty === "Institutional" ? "institutional" : "standard",
+          focus: customPrompt || undefined,
           questionCount,
         }),
       });
 
       const data = await res.json();
-      if (data.vignette) {
+      if (res.ok && data.vignette) {
         if (soundEnabled) sound.playNodeSwitch();
         setDrillQuestionCount(questionCount === 10 ? 10 : (questionCount as 2 | 5));
         addCustomVignette(data.vignette as VignetteSet);
@@ -76,6 +79,8 @@ export const AIVignetteGeneratorModal: React.FC = () => {
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-labelledby="ai-lab-title"

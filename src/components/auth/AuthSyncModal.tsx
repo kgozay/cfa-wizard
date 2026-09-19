@@ -18,7 +18,8 @@ import {
 import { useCFAStore } from "@/store/useCFAStore";
 import { supabaseRest, isSupabaseConfigured } from "@/lib/supabase/client";
 import { sound } from "@/components/common/SoundEffects";
-import { validateBackupPayload } from "@/lib/backup/schema";
+import { BackupPayload, validateBackupPayload } from "@/lib/backup/schema";
+import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
 
 interface AuthSyncModalProps {
   isOpen: boolean;
@@ -45,8 +46,10 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingBackup, setPendingBackup] = useState<BackupPayload | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useAccessibleDialog<HTMLDivElement>(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -54,17 +57,21 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
   const handleExportJSON = () => {
     if (soundEnabled) sound.playSuccessChime();
     const backupData = {
-      exportVersion: "4.0",
+      product: "cfa-wizard",
+      schemaVersion: 4,
       exportedAt: new Date().toISOString(),
-      completedTopicIds,
-      inProgressTopicId,
-      vignetteResults,
-      practiceAttempts,
-      practiceSessions,
-      activePracticeSessionId,
-      trapLogs,
-      customVignettes,
-      leitnerCards,
+      restoreMode: "replace",
+      data: {
+        completedTopicIds,
+        inProgressTopicId,
+        vignetteResults,
+        practiceAttempts,
+        practiceSessions,
+        activePracticeSessionId,
+        trapLogs,
+        customVignettes,
+        leitnerCards,
+      },
     };
 
     const blob = new Blob([JSON.stringify(backupData, null, 2)], {
@@ -114,23 +121,10 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
           return;
         }
 
-        const valid = validation.data;
-        useCFAStore.setState({
-          completedTopicIds: valid.completedTopicIds,
-          inProgressTopicId: valid.inProgressTopicId || "01",
-          vignetteResults: valid.vignetteResults,
-          practiceAttempts: valid.practiceAttempts,
-          practiceSessions: valid.practiceSessions,
-          activePracticeSessionId: valid.activePracticeSessionId,
-          trapLogs: valid.trapLogs,
-          customVignettes: valid.customVignettes,
-          leitnerCards: valid.leitnerCards,
-        });
-
-        if (soundEnabled) sound.playSuccessChime();
+        setPendingBackup(validation.data);
         setStatusMessage({
-          type: "success",
-          text: `Study progress and flashcards successfully restored from backup (v${valid.exportVersion})!`,
+          type: "info",
+          text: `Backup validated. Review the replacement summary before applying.${validation.warnings?.length ? ` ${validation.warnings.join(" ")}` : ""}`,
         });
       } catch (err) {
         setStatusMessage({
@@ -140,6 +134,25 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
       }
     };
     reader.readAsText(file);
+  };
+
+  const applyPendingBackup = () => {
+    if (!pendingBackup) return;
+    const valid = pendingBackup.data;
+    useCFAStore.setState({
+      completedTopicIds: valid.completedTopicIds,
+      inProgressTopicId: valid.inProgressTopicId || "01",
+      vignetteResults: valid.vignetteResults,
+      practiceAttempts: valid.practiceAttempts,
+      practiceSessions: valid.practiceSessions,
+      activePracticeSessionId: valid.activePracticeSessionId,
+      trapLogs: valid.trapLogs,
+      customVignettes: valid.customVignettes,
+      leitnerCards: valid.leitnerCards,
+    });
+    if (soundEnabled) sound.playSuccessChime();
+    setPendingBackup(null);
+    setStatusMessage({ type: "success", text: "Backup applied. Existing local study data was replaced." });
   };
 
   // Cloud Auth (Supabase)
@@ -178,6 +191,8 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-sync-title"
@@ -287,10 +302,10 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
                   <Upload className="w-4 h-4 text-cyan-300" />
                   <span>Restore from JSON File</span>
                 </span>
-                <span className="text-[10px] text-zinc-400">Instant Merge</span>
+                <span className="text-[10px] text-zinc-400">Validated Replace</span>
               </div>
               <p className="text-[11px] font-sans text-zinc-300 leading-relaxed">
-                Restore previous study progress or transfer your data seamlessly from another browser or device.
+                Validate a backup, review its summary, then explicitly replace the study data stored in this browser.
               </p>
               <input
                 type="file"
@@ -305,6 +320,17 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
               >
                 SELECT BACKUP FILE TO RESTORE
               </button>
+              {pendingBackup && (
+                <div className="space-y-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-amber-50">
+                  <p className="font-sans leading-relaxed">
+                    This will replace local data with {pendingBackup.data.practiceAttempts.length} attempts, {pendingBackup.data.completedTopicIds.length} completed topics, {pendingBackup.data.leitnerCards.length} review cards, and {pendingBackup.data.customVignettes.length} generated drafts.
+                  </p>
+                  <div className="flex gap-2">
+                    <button onClick={applyPendingBackup} className="min-h-11 flex-1 rounded-lg bg-amber-300 px-3 text-black font-bold">REPLACE LOCAL DATA</button>
+                    <button onClick={() => setPendingBackup(null)} className="min-h-11 rounded-lg border border-amber-200/40 px-3">CANCEL</button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

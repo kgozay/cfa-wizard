@@ -4,6 +4,10 @@ Date: 18 September 2026
 
 Scope: product strategy, CFA Level I fidelity, vignette and question generation, scoring and analytics, mock exams, persistence, accessibility, mobile usability, UI/UX, security, and engineering quality.
 
+## Implementation update — 19 September 2026
+
+The integrity remediation pass is now implemented. Practice, sprint, and mock workflows share canonical sessions and attempts; option permutations and per-item timing persist correctly; generated content carries visible provenance; drafts are excluded from readiness and mocks; insufficient mock banks fail instead of recycling questions; generation requests and responses are strict and exact-count; readiness uses evidence thresholds; backups validate a product/versioned replacement envelope before atomic application; and priority dialogs have shared focus trapping and restoration. Automated checks and a production build pass. The principal remaining work is the planned UI simplification and broader migration of lower-priority overlays to the shared accessible dialog behavior. Original findings below are retained as the audit record.
+
 Implementation runbook: `REFINEMENT_IMPLEMENTATION_PLAN.md`
 
 ## Executive summary

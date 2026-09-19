@@ -86,6 +86,7 @@ export interface VignetteSet {
   difficulty: "Standard" | "High Trap" | "Institutional";
   vignetteStem: string;
   questions: VignetteQuestion[];
+  provenance?: import("./practice").ContentProvenance;
 }
 
 /** @deprecated Use ItemAttempt from @/types/practice instead */
@@ -131,6 +132,10 @@ export interface TrapLogEntry {
   errorMode?: ErrorMode;
   leitnerBox?: number; // 1 = daily, 2 = 3-day, 3 = 7-day
   nextReviewDate?: string;
+  attemptId?: string;
+  itemAttemptId?: string;
+  sessionItemId?: string;
+  sourceItemId?: string;
 }
 
 export interface LeitnerCard {

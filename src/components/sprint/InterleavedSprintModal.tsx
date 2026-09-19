@@ -4,11 +4,14 @@ import React, { useState, useEffect } from "react";
 import { X, Zap, Clock, CheckCircle, XCircle, ArrowRight, RotateCcw, Award, ChevronDown, ChevronUp, Cpu, Sparkles } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { CFA_VIGNETTES } from "@/data/vignettes";
-import { OptionKey, VignetteQuestion, TrapLogEntry, QuestionSubmission } from "@/types/cfa";
+import { OptionKey, VignetteQuestion, TrapLogEntry } from "@/types/cfa";
+import type { PracticeSession } from "@/types/practice";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPracticeSession } from "@/lib/practice/createSession";
+import { gradeAttempt } from "@/lib/practice/gradeAttempt";
+import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
 
 export interface SprintQuestionItem {
   uniqueKey: string;
@@ -18,16 +21,18 @@ export interface SprintQuestionItem {
 }
 
 export const InterleavedSprintModal: React.FC = () => {
-  const { isSprintModalOpen, setSprintModalOpen, soundEnabled, recordVignetteSubmission } = useCFAStore();
+  const { isSprintModalOpen, setSprintModalOpen, soundEnabled, recordPracticeAttempt, savePracticeSession } = useCFAStore();
 
   const [sprintLength, setSprintLength] = useState<5 | 10 | 15>(10);
   const [sprintQuestions, setSprintQuestions] = useState<SprintQuestionItem[]>([]);
+  const [practiceSession, setPracticeSession] = useState<PracticeSession | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, OptionKey>>({});
   const [questionTimes, setQuestionTimes] = useState<Record<string, number>>({});
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(90);
   const [expandedAutopsyId, setExpandedAutopsyId] = useState<string | null>(null);
+  const dialogRef = useAccessibleDialog<HTMLDivElement>(isSprintModalOpen, () => setSprintModalOpen(false));
 
   // Generate randomized interleaved set
   const initSprint = (length: 5 | 10 | 15 = sprintLength) => {
@@ -37,7 +42,11 @@ export const InterleavedSprintModal: React.FC = () => {
       items: allPracticeItems,
       requestedCount: length,
       shuffleQuestions: true,
+      timerMode: "timed",
+      targetSecondsPerItem: 90,
     });
+    savePracticeSession(session, false);
+    setPracticeSession(session);
 
     const items: SprintQuestionItem[] = session.presentedItems.map((pi, index) => {
       const sourceItem = allPracticeItems.find((item) => item.id === pi.sourceItemId) || allPracticeItems[index];
@@ -86,7 +95,7 @@ export const InterleavedSprintModal: React.FC = () => {
     const interval = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
-          handleAdvance(null);
+          handleAdvance(null, 90);
           return 90;
         }
         return prev - 1;
@@ -122,12 +131,12 @@ export const InterleavedSprintModal: React.FC = () => {
   const currentItem = sprintQuestions[currentIndex];
   const q = currentItem?.question;
 
-  const handleAdvance = (chosenOption: OptionKey | null) => {
+  const handleAdvance = (chosenOption: OptionKey | null, elapsedOverride?: number) => {
     if (soundEnabled) sound.playKeyClick();
     if (!currentItem) return;
 
     const qKey = currentItem.uniqueKey;
-    const timeSpent = Math.max(1, 90 - secondsRemaining);
+    const timeSpent = elapsedOverride ?? Math.max(1, 90 - secondsRemaining);
 
     const updatedAnswers = { ...selectedAnswers };
     if (chosenOption) {
@@ -144,60 +153,46 @@ export const InterleavedSprintModal: React.FC = () => {
       setIsFinished(true);
       if (soundEnabled) sound.playSuccessChime();
 
-      let score = 0;
+      if (!practiceSession) return;
+      const attempt = gradeAttempt({
+        session: practiceSession,
+        answers: Object.fromEntries(sprintQuestions.map((item) => [item.uniqueKey, updatedAnswers[item.uniqueKey] || null])),
+        timing: updatedTimes,
+        trapCategories: Object.fromEntries(sprintQuestions.map((item) => [item.uniqueKey, item.question.trapCategory])),
+        errorModes: Object.fromEntries(sprintQuestions.filter((item) => item.question.errorModeDefault).map((item) => [item.uniqueKey, item.question.errorModeDefault!])),
+      });
       const trapEntries: TrapLogEntry[] = [];
-      const submissions: QuestionSubmission[] = [];
 
-      sprintQuestions.forEach((item) => {
+      sprintQuestions.forEach((item, index) => {
         const userChoice = updatedAnswers[item.uniqueKey];
         const isCorrect = userChoice === item.question.correctOption;
-        if (isCorrect) {
-          score++;
-        } else if (userChoice) {
+        if (!isCorrect) {
+          const itemAttempt = attempt.itemAttempts[index];
           trapEntries.push({
-            id: `sprint-trap-${item.uniqueKey}-${Date.now()}`,
-            timestamp: new Date().toISOString(),
+            id: crypto.randomUUID(),
+            timestamp: attempt.submittedAt,
             topicId: item.topicId,
             topicName: item.topicName,
             questionId: item.question.id,
             questionStem: item.question.stem,
             options: item.question.options,
-            userChoice,
-            selectedOption: userChoice,
+            userChoice: userChoice || undefined,
+            selectedOption: userChoice || undefined,
             correctOption: item.question.correctOption,
             trapCategory: item.question.trapCategory,
             trapName: item.question.trapCategory,
             errorMode: item.question.errorModeDefault || "UNSPECIFIED",
-            autopsyExplanation: item.question.distractorAutopsy[userChoice] || item.question.algebraicSolution,
+            autopsyExplanation: userChoice ? item.question.distractorAutopsy[userChoice] : "Time expired before an answer was selected.",
             calculatorKeystrokes: item.question.calculatorKeystrokes,
+            attemptId: attempt.id,
+            itemAttemptId: itemAttempt.id,
+            sessionItemId: item.uniqueKey,
+            sourceItemId: itemAttempt.sourceItemId,
           });
         }
-
-        submissions.push({
-          questionId: item.question.id,
-          selectedOption: userChoice || "A",
-          isCorrect,
-          trapTriggered: isCorrect ? undefined : item.question.trapCategory,
-          errorModeLogged: isCorrect ? undefined : item.question.errorModeDefault,
-          timeSpentSeconds: updatedTimes[item.uniqueKey] || 0,
-        });
       });
 
-      // Always save sprint attempts (including perfect 100% scores)
-      recordVignetteSubmission(
-        {
-          vignetteId: `sprint-${Date.now()}`,
-          topicId: "00",
-          score,
-          total: sprintQuestions.length,
-          submittedAt: new Date().toISOString(),
-          userAnswers: {},
-          submissions,
-          trapsTriggered: trapEntries.map((t) => t.trapName),
-          totalTimeSeconds: Object.values(updatedTimes).reduce((a, b) => a + b, 0),
-        },
-        trapEntries
-      );
+      recordPracticeAttempt(attempt, trapEntries);
     }
   };
 
@@ -220,6 +215,8 @@ export const InterleavedSprintModal: React.FC = () => {
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-labelledby="sprint-modal-title"
@@ -380,7 +377,7 @@ export const InterleavedSprintModal: React.FC = () => {
               {/* Distractor Autopsy Review */}
               <div className="space-y-3 font-mono text-xs">
                 <span className="text-editorial-dim uppercase tracking-wider block">
-                  Question Autopsy Review:
+                  Answer Review:
                 </span>
                 <div className="space-y-2">
                   {sprintQuestions.map((item, idx) => {
@@ -425,7 +422,7 @@ export const InterleavedSprintModal: React.FC = () => {
                             </div>
                             {userPick && item.question.distractorAutopsy[userPick] && (
                               <div className="p-3 rounded bg-red-500/10 border border-red-500/30 text-red-300 space-y-1">
-                                <span className="font-mono font-bold block">Your Selection Autopsy ([{userPick}]):</span>
+                                <span className="font-mono font-bold block">Why your answer was incorrect ([{userPick}]):</span>
                                 <FormattedMathText text={item.question.distractorAutopsy[userPick]} />
                               </div>
                             )}

@@ -2,8 +2,9 @@ import { CFA_VIGNETTES } from "./vignettes";
 import { CFA_CURRICULUM } from "./curriculum";
 import { MockExamSession, MockExamType, MockQuestionItem, MockTopicScore } from "@/types/mockExam";
 import { OptionKey, TrapLogEntry } from "@/types/cfa";
-import { createOptionPermutation } from "@/lib/practice/presentItem";
-import { makeAuthoredSourceId, makeSessionItemId } from "@/lib/practice/ids";
+import { PracticeItem } from "@/types/practice";
+import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
+import { createPracticeSession } from "@/lib/practice/createSession";
 
 // Fisher-Yates in-place shuffle helper
 export function shuffleArray<T>(array: T[]): T[] {
@@ -20,31 +21,19 @@ export function shuffleArray<T>(array: T[]): T[] {
  */
 export function generateMockExamSession(
   examType: MockExamType,
-  customVignettes: import("@/types/cfa").VignetteSet[] = []
+  _customVignettes: import("@/types/cfa").VignetteSet[] = []
 ): MockExamSession {
   // Approved authored content only for mock exams (quarantine unapproved generated drafts)
   const allVignettes = CFA_VIGNETTES;
   
   // Topic Pools
-  const topicQuestionPool: Record<string, {
-    topicId: string;
-    topicName: string;
-    subReading?: string;
-    question: import("@/types/cfa").VignetteQuestion;
-  }[]> = {};
+  const topicQuestionPool: Record<string, PracticeItem[]> = {};
 
   allVignettes.forEach((vig) => {
     if (!topicQuestionPool[vig.topicId]) {
       topicQuestionPool[vig.topicId] = [];
     }
-    vig.questions.forEach((q) => {
-      topicQuestionPool[vig.topicId].push({
-        topicId: vig.topicId,
-        topicName: vig.topicName,
-        subReading: vig.subReading,
-        question: q,
-      });
-    });
+    topicQuestionPool[vig.topicId].push(...legacyVignetteToPracticeItems(vig));
   });
 
   // Target questions per topic based on mock type and CFA official weights
@@ -111,62 +100,50 @@ export function generateMockExamSession(
   }
 
   // Sample questions according to target counts without repeating questions
-  const selectedRawQuestions: {
-    topicId: string;
-    topicName: string;
-    subReading?: string;
-    question: import("@/types/cfa").VignetteQuestion;
-  }[] = [];
+  const shortages = Object.entries(targetCounts)
+    .map(([topicId, count]) => ({ topicId, requested: count, available: topicQuestionPool[topicId]?.length || 0 }))
+    .filter(({ requested, available }) => available < requested);
+  if (shortages.length > 0) {
+    const details = shortages
+      .map(({ topicId, requested, available }) => `topic ${topicId}: ${available}/${requested}`)
+      .join(", ");
+    throw new Error(`This mock cannot be assembled without repeating questions (${details}). Choose a smaller mock while the authored bank is expanded.`);
+  }
+
+  const selectedItems: PracticeItem[] = [];
 
   Object.entries(targetCounts).forEach(([topicId, count]) => {
     const pool = topicQuestionPool[topicId] || [];
     const shuffledPool = shuffleArray(pool);
-    // Pick required amount (cycle if pool is smaller than target, giving each instance a unique sessionItemId)
-    for (let i = 0; i < count; i++) {
-      if (shuffledPool.length > 0) {
-        selectedRawQuestions.push(shuffledPool[i % shuffledPool.length]);
-      }
-    }
+    selectedItems.push(...shuffledPool.slice(0, count));
   });
 
-  // Shuffle all questions so topics are interleaved realistically
-  const randomizedMockList = shuffleArray(selectedRawQuestions);
-  const mockSessionId = `mock-${examType}-${Date.now()}`;
+  const practiceSession = createPracticeSession({
+    mode: "mock",
+    items: selectedItems,
+    requestedCount: totalTarget,
+    shuffleQuestions: true,
+    timerMode: "timed",
+  });
 
-  const mockQuestions: MockQuestionItem[] = randomizedMockList.map((item, index) => {
-    const perm = createOptionPermutation();
-    const sourceItemId = makeAuthoredSourceId(item.topicId, item.question.id);
-    const sessionItemId = makeSessionItemId(mockSessionId, index + 1, sourceItemId);
-
-    const displayedOptions = {
-      A: item.question.options[perm.displayedToAuthoring.A],
-      B: item.question.options[perm.displayedToAuthoring.B],
-      C: item.question.options[perm.displayedToAuthoring.C],
-    };
-    const displayedCorrectOption = perm.authoringToDisplayed[item.question.correctOption];
-    const displayedAutopsy = {
-      A: item.question.distractorAutopsy[perm.displayedToAuthoring.A] || "",
-      B: item.question.distractorAutopsy[perm.displayedToAuthoring.B] || "",
-      C: item.question.distractorAutopsy[perm.displayedToAuthoring.C] || "",
-    };
-
+  const mockQuestions: MockQuestionItem[] = practiceSession.presentedItems.map((item, index) => {
     return {
-      id: item.question.id * 1000 + index, // unique numeric ID in this mock for legacy views
-      sourceItemId,
-      sessionItemId,
+      id: index + 1,
+      sourceItemId: item.sourceItemId,
+      sessionItemId: item.sessionItemId,
       globalIndex: index + 1,
       topicId: item.topicId,
       topicName: item.topicName,
       subReading: item.subReading,
-      losCode: item.question.losCode,
-      stem: item.question.stem,
-      options: displayedOptions,
-      correctOption: displayedCorrectOption,
-      algebraicSolution: item.question.algebraicSolution,
-      calculatorKeystrokes: item.question.calculatorKeystrokes,
-      trapCategory: item.question.trapCategory,
-      errorModeDefault: item.question.errorModeDefault,
-      distractorAutopsy: displayedAutopsy,
+      losCode: item.losCode,
+      stem: item.stem,
+      options: item.options,
+      correctOption: item.correctOption,
+      algebraicSolution: item.solution,
+      calculatorKeystrokes: item.calculatorKeystrokes || "",
+      trapCategory: item.trapCategory,
+      errorModeDefault: item.errorModeDefault,
+      distractorAutopsy: item.distractorFeedback,
     };
   });
 
@@ -195,6 +172,7 @@ export function generateMockExamSession(
     isPassedMps: false,
     topicBreakdowns: initialTopicScores,
     questions: mockQuestions,
+    practiceSession,
   };
 }
 

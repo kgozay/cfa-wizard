@@ -16,6 +16,8 @@ import {
   Cloud,
 } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
+import { CFAWizardMark } from "@/components/brand/CFAWizardMark";
+import { TopicContextBar } from "@/components/common/TopicContextBar";
 import { CurrentAssignmentCard } from "@/components/dashboard/CurrentAssignmentCard";
 import { CurriculumTracksGrid } from "@/components/dashboard/CurriculumTracksGrid";
 import { ScenarioSimulatorStudio } from "@/components/dashboard/ScenarioSimulatorStudio";
@@ -190,7 +192,7 @@ export default function DiagnosticCockpitPage() {
 
   const TABS = [
     { id: "tracks" as const, label: "Study" },
-    { id: "simulator" as const, label: "Custom practice" },
+    { id: "simulator" as const, label: "Practice" },
     { id: "recall" as const, label: "Review" },
     { id: "analytics" as const, label: "Progress" },
   ];
@@ -219,12 +221,13 @@ export default function DiagnosticCockpitPage() {
 
   return (
     <main className="min-h-screen flex flex-col bg-background text-foreground selection:bg-accent selection:text-accent-ink font-sans">
-      <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/95 backdrop-blur-md">
+      <header className="sticky top-0 z-40 w-full glass-shell">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex min-h-11 items-center gap-3 rounded-lg pr-2 text-foreground">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/20">
-              <span className="h-2 w-2 rounded-full bg-accent" />
-            </span>
+          <Link
+            href="/"
+            className="flex min-h-11 items-center gap-3 rounded-lg pr-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            <CFAWizardMark className="h-5 w-5" />
             <span className="text-base font-bold tracking-tight text-foreground">CFA Wizard</span>
             <span className="hidden text-xs font-medium text-muted sm:inline">Level I study</span>
           </Link>
@@ -388,15 +391,21 @@ export default function DiagnosticCockpitPage() {
           </div>
         ) : (
           <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-            <CurrentAssignmentCard
-              onOpenBriefing={handleOpenBriefing}
-              onOpenScenarioSimulator={handleOpenScenarioSimulator}
-            />
+            {activeTab === "tracks" ? (
+              <CurrentAssignmentCard
+                onOpenBriefing={handleOpenBriefing}
+                onOpenScenarioSimulator={handleOpenScenarioSimulator}
+              />
+            ) : (
+              <TopicContextBar
+                onStartPractice={() => handleOpenScenarioSimulator(useCFAStore.getState().activeTopicId || "01")}
+              />
+            )}
 
             <div
               role="tablist"
               aria-label="Study views"
-              className="grid w-full grid-cols-2 gap-1 rounded-2xl border border-border/80 bg-surface p-1.5 sm:grid-cols-4"
+              className="grid w-full grid-cols-4 gap-1 rounded-xl glass-shell p-1.5"
             >
               {TABS.map((tab, idx) => {
                 const isSelected = activeTab === tab.id;
@@ -416,17 +425,17 @@ export default function DiagnosticCockpitPage() {
                       if (soundEnabled) sound.playKeyClick();
                       setActiveTab(tab.id);
                     }}
-                    className={`relative min-h-11 rounded-xl px-3 py-2.5 text-center text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                    className={`relative min-h-[44px] rounded-lg px-2 py-2.5 text-center text-xs sm:text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                       isSelected
-                        ? "bg-accent/10 text-accent"
-                        : "text-muted hover:bg-surface-interactive/70 hover:text-foreground active:scale-[0.98]"
+                        ? "bg-surface-interactive text-accent shadow-sm"
+                        : "text-muted hover:bg-surface-interactive/60 hover:text-foreground active:scale-[0.98]"
                     }`}
                   >
-                    <span>{tab.label}</span>
+                    <span className="truncate">{tab.label}</span>
                     {isSelected && (
                       <span
                         aria-hidden="true"
-                        className="absolute bottom-1 left-6 right-6 h-[2.5px] rounded-full bg-accent transition-all duration-200"
+                        className="absolute bottom-1 left-3 right-3 sm:left-6 sm:right-6 h-[2px] rounded-full bg-accent transition-all duration-150"
                       />
                     )}
                   </button>

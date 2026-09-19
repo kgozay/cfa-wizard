@@ -364,20 +364,19 @@ export const VignetteEngine: React.FC = () => {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
       
       {/* Top Ergonomic Control Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[#1F1F23]">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-divider">
         <button
           onClick={closeVignetteDrill}
-          className="inline-flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted hover:text-foreground transition-colors min-h-[44px]"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>BACK TO STUDY DASHBOARD</span>
+          <span>Back to dashboard</span>
         </button>
 
-        <div className="flex flex-wrap items-center gap-2.5 font-mono text-xs">
-          
+        <div className="flex flex-wrap items-center gap-2.5 text-xs">
           {/* Question Count Selector (2, 5, 10, 15) */}
-          <div className="flex items-center gap-1 bg-[#121215] border border-[#27272A] p-0.5 rounded-lg">
-            <span className="text-[11px] text-zinc-400 px-2 uppercase font-semibold select-none">Count:</span>
+          <div className="flex items-center gap-1 bg-surface-interactive rounded-lg p-0.5 border border-control">
+            <span className="text-[11px] text-muted px-2 font-medium select-none">Count:</span>
             {([2, 5, 10, 15] as const).map((cnt) => (
               <button
                 key={cnt}
@@ -387,10 +386,10 @@ export const VignetteEngine: React.FC = () => {
                   setDrillQuestionCount(cnt);
                 }}
                 disabled={hasSubmitted}
-                className={`px-2 py-1 rounded text-xs font-bold transition-all ${
+                className={`px-2 py-1 rounded text-xs font-semibold transition-all ${
                   drillQuestionCount === cnt
-                    ? "bg-brand-lime text-black shadow-lime-sm"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-accent text-accent-ink"
+                    : "text-muted hover:text-foreground"
                 }`}
               >
                 {cnt}Q
@@ -402,11 +401,11 @@ export const VignetteEngine: React.FC = () => {
           <button
             onClick={handleInjectAIQuestions}
             disabled={isInjectingAI || hasSubmitted}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-brand-lime/10 hover:bg-brand-lime/20 text-brand-lime border border-brand-lime/40 text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent text-xs font-semibold transition-all active:scale-[0.98] disabled:opacity-50 min-h-[36px]"
             title="Generate & inject additional AI scenario questions into this drill"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isInjectingAI ? "animate-spin" : ""}`} />
-            <span>{isInjectingAI ? "SYNTHESIZING..." : "+AI QUESTIONS"}</span>
+            <span>{isInjectingAI ? "Generating..." : "+ AI questions"}</span>
           </button>
 
           {/* 90-Second Exam Pace Toggle */}
@@ -415,14 +414,14 @@ export const VignetteEngine: React.FC = () => {
               if (soundEnabled) sound.playKeyClick();
               togglePacingTimer();
             }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-mono font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all min-h-[36px] ${
               isPacingTimerEnabled
                 ? isOvertime
-                ? "bg-red-500/20 text-red-400 border-red-500/50 animate-pulse"
-                : isWarning
-                ? "bg-amber-500/20 text-amber-300 border-amber-500/50"
-                : "bg-brand-lime/10 text-brand-lime border-brand-lime/40"
-              : "bg-[#121215] text-zinc-400 border-[#27272A] hover:text-white"
+                  ? "bg-danger/20 text-danger border border-danger/50 animate-pulse"
+                  : isWarning
+                  ? "bg-warning/20 text-warning border border-warning/50"
+                  : "bg-accent/15 text-accent"
+                : "bg-surface-interactive text-muted hover:text-foreground"
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
@@ -431,20 +430,20 @@ export const VignetteEngine: React.FC = () => {
                 ? `${Math.floor(elapsedSeconds / 60)}:${(elapsedSeconds % 60)
                     .toString()
                     .padStart(2, "0")} / ${Math.floor(targetTimeSeconds / 60)}:00`
-                : "UNTIMED STUDY"}
+                : "Untimed"}
             </span>
           </button>
 
-          {/* Non-Blocking Floating / Docked TI BA II Plus */}
+          {/* TI BA II Plus toggle */}
           <button
             onClick={() => {
               if (soundEnabled) sound.playKeyClick();
               setCalculatorMode(calculatorMode === "docked" ? "closed" : "docked");
             }}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[36px] ${
               calculatorMode !== "closed"
-                ? "bg-amber-400 text-black border-amber-400 shadow-sm"
-                : "bg-[#141418] hover:bg-[#1C1C22] border-[#27272A] text-amber-300"
+                ? "bg-warning text-accent-ink font-semibold"
+                : "bg-surface-interactive hover:bg-surface-raised text-warning"
             }`}
             title="Toggle Texas Instruments BA II Plus Emulator (Hotkey: K)"
           >
@@ -455,85 +454,83 @@ export const VignetteEngine: React.FC = () => {
           {/* Scratchpad Toggle */}
           <button
             onClick={() => setIsScratchpadOpen(!isScratchpadOpen)}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all min-h-[36px] ${
               isScratchpadOpen
-                ? "bg-brand-lime text-black font-bold border-brand-lime"
-                : "bg-[#141418] text-zinc-400 border-[#27272A] hover:text-white"
+                ? "bg-accent text-accent-ink font-semibold"
+                : "bg-surface-interactive text-muted hover:text-foreground"
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">SCRATCHPAD</span>
+            <span className="hidden sm:inline">Scratchpad</span>
           </button>
         </div>
       </div>
 
       {generationError && (
-        <div role="alert" className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <div role="alert" className="mb-6 rounded-xl bg-danger/10 border border-danger/25 px-4 py-3 text-sm text-danger">
           {generationError}
         </div>
       )}
 
       {/* Main Grid: Vignette Header + Case Stem */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
         {/* Left Column: Vignette Case Stem (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="p-6 bg-[#0B0B0E] border border-[#1F1F23] rounded-xl relative overflow-hidden shadow-lg">
-            
+          <div className="surface-panel rounded-2xl p-6 sm:p-7 relative overflow-hidden shadow-sm">
             {/* Topic & Difficulty Badges */}
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime font-mono text-xs font-bold uppercase tracking-wider">
-                  TOPIC {vignette.topicId} {"//"} {vignette.topicName}
+                <span className="px-2.5 py-1 rounded-md bg-accent/15 text-accent font-mono text-xs font-semibold">
+                  Topic {vignette.topicId} · {vignette.topicName}
                 </span>
-                <span className="text-xs font-mono text-zinc-400">
+                <span className="text-xs text-muted">
                   {vignette.subReading}
                 </span>
               </div>
-              <span className="px-2 py-0.5 rounded bg-[#18181B] border border-[#27272A] text-zinc-300 font-mono text-xs font-semibold">
-                DIFFICULTY: {vignette.difficulty.toUpperCase()}
+              <span className="px-2.5 py-1 rounded-md bg-surface-interactive text-muted text-xs font-medium">
+                {vignette.difficulty}
               </span>
             </div>
 
             {vignette.provenance && (
-              <p className="mb-4 text-xs text-amber-200" role="status">
+              <p className="mb-4 text-xs text-warning" role="status">
                 {vignette.provenance.origin === "ai-draft" ? "AI draft" : "Procedural fallback"}
                 {" · "}{vignette.provenance.status}. Generated content is excluded from readiness analytics and mock exams.
               </p>
             )}
 
             {/* Vignette Case Stem Text (Clean font-sans) */}
-            <h2 className="text-xs font-mono font-bold text-zinc-400 tracking-wider uppercase mb-3 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
-              PRACTICE CASE SCENARIO
+            <h2 className="text-xs font-semibold text-muted tracking-wider uppercase mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+              Practice case scenario
             </h2>
-            <div className="text-sm sm:text-base text-zinc-100 leading-relaxed font-sans font-normal border-l-2 border-brand-lime/40 pl-4 py-1">
+            <div className="text-sm sm:text-base text-foreground leading-relaxed font-sans font-normal border-l-2 border-accent/60 pl-4 py-1">
               <FormattedMathText text={vignette.vignetteStem} />
             </div>
 
             {/* Hotkey Guide Pill */}
-            <div className="mt-5 pt-3 border-t border-[#18181B] flex items-center justify-between text-xs font-mono text-zinc-400">
+            <div className="mt-5 pt-3 border-t border-divider flex items-center justify-between text-xs text-muted">
               <span className="flex items-center gap-1.5">
-                <Keyboard className="w-3.5 h-3.5 text-brand-lime" />
-                <span>HOTKEYS: [1/2/3] SELECT &bull; [SPACE/ENTER] SUBMIT &bull; [K] BA II+</span>
+                <Keyboard className="w-3.5 h-3.5 text-accent" />
+                <span className="font-mono">Keys: [1/2/3] select · [Space/Enter] submit · [K] BA II+</span>
               </span>
-              <span className="text-white font-bold">{activeQuestions.length} QUESTIONS IN SET</span>
+              <span className="font-mono text-foreground font-semibold">{activeQuestions.length} questions</span>
             </div>
           </div>
 
           {/* Scratchpad (Collapsible) */}
           {isScratchpadOpen && (
-            <div className="p-4 bg-[#0A0A0D] border border-brand-lime/30 rounded-xl space-y-2 font-mono animate-in fade-in duration-150">
-              <div className="flex items-center justify-between text-xs text-brand-lime">
-                <span className="font-bold">SCRATCHPAD // INTERMEDIATE WORKINGS</span>
-                <span className="text-[11px] text-zinc-400">Auto-persisted in session</span>
+            <div className="surface-panel rounded-xl border border-divider p-4 space-y-2 animate-in fade-in duration-150">
+              <div className="flex items-center justify-between text-xs text-accent font-medium">
+                <span>Scratchpad · Workings</span>
+                <span className="text-[11px] text-muted font-normal">Auto-saved in session</span>
               </div>
               <textarea
                 value={scratchpadText}
                 onChange={(e) => setScratchpadText(e.target.value)}
                 placeholder="Type intermediate keystrokes, cash flows, or formula steps..."
                 rows={4}
-                className="w-full bg-[#121215] border border-[#27272A] rounded-lg p-3 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-brand-lime font-mono"
+                className="w-full bg-surface-solid border border-control rounded-lg p-3 text-xs sm:text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent font-mono"
               />
             </div>
           )}
@@ -546,29 +543,29 @@ export const VignetteEngine: React.FC = () => {
             return (
               <div
                 key={q.sessionItemId}
-                className={`p-5 rounded-xl border transition-all ${
-                  chosen ? "bg-[#0E0E12] border-brand-lime/40" : "bg-[#0B0B0E] border-[#1F1F23]"
+                className={`p-5 rounded-2xl surface-panel border transition-all ${
+                  chosen ? "border-accent/40" : "border-divider"
                 }`}
               >
                 {/* Question Header */}
-                <div className="flex items-center justify-between mb-3 font-mono text-xs">
-                  <span className="text-brand-lime font-bold">
-                    QUESTION {idx + 1} OF {activeQuestions.length}
+                <div className="flex items-center justify-between mb-3 text-xs">
+                  <span className="text-accent font-mono font-semibold">
+                    Question {idx + 1} of {activeQuestions.length}
                   </span>
                   {q.losCode && (
-                    <span className="text-editorial-dim text-[11px] px-1.5 py-0.5 rounded bg-[#141418] border border-[#27272A]">
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-md bg-surface-interactive text-muted">
                       {q.losCode}
                     </span>
                   )}
                 </div>
 
                 {/* Question Stem */}
-                <div className="text-xs sm:text-sm text-zinc-100 font-medium mb-4 leading-relaxed">
+                <div className="text-xs sm:text-sm text-foreground font-medium mb-4 leading-relaxed">
                   <FormattedMathText text={q.stem} />
                 </div>
 
                 {/* Option Selector (A, B, C) */}
-                <div className="space-y-2 font-mono">
+                <div className="space-y-2">
                   {(["A", "B", "C"] as OptionKey[]).map((opt) => {
                     const isSelected = chosen === opt;
                     return (
@@ -577,17 +574,17 @@ export const VignetteEngine: React.FC = () => {
                         type="button"
                         onClick={() => handleSelectOption(q.sessionItemId, opt)}
                         disabled={hasSubmitted}
-                        className={`w-full text-left p-3 rounded-lg border transition-all flex items-start gap-3 select-none min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
+                        className={`w-full text-left p-3 rounded-xl border transition-all flex items-start gap-3 select-none min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                           isSelected
-                            ? "bg-brand-lime/10 border-brand-lime text-white shadow-[0_0_12px_rgba(216,255,62,0.15)]"
-                            : "bg-[#121215] border-[#222226] text-zinc-300 hover:border-[#3F3F46] hover:bg-[#16161A]"
+                            ? "bg-accent/10 border-accent text-foreground shadow-sm"
+                            : "bg-surface-solid border-control text-muted-strong hover:border-control-hover hover:bg-surface-interactive hover:text-foreground"
                         } ${hasSubmitted ? "cursor-not-allowed opacity-80" : ""}`}
                       >
                         <span
-                          className={`inline-flex items-center justify-center w-5 h-5 rounded font-bold text-xs shrink-0 ${
+                          className={`inline-flex items-center justify-center w-5 h-5 rounded-md font-mono font-bold text-xs shrink-0 ${
                             isSelected
-                              ? "bg-brand-lime text-black"
-                              : "bg-[#1C1C22] text-editorial-dim border border-[#27272A]"
+                              ? "bg-accent text-accent-ink"
+                              : "bg-surface-interactive text-muted border border-control"
                           }`}
                         >
                           {opt}
@@ -608,25 +605,25 @@ export const VignetteEngine: React.FC = () => {
             <button
               onClick={handleSubmitDiagnostic}
               disabled={!isFormComplete}
-              className={`w-full py-3.5 px-4 rounded-xl font-mono text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
+              className={`w-full min-h-[44px] py-3.5 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
                 isFormComplete
-                  ? "bg-brand-lime text-black hover:bg-brand-lime/90 shadow-lime-glow cursor-pointer active:scale-[0.99]"
-                  : "bg-[#18181B] text-editorial-dim border border-[#27272A] cursor-not-allowed"
+                  ? "bg-accent text-accent-ink hover:bg-accent-strong cursor-pointer"
+                  : "bg-surface-interactive text-muted border border-control cursor-not-allowed"
               }`}
             >
               <Send className="w-4 h-4" />
               <span>
                 {isFormComplete
-                  ? "SUBMIT PRACTICE SET"
-                  : `SELECT ALL ANSWERS (${Object.keys(selectedAnswers).length}/${activeQuestions.length})`}
+                  ? "Submit practice set"
+                  : `Select all answers (${Object.keys(selectedAnswers).length}/${activeQuestions.length})`}
               </span>
             </button>
           ) : (
             <button
               onClick={handleResetForRetake}
-              className="w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider bg-[#141418] hover:bg-[#1A1A20] text-zinc-300 border border-[#27272A] transition-all"
+              className="w-full min-h-[44px] py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-surface-interactive hover:bg-surface-raised text-foreground transition-all active:scale-[0.98]"
             >
-              RE-DRILL THIS PRACTICE SET (RESET)
+              Re-take this practice set
             </button>
           )}
         </div>

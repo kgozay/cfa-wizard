@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Layers, Zap, AlertTriangle, Play, CheckCircle2, RotateCcw, ArrowRight, ShieldCheck } from "lucide-react";
+import { Layers, Zap, AlertTriangle, Play, ArrowRight } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
 
@@ -45,61 +45,59 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
   };
 
   return (
-    <div className="space-y-6 font-mono">
-      
-      {/* 2-Column Hub: Spaced Repetition + Sprint Simulator */}
+    <div className="space-y-6">
+      {/* 2-Column Hub: Spaced Review + Mixed Sprint */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        
-        {/* Left Column: Leitner Spaced Repetition Vault */}
-        <div className="bg-[#0B0B0E] border border-[#27272A] rounded-xl p-5 sm:p-6 space-y-5 shadow-xl flex flex-col justify-between">
+        {/* Left Column: Spaced Review */}
+        <div className="surface-panel rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-[#1F1F23] pb-3">
+            <div className="flex items-center justify-between border-b border-divider pb-3">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-brand-lime" />
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                  SPACED REPETITION VAULT
+                <Layers className="w-4 h-4 text-accent" />
+                <h3 className="text-base font-bold text-foreground">
+                  Spaced review
                 </h3>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime font-bold">
-                LEITNER 3-BOX SYSTEM
+              <span className="text-xs px-2.5 py-0.5 rounded-md bg-accent/15 text-accent font-mono font-semibold">
+                Leitner system
               </span>
             </div>
 
-            <p className="text-xs text-zinc-400 font-sans leading-relaxed">
-              Every question you miss during diagnostic drills is automatically isolated into your active memory deck.
+            <p className="text-xs sm:text-sm text-muted leading-relaxed">
+              Questions you miss during practice sets are automatically routed to your spaced review deck.
             </p>
 
-            {/* Box Metric Stack */}
+            {/* Stepped Retention Model */}
             <div className="space-y-2 text-xs">
-              <div className="p-3 rounded-lg bg-[#121215] border border-[#27272A] flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-surface-raised flex items-center justify-between">
                 <div>
-                  <span className="text-zinc-300 font-bold block">Box 1: Daily Rapid Review</span>
-                  <span className="text-[11px] text-zinc-500 font-sans">Interval: 1 Day</span>
+                  <span className="text-foreground font-semibold block">Box 1: Daily review</span>
+                  <span className="text-xs text-muted font-mono">Interval: 1 day</span>
                 </div>
-                <span className={`px-2.5 py-1 rounded font-bold text-xs ${
-                  dueCards.length > 0 ? "bg-amber-400/20 text-amber-300 border border-amber-400/40" : "bg-[#18181B] text-zinc-400"
+                <span className={`px-2.5 py-1 rounded-md font-mono text-xs font-semibold ${
+                  dueCards.length > 0 ? "bg-warning/20 text-warning" : "bg-surface-interactive text-muted"
                 }`}>
-                  {box1Cards.length} Cards ({dueCards.length} Due)
+                  {box1Cards.length} cards ({dueCards.length} due)
                 </span>
               </div>
 
-              <div className="p-3 rounded-lg bg-[#121215] border border-[#27272A] flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-surface-raised flex items-center justify-between">
                 <div>
-                  <span className="text-zinc-300 font-bold block">Box 2: Intermediate Retention</span>
-                  <span className="text-[11px] text-zinc-500 font-sans">Interval: 3 Days</span>
+                  <span className="text-foreground font-semibold block">Box 2: Intermediate retention</span>
+                  <span className="text-xs text-muted font-mono">Interval: 3 days</span>
                 </div>
-                <span className="px-2.5 py-1 rounded bg-[#18181B] text-zinc-400 font-bold text-xs">
-                  {box2Cards.length} Cards
+                <span className="px-2.5 py-1 rounded-md bg-surface-interactive text-muted font-mono font-semibold text-xs">
+                  {box2Cards.length} cards
                 </span>
               </div>
 
-              <div className="p-3 rounded-lg bg-[#121215] border border-[#27272A] flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-surface-raised flex items-center justify-between">
                 <div>
-                  <span className="text-zinc-300 font-bold block">Box 3: Long-Term Exam Mastery</span>
-                  <span className="text-[11px] text-zinc-500 font-sans">Interval: 7 Days</span>
+                  <span className="text-foreground font-semibold block">Box 3: Long-term mastery</span>
+                  <span className="text-xs text-muted font-mono">Interval: 7 days</span>
                 </div>
-                <span className="px-2.5 py-1 rounded bg-brand-lime/10 text-brand-lime border border-brand-lime/30 font-bold text-xs">
-                  {box3Cards.length} Mastered
+                <span className="px-2.5 py-1 rounded-md bg-accent/15 text-accent font-mono font-semibold text-xs">
+                  {box3Cards.length} mastered
                 </span>
               </div>
             </div>
@@ -107,117 +105,115 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
 
           <button
             onClick={handleOpenLeitner}
-            className="w-full py-3 px-4 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-white hover:text-brand-lime border border-[#27272A] hover:border-brand-lime/50 font-bold text-xs transition-all flex items-center justify-center gap-2"
+            className="w-full min-h-[44px] py-3 px-4 rounded-xl bg-surface-interactive hover:bg-surface-raised text-foreground font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
           >
-            <Layers className="w-4 h-4 text-brand-lime" />
-            <span>OPEN FLASHCARD REVIEW DECK ({leitnerCards.length})</span>
+            <Layers className="w-4 h-4 text-accent" />
+            <span>Open review deck ({leitnerCards.length} cards)</span>
           </button>
         </div>
 
-        {/* Right Column: Interleaved Sprint Simulator */}
-        <div className="bg-[#0B0B0E] border border-[#27272A] rounded-xl p-5 sm:p-6 space-y-5 shadow-xl flex flex-col justify-between">
+        {/* Right Column: Mixed Topic Sprint */}
+        <div className="surface-panel rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-[#1F1F23] pb-3">
+            <div className="flex items-center justify-between border-b border-divider pb-3">
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                  INTERLEAVED SPRINT DRILL
+                <Zap className="w-4 h-4 text-warning" />
+                <h3 className="text-base font-bold text-foreground">
+                  Mixed topic sprint
                 </h3>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-amber-400/10 border border-amber-400/30 text-amber-300 font-bold">
-                10-QUESTION EXAM SIMULATOR
+              <span className="text-xs px-2.5 py-0.5 rounded-md bg-warning/15 text-warning font-mono font-semibold">
+                10-question set
               </span>
             </div>
 
-            <p className="text-xs text-zinc-400 font-sans leading-relaxed">
-              Stress-test your cross-curriculum cognitive switching by tackling 10 randomized high-yield questions sampled across all 10 CFA tracks with strict 90-second exam pacing.
+            <p className="text-xs sm:text-sm text-muted leading-relaxed">
+              Test your cross-curriculum cognitive agility with 10 randomized high-yield questions sampled across all 10 CFA topics with exam pacing.
             </p>
 
             <div className="space-y-2 text-xs">
-              <div className="flex justify-between py-2 border-b border-[#18181B]">
-                <span className="text-zinc-400">Total Drill Questions:</span>
-                <span className="text-white font-bold">10 Randomized Items</span>
+              <div className="flex justify-between py-2 border-b border-divider">
+                <span className="text-muted">Questions:</span>
+                <span className="text-foreground font-semibold font-mono">10 randomized items</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-[#18181B]">
-                <span className="text-zinc-400">Per-Question Time Limit:</span>
-                <span className="text-brand-lime font-bold">90 Seconds (15.0 Mins Total)</span>
+              <div className="flex justify-between py-2 border-b border-divider">
+                <span className="text-muted">Target pacing:</span>
+                <span className="text-accent font-semibold font-mono">90s per question (15m total)</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-[#18181B]">
-                <span className="text-zinc-400">Curriculum Scope:</span>
-                <span className="text-white font-bold">All 10 CFA Tracks</span>
+              <div className="flex justify-between py-2 border-b border-divider">
+                <span className="text-muted">Curriculum scope:</span>
+                <span className="text-foreground font-semibold">All 10 CFA topics</span>
               </div>
             </div>
           </div>
 
           <button
             onClick={handleLaunchSprint}
-            className="w-full py-3.5 px-4 rounded-lg bg-brand-lime hover:bg-brand-neon text-black font-extrabold text-xs tracking-wider flex items-center justify-center gap-2 transition-all shadow-lime-glow active:scale-95 uppercase"
+            className="w-full min-h-[44px] py-3 px-4 rounded-xl bg-accent hover:bg-accent-strong text-accent-ink font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
           >
-            <Play className="w-4 h-4 fill-black" />
-            <span>LAUNCH 10-QUESTION SPRINT</span>
+            <Play className="w-4 h-4 fill-current" />
+            <span>Start 10-question sprint</span>
           </button>
         </div>
-
       </div>
 
-      {/* Candidate Error Log / Trap Radar Summary Table */}
-      <div className="w-full bg-[#0B0B0E] border border-[#27272A] rounded-xl p-5 sm:p-6 space-y-4 shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#1F1F23] pb-3">
+      {/* Mistake Review / Trap Autopsy Table */}
+      <div className="w-full surface-panel rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-divider pb-3">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              CANDIDATE ERROR LOG ({trapLogs.length} LOGGED TRAPS)
+            <AlertTriangle className="w-4 h-4 text-warning" />
+            <h3 className="text-base font-bold text-foreground">
+              Mistake review ({trapLogs.length} logged errors)
             </h3>
           </div>
           {trapLogs.length > 0 && (
             <button
               onClick={() => setTrapLogOpen(true)}
-              className="text-xs text-brand-lime hover:underline font-semibold"
+              className="text-xs sm:text-sm text-accent hover:underline font-semibold"
             >
-              View Full Error Radar &rarr;
+              View full error log &rarr;
             </button>
           )}
         </div>
 
         {trapLogs.length === 0 ? (
-          <div className="py-8 text-center text-xs text-zinc-500 font-sans space-y-1">
-            <p className="text-zinc-400 font-semibold">No Trap Errors Logged</p>
-            <p>Complete vignette drills or sprints to build your personalized distractor error profile.</p>
+          <div className="py-8 text-center text-xs sm:text-sm text-muted space-y-1">
+            <p className="text-foreground font-semibold">No mistakes logged yet</p>
+            <p>Complete practice questions or sprints to build your personalized error review profile.</p>
           </div>
         ) : (
-          <div className="divide-y divide-[#18181B] text-xs">
+          <div className="divide-y divide-divider text-xs">
             {trapLogs.slice(0, 5).map((log, idx) => (
               <div key={idx} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="px-1.5 py-0.5 rounded bg-[#18181D] text-brand-lime text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-md bg-surface-interactive text-accent text-xs font-mono font-semibold">
                       [{log.topicId}]
                     </span>
-                    <span className="font-bold text-white">{log.trapCategory || log.trapName}</span>
+                    <span className="font-semibold text-foreground">{log.trapCategory || log.trapName}</span>
                     {log.errorMode && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-950/40 border border-red-900/40 text-red-300 font-mono">
+                      <span className="text-[11px] px-2 py-0.5 rounded-md bg-danger/10 text-danger font-mono">
                         {log.errorMode}
                       </span>
                     )}
                   </div>
-                  <p className="text-zinc-400 font-sans text-[11px] line-clamp-1">
+                  <p className="text-muted text-xs line-clamp-1">
                     {log.autopsyExplanation}
                   </p>
                 </div>
 
                 <button
                   onClick={() => handleTargetTrapDrill(log.topicId)}
-                  className="shrink-0 px-2.5 py-1 rounded bg-[#141418] hover:bg-[#1C1C22] text-brand-lime border border-brand-lime/30 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                  className="shrink-0 min-h-[36px] px-3 py-1.5 rounded-lg bg-surface-interactive hover:bg-surface-raised text-accent text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
-                  <span>Practice Target Trap</span>
-                  <ArrowRight className="w-3 h-3" />
+                  <span>Practice this trap</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             ))}
           </div>
         )}
       </div>
-
     </div>
   );
 };

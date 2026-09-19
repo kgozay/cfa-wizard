@@ -10,20 +10,32 @@ const config: Config = {
     extend: {
       colors: {
         background: "var(--background)",
+        "background-elevated": "var(--background-elevated)",
         foreground: "var(--foreground)",
         surface: {
           DEFAULT: "var(--surface)",
+          solid: "var(--surface-solid)",
           raised: "var(--surface-raised)",
           interactive: "var(--surface-interactive)",
-          card: "#121215",
-          elevated: "#18181B",
-          highlight: "#222226",
+          card: "var(--surface-solid)",
+          elevated: "var(--surface-raised)",
+          highlight: "var(--surface-interactive)",
+        },
+        glass: {
+          surface: "var(--glass-surface)",
+          "surface-strong": "var(--glass-surface-strong)",
+          highlight: "var(--glass-highlight)",
         },
         border: {
           DEFAULT: "var(--border)",
           strong: "var(--border-strong)",
-          subtle: "#1F1F23",
-          muted: "#3F3F46",
+          subtle: "var(--divider)",
+          muted: "var(--border)",
+        },
+        divider: "var(--divider)",
+        control: {
+          boundary: "var(--control-boundary)",
+          "boundary-hover": "var(--control-boundary-hover)",
         },
         muted: {
           DEFAULT: "var(--muted)",
@@ -40,26 +52,33 @@ const config: Config = {
         danger: "var(--danger)",
         brand: {
           lime: "#B8D878",
-          neon: "#C8E68A",
+          neon: "#CAE98A",
           dim: "#9FBE61",
           glow: "rgba(184, 216, 120, 0.18)",
         },
         editorial: {
-          white: "#FFFFFF",
-          muted: "#71717A",
-          steely: "#8E8E93",
+          white: "#F2F6F3",
+          muted: "#9EAAA3",
+          steely: "#C3CEC7",
           dim: "#52525B",
-          dark: "#3F3F46",
+          dark: "#1B2721",
         },
       },
+      borderRadius: {
+        sm: "8px",
+        md: "12px",
+        lg: "16px",
+      },
       fontFamily: {
-        sans: ["var(--font-plus-jakarta)", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "system-ui", "sans-serif"],
-        mono: ['"SFMono-Regular"', "Consolas", '"Liberation Mono"', "monospace"],
+        sans: ["var(--font-ibm-plex-sans)", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "system-ui", "sans-serif"],
+        mono: ["var(--font-ibm-plex-mono)", '"SFMono-Regular"', "Consolas", '"Liberation Mono"', "monospace"],
       },
       boxShadow: {
         "lime-glow": "0 8px 24px -12px rgba(184, 216, 120, 0.35)",
         "lime-sm": "0 4px 12px -8px rgba(184, 216, 120, 0.3)",
         "panel-dark": "0 20px 40px -15px rgba(0, 0, 0, 0.8)",
+        "glass": "var(--glass-shadow)",
+        "glass-soft": "var(--glass-shadow-soft)",
       },
       animation: {
         "pulse-subtle": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",

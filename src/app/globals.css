@@ -5,22 +5,39 @@
 @tailwind utilities;
 
 :root {
-  --background: #0b100f;
-  --surface: #121816;
-  --surface-raised: #18211d;
-  --surface-interactive: #1d2823;
-  --border: #2a3530;
-  --border-strong: #3a4841;
-  --foreground: #f3f6f2;
-  --muted: #aab5af;
-  --muted-strong: #c5cdc8;
+  --background: #080d0b;
+  --background-elevated: #0c1210;
+
+  --surface: #121916;
+  --surface-solid: #121916;
+  --surface-raised: #17211c;
+  --surface-interactive: #1b2721;
+
+  --glass-surface: rgba(20, 30, 25, 0.72);
+  --glass-surface-strong: rgba(23, 34, 28, 0.84);
+  --glass-highlight: rgba(235, 255, 242, 0.055);
+  --glass-shadow: 0 20px 60px rgba(0, 0, 0, 0.36);
+  --glass-shadow-soft: 0 10px 32px rgba(0, 0, 0, 0.24);
+  --glass-blur: 18px;
+
+  --divider: rgba(190, 214, 199, 0.09);
+  --control-boundary: rgba(190, 214, 199, 0.15);
+  --control-boundary-hover: rgba(184, 216, 120, 0.34);
+
+  --border: rgba(190, 214, 199, 0.12);
+  --border-strong: rgba(190, 214, 199, 0.22);
+
+  --foreground: #f2f6f3;
+  --muted-strong: #c3cec7;
+  --muted: #9eaaa3;
+
   --accent: #b8d878;
-  --accent-strong: #c9e986;
-  --accent-ink: #11170f;
+  --accent-strong: #cae98a;
+  --accent-ink: #10160f;
   --info: #77cdb1;
   --warning: #e6bd68;
-  --generated: #aaa5e8;
   --danger: #e07c7c;
+  --generated: #aaa5e8;
 
   --text-caption: 0.75rem;
   --text-secondary: 0.875rem;
@@ -32,13 +49,66 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-ibm-plex-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   font-size: var(--text-body);
   line-height: 1.55;
   font-kerning: normal;
   font-optical-sizing: auto;
   letter-spacing: 0.005em;
   overflow-x: hidden;
+}
+
+/* Obsidian Glass material classes */
+.glass-shell {
+  background: var(--glass-surface-strong);
+  backdrop-filter: blur(var(--glass-blur)) saturate(115%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(115%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow-soft);
+  border-bottom: 1px solid var(--divider);
+}
+
+.glass-panel {
+  background: var(--glass-surface);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur)) saturate(115%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(115%);
+}
+
+.surface-panel {
+  background: var(--surface-solid);
+  box-shadow: var(--glass-shadow-soft);
+}
+
+.surface-row {
+  transition: background-color 150ms ease;
+}
+.surface-row:hover {
+  background-color: var(--surface-interactive);
+}
+
+.control-boundary {
+  border: 1px solid var(--control-boundary);
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.control-boundary:hover {
+  border-color: var(--control-boundary-hover);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-shell {
+    background: var(--background-elevated);
+  }
+  .glass-panel {
+    background: var(--surface-raised);
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --glass-blur: 12px;
+  }
 }
 
 h1,
@@ -59,7 +129,7 @@ p {
 /* Custom selection */
 ::selection {
   background-color: var(--accent);
-  color: #101310;
+  color: var(--accent-ink);
 }
 
 /* KaTeX custom dark overrides */

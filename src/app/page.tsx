@@ -16,6 +16,7 @@ import { CFA_CURRICULUM } from "@/data/curriculum";
 import { KeystrokeSequence } from "@/components/calculator/KeystrokeBadge";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
+import { DarkSmokyBackground } from "@/components/common/DarkSmokyBackground";
 
 export default function LandingPage() {
   const heroContainerRef = useRef<HTMLDivElement>(null);
@@ -69,11 +70,12 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-accent selection:text-accent-ink font-sans">
-      
+    <div className="relative min-h-screen bg-background text-foreground selection:bg-accent selection:text-accent-ink font-sans">
+      <DarkSmokyBackground />
+
       {/* 1. Minimalist Editorial Navigation */}
-      <header className="fixed top-0 z-50 w-full glass-shell">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <header className="fixed top-0 z-50 w-full px-4 sm:px-6 lg:px-8 py-3">
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between liquid-glass-pill rounded-2xl">
           
           <div className="flex items-center gap-3">
             <span className="font-mono text-sm font-black tracking-widest text-foreground">
@@ -94,7 +96,7 @@ export default function LandingPage() {
 
             <Link
               href="/app"
-              className="px-4 py-2 rounded-lg bg-accent text-accent-ink font-mono text-xs font-extrabold hover:bg-accent-strong transition-all flex items-center gap-1.5 active:scale-95"
+              className="lime-btn-primary px-4 py-2 rounded-xl font-mono text-xs font-extrabold transition-all flex items-center gap-1.5 active:scale-95"
             >
               <span>LAUNCH COCKPIT</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -108,17 +110,15 @@ export default function LandingPage() {
       <section ref={heroContainerRef} className="relative h-[250vh] w-full">
         <div className="sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden px-6 pt-24 pb-12">
           
-          {/* Ambient Financial Manifold Background */}
+          {/* Subtle Grid Accent */}
           <div className="absolute inset-0 pointer-events-none z-0">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_35%,rgba(216,255,62,0.05),transparent_70%)]" />
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px]" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f2312_1px,transparent_1px),linear-gradient(to_bottom,#1f1f2312_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)]" />
           </div>
 
           {/* Top Label */}
           <div className="relative z-10 max-w-5xl mx-auto w-full text-center pt-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121215]/90 border border-[#222226] font-mono text-[11px] text-brand-lime">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-pill font-mono text-[11px] text-accent">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
               <span>2026/2027 CURRICULUM ARCHITECTURE</span>
             </div>
           </div>
@@ -131,14 +131,14 @@ export default function LandingPage() {
               style={{ opacity: opacity1, filter: filter1, y: y1, scale: scale1, display: display1 }}
               className="absolute inset-x-0 space-y-6 px-4 pointer-events-auto"
             >
-              <div className="font-mono text-xs text-editorial-muted tracking-widest uppercase">
+              <div className="font-mono text-xs text-muted tracking-widest uppercase">
                 01 // THE CURRICULUM FOUNDATION
               </div>
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06] drop-shadow-sm">
                 Master CFA® Level 1{" "}
-                <span className="text-brand-lime block sm:inline">from first principles.</span>
+                <span className="text-accent block sm:inline">from first principles.</span>
               </h1>
-              <p className="text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-strong max-w-2xl mx-auto leading-relaxed">
                 10 Curriculum Tracks. 150 Learning Outcome Modules. Build profound financial intuition through structured, step-by-step conceptual deconstruction.
               </p>
             </motion.div>
@@ -148,14 +148,14 @@ export default function LandingPage() {
               style={{ opacity: opacity2, filter: filter2, y: y2, scale: scale2, display: display2 }}
               className="absolute inset-x-0 space-y-6 px-4 pointer-events-none"
             >
-              <div className="font-mono text-xs text-brand-lime tracking-widest uppercase font-bold">
+              <div className="font-mono text-xs text-accent tracking-widest uppercase font-bold">
                 02 // DEEP CONCEPTUAL MECHANICS
               </div>
               <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06] drop-shadow-sm">
                 Understand the exact mechanics{" "}
-                <span className="text-brand-lime block sm:inline">behind every formula.</span>
+                <span className="text-accent block sm:inline">behind every formula.</span>
               </h2>
-              <p className="text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-strong max-w-2xl mx-auto leading-relaxed">
                 No surface memorization. Dissect how duration approximations, currency cross-rates, and multi-stage DCF models actually function under real market conditions.
               </p>
             </motion.div>
@@ -165,27 +165,27 @@ export default function LandingPage() {
               style={{ opacity: opacity3, filter: filter3, y: y3, scale: scale3, display: display3 }}
               className="absolute inset-x-0 space-y-6 px-4"
             >
-              <div className="font-mono text-xs text-brand-lime tracking-widest uppercase font-bold">
+              <div className="font-mono text-xs text-accent tracking-widest uppercase font-bold">
                 03 // TACTILE EXECUTION &amp; RETENTION
               </div>
               <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06] drop-shadow-sm">
                 Active learning through{" "}
-                <span className="text-brand-lime block sm:inline">BA II+ workflows &amp; spaced recall.</span>
+                <span className="text-accent block sm:inline">BA II+ workflows &amp; spaced recall.</span>
               </h2>
-              <p className="text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-strong max-w-2xl mx-auto leading-relaxed">
                 Seamless Texas Instruments keystroke pipelines, 90-second exam pacers, and adaptive Leitner intervals designed for permanent mastery.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4 pt-4 font-mono text-xs">
                 <Link
                   href="/app"
-                  className="px-6 py-3.5 rounded-xl bg-brand-lime text-black font-extrabold hover:bg-brand-lime/90 shadow-lime-glow transition-all flex items-center gap-2 text-sm active:scale-95"
+                  className="lime-btn-primary px-6 py-3.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm active:scale-95"
                 >
                   <span>ENTER STUDY COCKPIT</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a
                   href="#diagnostics"
-                  className="px-5 py-3.5 rounded-xl bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 border border-[#27272A] font-bold transition-all flex items-center gap-2"
+                  className="glass-pill-btn px-5 py-3.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
                 >
                   <span>TRY SAMPLE DRILL</span>
                   <Play className="w-3.5 h-3.5 fill-current" />
@@ -197,13 +197,13 @@ export default function LandingPage() {
 
           {/* Bottom Progress Tracker Indicator */}
           <div className="relative z-10 max-w-md mx-auto w-full space-y-2">
-            <div className="flex items-center justify-between text-[11px] font-mono text-editorial-dim">
+            <div className="flex items-center justify-between text-[11px] font-mono text-muted">
               <span>EXPLORE METHODOLOGY</span>
               <span>SCROLL DOWN</span>
             </div>
-            <div className="w-full h-1 bg-[#18181B] rounded-full overflow-hidden">
+            <div className="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-brand-lime rounded-full"
+                className="h-full bg-accent rounded-full"
                 style={{ width: progressWidth }}
               />
             </div>
@@ -213,7 +213,7 @@ export default function LandingPage() {
       </section>
 
       {/* 3. Three-Pillar Methodology Architecture */}
-      <section id="methodology" className="py-24 bg-background-elevated">
+      <section id="methodology" className="py-24 relative z-10">
         <div className="max-w-7xl mx-auto px-6 space-y-16">
           
           <div className="max-w-3xl space-y-3">
@@ -221,7 +221,7 @@ export default function LandingPage() {
               {"//"} CORE LEARNING PILLARS
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground">
-              Engineered for Deep Mathematical & Conceptual Mastery
+              Engineered for Deep Mathematical &amp; Conceptual Mastery
             </h2>
             <p className="text-sm sm:text-base text-muted leading-relaxed">
               Every tool inside CFA Wizard is calibrated to transition candidates from passive reading to active, permanent comprehension.
@@ -232,7 +232,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono text-xs">
             
             {/* Pillar I */}
-            <div className="p-8 rounded-2xl surface-panel transition-all flex flex-col justify-between space-y-8">
+            <div className="p-8 rounded-2xl liquid-glass-card transition-all flex flex-col justify-between space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-accent font-bold text-xs pb-3 border-b border-divider">
                   <span>PILLAR I</span>
@@ -246,7 +246,7 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-surface-raised space-y-2 text-[11px]">
+              <div className="p-4 rounded-xl bg-white/[0.03] space-y-2 text-[11px]">
                 <div className="text-foreground font-bold font-sans">Diagnostic Focus Areas:</div>
                 <div className="text-muted space-y-1.5 font-sans">
                   <div className="flex items-center gap-2">
@@ -266,7 +266,7 @@ export default function LandingPage() {
             </div>
 
             {/* Pillar II */}
-            <div className="p-8 rounded-2xl surface-panel transition-all flex flex-col justify-between space-y-8">
+            <div className="p-8 rounded-2xl liquid-glass-card transition-all flex flex-col justify-between space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-accent font-bold text-xs pb-3 border-b border-divider">
                   <span>PILLAR II</span>
@@ -280,20 +280,20 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-surface-raised space-y-2.5 text-[11px]">
+              <div className="p-4 rounded-xl bg-white/[0.03] space-y-2.5 text-[11px]">
                 <div className="text-foreground font-bold font-sans">Verified Keystroke Pipeline:</div>
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="px-2 py-1 rounded bg-surface-interactive text-accent font-bold">[2nd]</span>
-                  <span className="px-2 py-1 rounded bg-surface-interactive text-foreground font-bold">[CLR TVM]</span>
-                  <span className="px-2 py-1 rounded bg-surface-interactive text-foreground font-bold">[N=10]</span>
-                  <span className="px-2 py-1 rounded bg-surface-interactive text-foreground font-bold">[I/Y=6]</span>
-                  <span className="px-2 py-1 rounded bg-surface-interactive text-accent font-bold">[CPT] [PV]</span>
+                  <span className="px-2 py-1 rounded bg-white/[0.06] text-accent font-bold">[2nd]</span>
+                  <span className="px-2 py-1 rounded bg-white/[0.06] text-foreground font-bold">[CLR TVM]</span>
+                  <span className="px-2 py-1 rounded bg-white/[0.06] text-foreground font-bold">[N=10]</span>
+                  <span className="px-2 py-1 rounded bg-white/[0.06] text-foreground font-bold">[I/Y=6]</span>
+                  <span className="px-2 py-1 rounded bg-white/[0.06] text-accent font-bold">[CPT] [PV]</span>
                 </div>
               </div>
             </div>
 
             {/* Pillar III */}
-            <div className="p-8 rounded-2xl surface-panel transition-all flex flex-col justify-between space-y-8">
+            <div className="p-8 rounded-2xl liquid-glass-card transition-all flex flex-col justify-between space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-accent font-bold text-xs pb-3 border-b border-divider">
                   <span>PILLAR III</span>
@@ -307,7 +307,7 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-surface-raised space-y-2 text-[11px]">
+              <div className="p-4 rounded-xl bg-white/[0.03] space-y-2 text-[11px]">
                 <div className="flex items-center justify-between text-foreground font-bold font-sans">
                   <span>Memory Retention Schedule:</span>
                   <span className="text-accent">94% Target</span>
@@ -332,7 +332,7 @@ export default function LandingPage() {
       </section>
 
       {/* 4. Live Interactive Learning & Diagnostic Lab */}
-      <section id="diagnostics" className="py-24 bg-background">
+      <section id="diagnostics" className="py-24 relative z-10">
         <div className="max-w-5xl mx-auto px-6 space-y-10">
           
           <div className="text-center space-y-3">
@@ -347,7 +347,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="p-6 sm:p-8 rounded-2xl surface-panel space-y-6 shadow-2xl">
+          <div className="p-6 sm:p-8 rounded-2xl liquid-glass-card space-y-6">
             
             <div className="flex items-center justify-between font-mono text-xs">
               <span className="px-2.5 py-1 rounded-md bg-accent/15 text-accent font-bold">
@@ -378,11 +378,11 @@ export default function LandingPage() {
                     className={`p-4 rounded-xl text-left transition-all flex flex-col justify-between gap-3 ${
                       isSelected
                         ? isCorrectKey
-                          ? "bg-accent/20 text-foreground"
-                          : "bg-danger/20 text-danger"
+                          ? "bg-accent/20 text-foreground border border-accent/30"
+                          : "bg-danger/20 text-danger border border-danger/30"
                         : isTeaserSubmitted && isCorrectKey
-                        ? "bg-accent/15 text-accent"
-                        : "bg-surface-interactive text-muted-strong hover:bg-surface-raised hover:text-foreground"
+                        ? "bg-accent/15 text-accent border border-accent/20"
+                        : "glass-pill-btn text-muted-strong hover:text-foreground"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -392,7 +392,7 @@ export default function LandingPage() {
                             ? "bg-accent text-accent-ink"
                             : isSelected
                             ? "bg-danger text-white"
-                            : "bg-surface-raised text-muted"
+                            : "bg-white/[0.06] text-muted"
                         }`}
                       >
                         {opt}
@@ -409,7 +409,7 @@ export default function LandingPage() {
 
             {/* Revealed Step-by-Step Breakdown */}
             {isTeaserSubmitted && (
-              <div className="p-6 rounded-xl bg-surface-raised space-y-4 animate-in fade-in duration-200">
+              <div className="p-6 rounded-xl bg-white/[0.03] space-y-4 animate-in fade-in duration-200">
                 <div className="flex items-center justify-between text-xs font-mono">
                   <span className="text-accent font-bold">
                     STEP-BY-STEP DERIVATION &amp; ANALYSIS
@@ -447,7 +447,7 @@ export default function LandingPage() {
       </section>
 
       {/* 5. Official 10-Track Curriculum Index Table */}
-      <section id="curriculum" className="py-24 bg-background-elevated">
+      <section id="curriculum" className="py-24 relative z-10">
         <div className="max-w-7xl mx-auto px-6 space-y-12">
           
           <div className="max-w-3xl space-y-3">
@@ -462,10 +462,10 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* High-Density Editorial Table */}
-          <div className="overflow-x-auto rounded-2xl surface-panel">
+          {/* High-Density Liquid Glass Table */}
+          <div className="overflow-x-auto rounded-2xl liquid-glass-card">
             <table className="w-full text-left font-mono text-xs">
-              <thead className="bg-surface-raised text-muted text-[11px] uppercase tracking-wider">
+              <thead className="bg-white/[0.03] text-muted text-[11px] uppercase tracking-wider">
                 <tr>
                   <th className="py-4 px-5 font-bold text-foreground whitespace-nowrap">Track</th>
                   <th className="py-4 px-5 font-bold text-foreground whitespace-nowrap">Curriculum Volume</th>
@@ -479,7 +479,7 @@ export default function LandingPage() {
                 {CFA_CURRICULUM.map((topic, idx) => {
                   const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
                   return (
-                    <tr key={topic.id} className="hover:bg-surface-interactive/40 transition-colors">
+                    <tr key={topic.id} className="hover:bg-white/[0.03] transition-colors">
                       <td className="py-4 px-5 text-accent font-bold whitespace-nowrap">
                         {romanNumerals[idx] || topic.id}
                       </td>
@@ -490,7 +490,7 @@ export default function LandingPage() {
                         {topic.subReadings.length} Modules
                       </td>
                       <td className="py-4 px-5 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded bg-surface-interactive text-foreground font-mono text-xs font-bold whitespace-nowrap leading-none">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded bg-white/[0.05] text-foreground font-mono text-xs font-bold whitespace-nowrap leading-none">
                           {topic.weight}
                         </span>
                       </td>
@@ -517,7 +517,7 @@ export default function LandingPage() {
       </section>
 
       {/* 6. Call to Action Banner */}
-      <section className="py-24 bg-background">
+      <section className="py-24 relative z-10">
         <div className="max-w-4xl mx-auto px-6 text-center space-y-6">
           <div className="w-12 h-12 rounded-2xl bg-accent/15 flex items-center justify-center text-accent mx-auto">
             <BookOpen className="w-6 h-6" />
@@ -534,7 +534,7 @@ export default function LandingPage() {
           <div className="pt-2">
             <Link
               href="/app"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-accent text-accent-ink font-mono text-sm font-extrabold hover:bg-accent-strong transition-all active:scale-95"
+              className="lime-btn-primary inline-flex items-center gap-2 px-8 py-4 rounded-xl font-mono text-sm font-extrabold transition-all active:scale-95"
             >
               <span>LAUNCH LEARNING COCKPIT</span>
               <ArrowRight className="w-4 h-4" />
@@ -544,7 +544,7 @@ export default function LandingPage() {
       </section>
 
       {/* 7. Institutional Footer */}
-      <footer className="border-t border-divider bg-background py-8 text-center font-mono text-xs text-muted">
+      <footer className="border-t border-divider bg-transparent py-8 text-center font-mono text-xs text-muted relative z-10">
         <div className="max-w-7xl mx-auto px-4 space-y-2">
           <div className="flex items-center justify-center gap-2 text-muted-strong">
             <span className="w-2 h-2 rounded-full bg-accent" />
@@ -559,3 +559,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

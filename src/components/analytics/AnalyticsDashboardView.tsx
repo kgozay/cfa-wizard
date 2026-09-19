@@ -170,7 +170,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
                 if (soundEnabled) sound.playNodeSwitch();
                 onOpenScenarioSimulator("01");
               }}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-ink hover:bg-accent-strong transition-all active:scale-[0.98] shrink-0"
+              className="lime-btn-primary inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] shrink-0"
             >
               <Play className="h-4 w-4 fill-current" />
               <span>Start diagnostic practice</span>

@@ -494,7 +494,7 @@ export default function DiagnosticCockpitPage() {
           aria-labelledby="reset-progress-title"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
         >
-          <div className="w-full max-w-md space-y-4 rounded-2xl surface-panel p-6 shadow-2xl">
+          <div className="w-full max-w-md space-y-4 rounded-2xl liquid-glass-card p-6 shadow-2xl">
             <div id="reset-progress-title" className="flex items-center gap-2 font-semibold text-danger">
               <AlertTriangle className="w-4 h-4" />
               <span>Reset study progress?</span>

@@ -5,31 +5,33 @@
 @tailwind utilities;
 
 :root {
-  --background: #070a09;
-  --background-elevated: #0b0f0d;
+  /* Neutral Dark Obsidian / Terminal Canvas (Zero green tint) */
+  --background: #090a0f;
+  --background-elevated: #0e1017;
 
-  --surface: #101614;
-  --surface-solid: rgba(16, 22, 20, 0.7);
-  --surface-raised: rgba(255, 255, 255, 0.07);
+  --surface: #12141c;
+  --surface-solid: rgba(18, 21, 30, 0.85);
+  --surface-raised: rgba(255, 255, 255, 0.05);
   --surface-interactive: rgba(255, 255, 255, 0.04);
 
-  --glass-surface: rgba(18, 24, 22, 0.65);
-  --glass-surface-strong: rgba(22, 30, 26, 0.78);
-  --glass-pill: rgba(25, 34, 30, 0.55);
-  --glass-btn: rgba(30, 42, 36, 0.5);
-  --glass-btn-hover: rgba(40, 56, 48, 0.75);
+  /* Liquid Glass Material Tokens - pure depth, top specular rim, zero white perimeter outlines */
+  --glass-surface: rgba(16, 19, 27, 0.65);
+  --glass-surface-strong: rgba(20, 24, 34, 0.8);
+  --glass-pill: rgba(22, 27, 38, 0.6);
+  --glass-btn: rgba(255, 255, 255, 0.05);
+  --glass-btn-hover: rgba(255, 255, 255, 0.1);
 
-  --glass-highlight: rgba(255, 255, 255, 0.05);
-  --glass-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.7);
-  --glass-shadow-soft: 0 10px 32px rgba(0, 0, 0, 0.35);
-  --glass-blur: 24px;
+  --glass-highlight: rgba(255, 255, 255, 0.09);
+  --glass-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.75);
+  --glass-shadow-soft: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+  --glass-blur: 16px;
 
-  --divider: rgba(255, 255, 255, 0.04);
-  --control-boundary: rgba(255, 255, 255, 0.05);
-  --control-boundary-hover: rgba(190, 242, 100, 0.25);
+  --divider: rgba(255, 255, 255, 0.05);
+  --control-boundary: rgba(255, 255, 255, 0.06);
+  --control-boundary-hover: rgba(190, 242, 100, 0.3);
 
   --border: transparent;
-  --border-strong: rgba(255, 255, 255, 0.04);
+  --border-strong: rgba(255, 255, 255, 0.06);
 
   --foreground: #f1f5f9;
   --muted-strong: #cbd5e1;
@@ -37,11 +39,11 @@
 
   --lime-primary: #bef264;
   --lime-hover: #cae98a;
-  --lime-ink: #08100b;
+  --lime-ink: #090e0b;
 
   --accent: #bef264;
   --accent-strong: #cae98a;
-  --accent-ink: #08100b;
+  --accent-ink: #090e0b;
   --info: #77cdb1;
   --warning: #e6bd68;
   --danger: #e07c7c;
@@ -66,31 +68,34 @@ body {
   overflow-x: hidden;
 }
 
-/* Dark Smoky Atmospheric Mesh Keyframes */
+/* Atmospheric Smoky Gradient Mesh Keyframes (100% GPU compositor accelerated) */
 @keyframes smokeDrift1 {
-  0%, 100% { transform: translate3d(0px, 0px, 0) scale(1); opacity: 0.35; }
-  50% { transform: translate3d(60px, -40px, 0) scale(1.15); opacity: 0.5; }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.85; }
+  50% { transform: translate3d(80px, -50px, 0) scale(1.12); opacity: 1; }
 }
 @keyframes smokeDrift2 {
-  0%, 100% { transform: translate3d(0px, 0px, 0) scale(1.1); opacity: 0.4; }
-  50% { transform: translate3d(-50px, 50px, 0) scale(0.95); opacity: 0.25; }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.08); opacity: 0.8; }
+  50% { transform: translate3d(-70px, 60px, 0) scale(0.95); opacity: 0.95; }
 }
 @keyframes smokeDrift3 {
-  0%, 100% { transform: translate3d(0px, 0px, 0) scale(0.95); opacity: 0.3; }
-  50% { transform: translate3d(40px, 40px, 0) scale(1.1); opacity: 0.45; }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.96); opacity: 0.75; }
+  50% { transform: translate3d(60px, 50px, 0) scale(1.1); opacity: 0.95; }
 }
 
+.smoke-drift-1,
 .smoke-orb-1 {
-  animation: smokeDrift1 26s ease-in-out infinite;
-  will-change: transform, opacity;
+  animation: smokeDrift1 24s ease-in-out infinite;
+  will-change: transform;
 }
+.smoke-drift-2,
 .smoke-orb-2 {
-  animation: smokeDrift2 32s ease-in-out infinite;
-  will-change: transform, opacity;
+  animation: smokeDrift2 30s ease-in-out infinite;
+  will-change: transform;
 }
+.smoke-drift-3,
 .smoke-orb-3 {
-  animation: smokeDrift3 28s ease-in-out infinite;
-  will-change: transform, opacity;
+  animation: smokeDrift3 26s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* Liquid Glass material classes - pure depth, top specular rim, zero white perimeter outlines */
@@ -108,8 +113,8 @@ body {
 .liquid-glass-pill,
 .glass-shell {
   background: var(--glass-pill);
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(120%);
   box-shadow:
     inset 0 1px 0 0 var(--glass-highlight),
     var(--glass-shadow-soft);

@@ -222,12 +222,12 @@ export const InterleavedSprintModal: React.FC = () => {
       aria-labelledby="sprint-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans"
     >
-      <div className="bg-[#0B0B0E] border border-[#27272A] rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="liquid-glass-card rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         
         {/* Sprint Header */}
-        <div className="p-4 sm:p-5 border-b border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400">
+            <div className="w-8 h-8 rounded-xl bg-amber-400/20 flex items-center justify-center text-amber-400">
               <Zap className="w-4 h-4" />
             </div>
             <div>

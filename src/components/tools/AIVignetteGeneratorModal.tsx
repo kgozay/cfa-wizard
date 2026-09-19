@@ -86,19 +86,19 @@ export const AIVignetteGeneratorModal: React.FC = () => {
       aria-labelledby="ai-lab-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200 font-sans"
     >
-      <div className="w-full max-w-2xl bg-[#0B0B0E] border border-[#27272A] rounded-xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-2xl liquid-glass-card rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         
         {/* Header */}
-        <div className="p-5 border-b border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between">
+        <div className="p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-lime/10 border border-brand-lime/40 flex items-center justify-center text-brand-lime">
+            <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
               <h3 id="ai-lab-title" className="text-base sm:text-lg font-bold text-white tracking-tight">
                 ON-DEMAND AI SCENARIO LAB
               </h3>
-              <span className="font-mono text-xs text-zinc-400">
+              <span className="font-mono text-xs text-slate-400">
                 SYNTHESIZE INSTITUTIONAL CFA CASE VIGNETTES WITH TARGETED TRAPS
               </span>
             </div>

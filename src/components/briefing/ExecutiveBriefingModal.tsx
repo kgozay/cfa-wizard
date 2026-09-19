@@ -44,19 +44,19 @@ export const ExecutiveBriefingModal: React.FC = () => {
       aria-labelledby="executive-briefing-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200"
     >
-      <div className="w-full max-w-4xl bg-[#0B0B0E] border border-[#27272A] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[90vh]">
+      <div className="w-full max-w-4xl liquid-glass-card rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[90vh]">
         
         {/* Top Header */}
-        <div className="p-5 border-b border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between">
+        <div className="p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs font-bold text-brand-lime px-2 py-0.5 rounded bg-brand-lime/10 border border-brand-lime/30">
+            <span className="font-mono text-xs font-bold text-accent px-2.5 py-0.5 rounded-full bg-accent/15">
               TRACK {topic.id}
             </span>
             <div>
               <h2 id="executive-briefing-title" className="text-lg sm:text-xl font-bold text-white tracking-tight">
                 {topic.name}
               </h2>
-              <span className="text-xs font-mono text-editorial-dim">
+              <span className="text-xs font-mono text-slate-400">
                 EXECUTIVE BRIEFING // WEIGHT: {topic.weight}
               </span>
             </div>
@@ -64,7 +64,7 @@ export const ExecutiveBriefingModal: React.FC = () => {
           <button
             onClick={handleClose}
             aria-label="Close executive briefing"
-            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white glass-pill-btn transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -75,7 +75,7 @@ export const ExecutiveBriefingModal: React.FC = () => {
           
           {/* Section 1: Executive Summary Bullet Points */}
           <div>
-            <div className="flex items-center gap-2 font-mono text-xs text-brand-lime tracking-wider uppercase mb-3">
+            <div className="flex items-center gap-2 font-mono text-xs text-accent tracking-wider uppercase mb-3">
               <Sparkles className="w-3.5 h-3.5" />
               <span>HIGH-YIELD EXECUTIVE SUMMARY & TRAP MATRIX</span>
             </div>
@@ -84,12 +84,12 @@ export const ExecutiveBriefingModal: React.FC = () => {
               {topic.executiveSummary.map((bullet, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 rounded-lg bg-[#121215] border border-[#1F1F23] flex items-start gap-3"
+                  className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.04] flex items-start gap-3"
                 >
-                  <div className="w-5 h-5 rounded bg-[#18181B] border border-[#27272A] flex items-center justify-center text-editorial-muted font-mono text-xs shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-lg bg-white/[0.04] flex items-center justify-center text-slate-400 font-mono text-xs shrink-0 mt-0.5">
                     {idx + 1}
                   </div>
-                  <div className="text-xs sm:text-sm text-editorial-steely leading-relaxed">
+                  <div className="text-xs sm:text-sm text-slate-200 leading-relaxed">
                     <FormattedMathText text={bullet} />
                   </div>
                 </div>
@@ -206,17 +206,17 @@ export const ExecutiveBriefingModal: React.FC = () => {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between gap-3">
+        <div className="p-4 border-t border-white/[0.04] bg-white/[0.02] flex items-center justify-between gap-3">
           <button
             onClick={handleClose}
-            className="px-4 py-2 rounded-lg font-mono text-xs text-editorial-muted hover:text-white border border-[#27272A] hover:bg-[#18181B] transition-all"
+            className="px-4 py-2.5 rounded-xl font-mono text-xs text-slate-400 hover:text-white glass-pill-btn transition-all"
           >
             RETURN TO DASHBOARD
           </button>
           
           <button
             onClick={handleLaunchDrill}
-            className="px-5 py-2.5 rounded-lg bg-brand-lime text-black font-mono text-xs font-bold flex items-center gap-2 hover:bg-brand-neon active:scale-95 transition-all shadow-lime-sm"
+            className="lime-btn-primary px-5 py-2.5 rounded-xl font-mono text-xs font-bold flex items-center gap-2 transition-all"
           >
             <Play className="w-4 h-4 fill-current" />
             <span>LAUNCH {drillQuestionCount}-QUESTION VIGNETTE DRILL</span>

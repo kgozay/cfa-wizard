@@ -55,31 +55,33 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
       {/* Header & syllabus completion counter */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-            Curriculum index
+          <h2 className="text-2xl font-bold tracking-tight text-white">
+            Curriculum
           </h2>
-          <p className="mt-1 text-sm text-muted">
-            All 10 Level I topics organized by official syllabus sequence and exam weights.
+          <p className="mt-1 text-sm text-slate-400">
+            Choose a topic to study, then practice with custom question sets.
           </p>
         </div>
-        <div className="inline-flex items-center gap-2 self-start rounded-lg bg-surface-interactive px-3 py-1.5 text-xs text-muted sm:self-auto sm:text-sm">
-          <span className="font-mono font-semibold text-foreground tabular-nums">
-            {completedTopicIds.length}
+        <div className="inline-flex items-center gap-2 self-start rounded-xl glass-pill-btn px-3.5 py-1.5 text-xs text-slate-300 sm:self-auto">
+          <span>All 10 topics</span>
+          <span className="text-slate-500">•</span>
+          <span className="font-mono font-semibold text-white tabular-nums">
+            {completedTopicIds.length}/10
           </span>
-          <span>of 10 topics completed</span>
+          <span>completed</span>
         </div>
       </div>
 
-      {/* Structured Curriculum Index (Single continuous surface with subtle dividers) */}
-      <div className="overflow-hidden rounded-2xl surface-panel divide-y divide-divider shadow-sm">
+      {/* Structured Curriculum Index (Liquid Glass Card) */}
+      <div className="overflow-hidden rounded-2xl liquid-glass-card divide-y divide-white/[0.03]">
         {/* Desktop Table Header */}
-        <div className="hidden lg:grid grid-cols-12 items-center gap-4 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-muted bg-surface-raised/40">
-          <span className="col-span-1">Topic</span>
-          <span className="col-span-4">Curriculum title</span>
-          <span className="col-span-2 text-right">Weight</span>
-          <span className="col-span-2 text-right">Last score</span>
+        <div className="hidden lg:grid grid-cols-12 items-center gap-4 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-white/[0.04]">
+          <span className="col-span-1">#</span>
+          <span className="col-span-4">Topic</span>
+          <span className="col-span-2 text-center">Exam Weight</span>
+          <span className="col-span-2 text-center">Last Result</span>
           <span className="col-span-1 text-center">Status</span>
-          <span className="col-span-2 text-right pr-2">Action</span>
+          <span className="col-span-2 text-right pr-2">Practice</span>
         </div>
 
         {CFA_CURRICULUM.map((topic) => {
@@ -102,14 +104,14 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
               key={topic.id}
               className={`transition-colors duration-150 ${
                 isCurrent
-                  ? "bg-accent/[0.04]"
+                  ? "bg-white/[0.02]"
                   : isNeedsReview
-                  ? "bg-warning/[0.03]"
-                  : "hover:bg-surface-interactive/40"
+                  ? "bg-warning/[0.02]"
+                  : "hover:bg-white/[0.015]"
               }`}
             >
               {/* Desktop Row View */}
-              <div className="hidden lg:grid grid-cols-12 items-center gap-4 px-5 py-3.5">
+              <div className="hidden lg:grid grid-cols-12 items-center gap-4 px-6 py-4">
                 {/* Col 1: Topic Number with expand trigger */}
                 <div className="col-span-1 flex items-center gap-2">
                   <button
@@ -117,15 +119,15 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
                     onClick={() => toggleExpand(topic.id)}
                     aria-expanded={isExpanded}
                     aria-controls={`topic-details-${topic.id}`}
-                    className="flex items-center gap-1.5 font-mono text-sm font-semibold text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded p-1"
+                    className="flex items-center gap-1.5 font-mono text-sm font-bold text-slate-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded p-1"
                   >
                     <ChevronDown
                       className={`h-4 w-4 transition-transform duration-200 ${
-                        isExpanded ? "rotate-180 text-foreground" : "text-muted"
+                        isExpanded ? "rotate-180 text-white" : "text-slate-500"
                       }`}
                       aria-hidden="true"
                     />
-                    <span className={isCurrent ? "text-accent font-bold" : "text-muted-strong"}>
+                    <span className={isCurrent ? "text-accent font-bold" : "text-slate-300"}>
                       {topic.id}
                     </span>
                   </button>
@@ -138,78 +140,65 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
                     onClick={() => toggleExpand(topic.id)}
                     className="text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
                   >
-                    <h3 className="truncate text-sm font-semibold text-foreground group-hover:text-accent transition-colors">
+                    <h3 className="truncate text-sm font-semibold text-white group-hover:text-accent transition-colors">
                       {topic.name}
                     </h3>
-                    <p className="mt-0.5 text-xs text-muted">
-                      {topic.subReadings.length} modules · {topic.formulas.length} formulas
+                    <p className="mt-0.5 text-xs text-slate-400">
+                      {topic.subReadings.length} learning modules • Practice sets • Key concepts
                     </p>
                   </button>
                 </div>
 
                 {/* Col 3: Exam Weight */}
-                <div className="col-span-2 text-right font-mono text-xs text-muted">
+                <div className="col-span-2 text-center font-mono text-xs text-slate-300">
                   {topic.weight}
                 </div>
 
                 {/* Col 4: Last Score / Accuracy */}
-                <div className="col-span-2 text-right">
+                <div className="col-span-2 text-center">
                   {presentation.latestScore !== undefined && presentation.latestTotal !== undefined ? (
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="font-mono text-xs font-medium text-foreground">
-                        {presentation.latestScore}/{presentation.latestTotal} ({presentation.latestAccuracy}%)
+                    <div className="inline-flex items-center gap-1.5">
+                      <span className="font-mono text-xs font-semibold text-white">
+                        {presentation.latestAccuracy}%
                       </span>
-                      <div
-                        className="h-1 w-16 overflow-hidden rounded-full bg-surface-interactive"
-                        role="progressbar"
-                        aria-valuenow={presentation.latestAccuracy ?? 0}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-label={`${topic.name} score: ${presentation.latestAccuracy}%`}
-                      >
-                        <div
-                          className={`h-full rounded-full ${
-                            isNeedsReview
-                              ? "bg-warning"
-                              : isCompleted || isCurrent
-                              ? "bg-accent"
-                              : "bg-info"
-                          }`}
-                          style={{ width: `${presentation.latestAccuracy ?? 0}%` }}
-                        />
-                      </div>
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        ({presentation.latestScore}/{presentation.latestTotal})
+                      </span>
                     </div>
                   ) : (
-                    <span className="text-xs text-muted/60">Not tested</span>
+                    <span className="inline-flex items-center gap-1.5 text-xs text-slate-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                      Not started
+                    </span>
                   )}
                 </div>
 
                 {/* Col 5: Status Badge */}
                 <div className="col-span-1 flex justify-center">
                   {isCurrent && (
-                    <span className="inline-flex items-center rounded-md bg-accent/15 px-2 py-0.5 text-xs font-semibold text-accent">
+                    <span className="inline-flex items-center rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-medium text-accent">
                       Current
                     </span>
                   )}
                   {isNeedsReview && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning">
                       <AlertTriangle className="h-3 w-3" aria-hidden="true" />
                       Review
                     </span>
                   )}
                   {isCompleted && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
                       <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
                       Done
                     </span>
                   )}
                   {isStarted && (
-                    <span className="inline-flex items-center rounded-md bg-info/15 px-2 py-0.5 text-xs font-medium text-info">
+                    <span className="inline-flex items-center rounded-full bg-info/15 px-2.5 py-0.5 text-xs font-medium text-info">
                       Started
                     </span>
                   )}
                   {!isCurrent && !isNeedsReview && !isCompleted && !isStarted && (
-                    <span className="text-xs text-muted/50">—</span>
+                    <span className="text-xs text-slate-500">—</span>
                   )}
                 </div>
 
@@ -219,14 +208,10 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
                     type="button"
                     aria-label={`Practice ${topic.name}`}
                     onClick={(e) => handleStartDrill(topic.id, e)}
-                    className={`inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-                      isCurrent
-                        ? "bg-accent text-accent-ink hover:bg-accent-strong"
-                        : "bg-surface-interactive text-foreground hover:bg-surface-raised"
-                    }`}
+                    className="glass-pill-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white inline-flex items-center gap-1.5"
                   >
-                    <Play className="h-3.5 w-3.5 fill-current" />
-                    <span>Practice ({drillQuestionCount}Q)</span>
+                    <Play className="h-3 w-3 text-accent fill-current" />
+                    <span>Practice</span>
                   </button>
                 </div>
               </div>
@@ -287,42 +272,38 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
                   type="button"
                   aria-label={`Practice ${topic.name}`}
                   onClick={(e) => handleStartDrill(topic.id, e)}
-                  className={`inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg px-3 text-xs font-semibold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-                    isCurrent
-                      ? "bg-accent text-accent-ink hover:bg-accent-strong"
-                      : "bg-surface-interactive text-foreground hover:bg-surface-raised"
-                  }`}
+                  className="glass-pill-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white inline-flex items-center gap-1.5 shrink-0"
                 >
-                  <Play className="h-4 w-4 fill-current" />
-                  <span className="hidden sm:inline sm:ml-1.5">Practice</span>
+                  <Play className="h-3 w-3 text-accent fill-current" />
+                  <span className="hidden sm:inline">Practice</span>
                 </button>
               </div>
 
-              {/* Accordion Expanded Learning Modules (Tonal inset region, no outlined card) */}
+              {/* Accordion Expanded Learning Modules (Liquid Glass Inset) */}
               {isExpanded && (
                 <div
                   id={`topic-details-${topic.id}`}
-                  className="space-y-4 border-t border-divider bg-surface-raised/60 px-4 py-4 sm:px-6 sm:py-5 transition-all"
+                  className="space-y-4 border-t border-white/[0.04] bg-white/[0.02] px-4 py-4 sm:px-6 sm:py-5 transition-all"
                 >
-                  <p className="max-w-[75ch] text-xs leading-relaxed text-muted-strong sm:text-sm">
-                    <span className="font-semibold text-foreground">Common difficulty:</span>{" "}
+                  <p className="max-w-[75ch] text-xs leading-relaxed text-slate-300 sm:text-sm">
+                    <span className="font-semibold text-white">Common difficulty:</span>{" "}
                     {topic.highYieldTrapArea}
                   </p>
 
                   <div className="space-y-2">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Learning modules ({topic.subReadings.length})
                     </h4>
                     <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                       {topic.subReadings.map((sub) => (
                         <div
                           key={sub.id}
-                          className="flex items-start gap-2.5 rounded-lg bg-surface-interactive/60 px-3 py-2 text-xs text-muted-strong"
+                          className="flex items-start gap-2.5 rounded-xl bg-white/[0.03] px-3.5 py-2 text-xs text-slate-300"
                         >
                           <span className="shrink-0 font-mono text-xs font-semibold text-accent">
                             {sub.losCode || sub.id}
                           </span>
-                          <span className="leading-snug text-foreground">{sub.title}</span>
+                          <span className="leading-snug text-white">{sub.title}</span>
                         </div>
                       ))}
                     </div>
@@ -333,15 +314,15 @@ export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenBriefing(topic.id)}
-                      className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-surface-interactive px-4 py-2 text-xs sm:text-sm font-medium text-foreground transition-colors hover:bg-surface-raised active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      className="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-xl glass-pill-btn px-4 py-2 text-xs sm:text-sm font-semibold text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     >
-                      <BookOpen className="h-4 w-4 text-muted" />
+                      <BookOpen className="h-4 w-4 text-slate-400" />
                       <span>Review topic notes</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => onOpenScenarioSimulator(topic.id)}
-                      className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs sm:text-sm font-medium text-accent transition-colors hover:bg-accent/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      className="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold text-accent transition-colors hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       <span>Create custom practice</span>
                       <ArrowRight className="h-4 w-4" />

@@ -225,10 +225,10 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
         aria-labelledby="mock-exam-title"
         className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
       >
-        <div className="bg-[#0D0D11] border border-[#27272A] rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-[0_25px_60px_rgba(0,0,0,0.9)] animate-in fade-in zoom-in-95 duration-150">
-          <div className="flex items-center justify-between pb-4 border-b border-[#1F1F23]">
+        <div className="liquid-glass-card rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="flex items-center justify-between pb-4 border-b border-white/[0.04]">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-brand-lime/20 border border-brand-lime/40 flex items-center justify-center text-brand-lime font-bold font-mono">
+              <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent font-bold font-mono">
                 CFA
               </div>
               <div>

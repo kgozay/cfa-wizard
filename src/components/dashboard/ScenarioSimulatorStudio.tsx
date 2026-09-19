@@ -89,37 +89,37 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
   };
 
   return (
-    <div className="w-full surface-panel rounded-2xl p-5 sm:p-7 space-y-6">
+    <div className="w-full liquid-glass-card rounded-2xl p-6 sm:p-8 space-y-6">
       {/* Studio Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-divider">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-white/[0.04]">
         <div>
-          <h3 className="text-lg font-bold text-foreground tracking-tight flex items-center gap-2">
+          <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
             <span>Custom practice studio</span>
-            <span className="text-[11px] px-2 py-0.5 rounded-md bg-accent/15 text-accent font-mono font-semibold">
+            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-accent/15 text-accent font-mono font-semibold">
               Dynamic generator
             </span>
           </h3>
-          <p className="text-xs sm:text-sm text-muted mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
             Create custom CFA Level I vignettes with targeted exam traps and difficulty settings.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Form Controls (7 cols) */}
         <div className="lg:col-span-7 space-y-5">
           {/* Step 1: Curriculum Track */}
           <div>
-            <label className="block text-xs font-semibold text-foreground mb-1.5">
+            <label className="block text-xs font-semibold text-slate-300 mb-2">
               Select curriculum topic
             </label>
             <select
               value={selectedTopicId}
               onChange={(e) => setSelectedTopicId(e.target.value)}
-              className="w-full bg-surface-solid border border-control rounded-lg p-2.5 text-xs sm:text-sm text-foreground focus:outline-none focus:border-accent"
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 text-xs sm:text-sm text-white focus:outline-none focus:border-accent"
             >
               {CFA_CURRICULUM.map((t) => (
-                <option key={t.id} value={t.id}>
+                <option key={t.id} value={t.id} className="bg-[#0b100d] text-white">
                   Topic {t.id}: {t.name} ({t.weight})
                 </option>
               ))}
@@ -185,12 +185,12 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
               placeholder="e.g. Callable bond yield shock, LIFO liquidation, cross-rate triangular arbitrage..."
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
-              className="w-full bg-surface-solid border border-control rounded-lg p-2.5 text-xs sm:text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent"
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-accent"
             />
 
             {/* Suggestion Chips */}
             <div className="mt-2.5 space-y-1.5">
-              <span className="text-xs text-muted block">
+              <span className="text-xs text-slate-400 block">
                 Suggested scenario topics:
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -199,7 +199,7 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
                     key={idx}
                     type="button"
                     onClick={() => setCustomPrompt(chip)}
-                    className="px-2.5 py-1 rounded-md bg-surface-interactive hover:bg-surface-raised text-muted hover:text-foreground text-xs transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-slate-300 hover:text-white text-xs transition-colors"
                   >
                     + {chip}
                   </button>
@@ -210,7 +210,7 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
 
           {/* Error message banner */}
           {errorMessage && (
-            <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-danger/10 border border-danger/20 text-danger text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -218,33 +218,33 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
         </div>
 
         {/* Right Column: Scenario Context & Launch CTA (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col justify-between space-y-4 rounded-xl bg-surface-raised p-4 sm:p-5">
+        <div className="lg:col-span-5 flex flex-col justify-between space-y-4 rounded-2xl bg-white/[0.03] p-5 sm:p-6">
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs text-muted pb-2 border-b border-divider">
-              <span className="font-semibold text-foreground">Configuration summary</span>
+            <div className="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-white/[0.04]">
+              <span className="font-semibold text-white">Configuration summary</span>
               <span className="font-mono text-accent font-semibold">{questionCount} questions</span>
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="flex justify-between py-1 border-b border-divider">
-                <span className="text-muted">Selected topic:</span>
-                <span className="text-foreground font-medium truncate max-w-[200px]">[{topic.id}] {topic.name}</span>
+              <div className="flex justify-between py-1 border-b border-white/[0.04]">
+                <span className="text-slate-400">Selected topic:</span>
+                <span className="text-white font-medium truncate max-w-[200px]">[{topic.id}] {topic.name}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-divider">
-                <span className="text-muted">Exam weight:</span>
-                <span className="font-mono text-foreground">{topic.weight}</span>
+              <div className="flex justify-between py-1 border-b border-white/[0.04]">
+                <span className="text-slate-400">Exam weight:</span>
+                <span className="font-mono text-white">{topic.weight}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-divider">
-                <span className="text-muted">Pacing guideline:</span>
-                <span className="font-mono text-foreground">{questionCount * 90}s ({((questionCount * 90) / 60).toFixed(1)} mins)</span>
+              <div className="flex justify-between py-1 border-b border-white/[0.04]">
+                <span className="text-slate-400">Pacing guideline:</span>
+                <span className="font-mono text-white">{questionCount * 90}s ({((questionCount * 90) / 60).toFixed(1)} mins)</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-lg bg-surface-interactive/60 text-xs">
+            <div className="p-3 rounded-xl bg-white/[0.02] text-xs">
               <span className="font-semibold text-warning block mb-1">
                 Primary target trap:
               </span>
-              <p className="text-muted-strong text-xs leading-relaxed">
+              <p className="text-slate-300 text-xs leading-relaxed">
                 {topic.highYieldTrapArea}
               </p>
             </div>
@@ -253,7 +253,7 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
           <button
             onClick={handleSynthesize}
             disabled={isGenerating}
-            className="w-full min-h-[44px] py-3 px-4 rounded-xl bg-accent hover:bg-accent-strong text-accent-ink font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
+            className="lime-btn-primary w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
           >
             {isGenerating ? (
               <>

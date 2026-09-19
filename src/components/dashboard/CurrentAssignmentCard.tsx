@@ -60,24 +60,24 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
   const syllabusPercentage = Math.round((completedCount / 10) * 100);
 
   return (
-    <section className="relative w-full overflow-hidden rounded-2xl glass-panel p-5 sm:p-6 shadow-glass">
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
-        {/* Left Column (approx 65%) */}
+    <section className="relative w-full overflow-hidden rounded-2xl liquid-glass-card p-6 sm:p-8">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+        {/* Left Column (approx 60%) */}
         <div className="flex flex-col space-y-4 lg:col-span-7">
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {/* Status badge & topic metadata */}
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-muted">
-              <span className="inline-flex items-center rounded-md bg-accent/15 px-2.5 py-0.5 font-mono text-xs font-semibold text-accent">
-                {hasAttempt ? "Continue studying" : "Recommended next"}
+            <div className="flex flex-wrap items-center gap-2.5 text-xs">
+              <span className="px-2.5 py-0.5 rounded-full bg-accent/15 text-accent font-medium text-xs">
+                {hasAttempt ? "Continue studying" : "Start here"}
               </span>
-              <span aria-hidden="true" className="text-muted/40">•</span>
-              <span className="font-mono text-xs font-medium text-foreground">
+              <span aria-hidden="true" className="text-slate-600">•</span>
+              <span className="font-mono text-xs text-slate-300">
                 Topic {topic.id} of 10
               </span>
-              <span aria-hidden="true" className="text-muted/40">•</span>
-              <span className="font-mono text-xs">{topic.weight} weight</span>
+              <span aria-hidden="true" className="text-slate-600">•</span>
+              <span className="font-mono text-xs text-slate-400">{topic.weight}</span>
               {isCompleted && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+                <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   Completed
                 </span>
@@ -86,18 +86,18 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
 
             {/* Topic Title & Concise Objective */}
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl leading-snug">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-snug">
                 {topic.name}
               </h1>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-strong">
-                Build fluency across {topic.subReadings.length} learning modules with a focused practice set.
+              <p className="mt-2 text-sm sm:text-base text-slate-300 leading-relaxed">
+                Build fluency across {topic.subReadings.length} learning modules.
               </p>
             </div>
           </div>
 
           {/* Last Attempt Feedback */}
           {hasAttempt && latestAccuracy !== undefined && (
-            <div className="rounded-xl bg-surface-solid/80 px-4 py-2.5 text-xs sm:text-sm text-muted-strong">
+            <div className="rounded-xl bg-white/[0.03] px-4 py-2 text-xs sm:text-sm text-slate-300">
               <p className="leading-snug">
                 {latestAccuracy === 100 ? (
                   <>
@@ -105,7 +105,7 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
                   </>
                 ) : (
                   <>
-                    Last set score: <span className="font-semibold text-foreground font-mono">{latestAccuracy}%</span> ({latestTopicScore}/{latestTopicItems.length}). Review the rationale or practice again.
+                    Last set score: <span className="font-semibold text-white font-mono">{latestAccuracy}%</span> ({latestTopicScore}/{latestTopicItems.length}). Review the rationale or practice again.
                   </>
                 )}
               </p>
@@ -113,24 +113,26 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
           )}
 
           {/* High-yield Trap Area */}
-          <div className="text-xs leading-relaxed text-muted">
-            <span className="font-medium text-foreground">Common difficulty:</span>{" "}
+          <div className="pt-1 text-xs leading-relaxed text-slate-400">
+            <span className="font-semibold text-slate-200">Common difficulty:</span>{" "}
             {topic.highYieldTrapArea}
           </div>
         </div>
 
-        {/* Right Column (approx 35%) */}
-        <div className="flex flex-col justify-between gap-4 rounded-xl bg-surface-solid/60 p-4 sm:p-5 lg:col-span-5">
+        {/* Right Column (approx 40%) */}
+        <div className="flex flex-col justify-between space-y-5 lg:col-span-5 lg:pl-6">
           {/* Compact Linear Syllabus Progress */}
-          <div className="space-y-2 pb-3 border-b border-divider">
+          <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-muted">Syllabus completion</span>
-              <span className="font-mono font-semibold text-foreground">
-                {completedCount}/10 ({syllabusPercentage}%)
+              <span className="font-semibold tracking-wider uppercase text-slate-400 text-[11px]">
+                Syllabus Progress
+              </span>
+              <span className="font-mono font-medium text-slate-400">
+                {syllabusPercentage}% complete
               </span>
             </div>
             <div
-              className="h-1.5 w-full overflow-hidden rounded-full bg-surface-interactive"
+              className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800/60"
               role="progressbar"
               aria-valuenow={syllabusPercentage}
               aria-valuemin={0}
@@ -142,13 +144,16 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
                 style={{ width: `${syllabusPercentage}%` }}
               />
             </div>
+            <p className="text-xs text-slate-400">
+              {completedCount} of 10 topics completed
+            </p>
           </div>
 
-          {/* Action Area */}
+          {/* Action Cluster */}
           <div className="space-y-2.5">
             <button
               onClick={handleStartDrill}
-              className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-ink transition-all duration-150 hover:bg-accent-strong active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="lime-btn-primary w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold"
             >
               <Play className="h-4 w-4 fill-current" />
               <span>
@@ -158,21 +163,21 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
               </span>
             </button>
 
-            <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
+            <div className="grid grid-cols-2 gap-2.5">
               <button
                 onClick={() => onOpenBriefing(topic.id)}
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-surface-interactive px-3 py-2 text-xs sm:text-sm font-medium text-muted-strong transition-all duration-150 hover:bg-surface-raised hover:text-foreground active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="glass-pill-btn py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
               >
-                <BookOpen className="h-4 w-4 shrink-0 text-muted" />
-                <span>Review topic</span>
+                <BookOpen className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <span>Review</span>
               </button>
 
               <button
                 onClick={() => onOpenScenarioSimulator(topic.id)}
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-surface-interactive px-3 py-2 text-xs sm:text-sm font-medium text-muted-strong transition-all duration-150 hover:bg-surface-raised hover:text-foreground active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="glass-pill-btn py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
               >
-                <Wand2 className="h-4 w-4 shrink-0 text-muted" />
-                <span>Custom practice</span>
+                <Wand2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <span>Practice setup</span>
               </button>
             </div>
           </div>

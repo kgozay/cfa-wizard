@@ -607,8 +607,8 @@ export const VignetteEngine: React.FC = () => {
               disabled={!isFormComplete}
               className={`w-full min-h-[44px] py-3.5 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
                 isFormComplete
-                  ? "bg-accent text-accent-ink hover:bg-accent-strong cursor-pointer"
-                  : "bg-surface-interactive text-muted border border-control cursor-not-allowed"
+                  ? "lime-btn-primary cursor-pointer"
+                  : "glass-pill-btn text-slate-500 opacity-60 cursor-not-allowed"
               }`}
             >
               <Send className="w-4 h-4" />
@@ -621,7 +621,7 @@ export const VignetteEngine: React.FC = () => {
           ) : (
             <button
               onClick={handleResetForRetake}
-              className="w-full min-h-[44px] py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-surface-interactive hover:bg-surface-raised text-foreground transition-all active:scale-[0.98]"
+              className="glass-pill-btn w-full min-h-[44px] py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold text-white transition-all active:scale-[0.98]"
             >
               Re-take this practice set
             </button>

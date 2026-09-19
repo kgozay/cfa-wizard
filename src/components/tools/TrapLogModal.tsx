@@ -50,12 +50,12 @@ export const TrapLogModal: React.FC = () => {
       aria-labelledby="trap-log-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200"
     >
-      <div className="w-full max-w-4xl bg-[#0B0B0E] border border-[#27272A] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[90vh]">
+      <div className="w-full max-w-4xl liquid-glass-card rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-5 border-b border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between">
+        <div className="p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div>

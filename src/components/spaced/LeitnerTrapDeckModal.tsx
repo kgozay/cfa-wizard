@@ -72,19 +72,19 @@ export const LeitnerTrapDeckModal: React.FC = () => {
       aria-labelledby="leitner-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans"
     >
-      <div className="bg-[#0B0B0E] border border-[#27272A] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="liquid-glass-card rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-lime/20 border border-brand-lime/40 flex items-center justify-center text-brand-lime">
+            <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent">
               <Layers className="w-4 h-4" />
             </div>
             <div>
               <h2 id="leitner-modal-title" className="text-sm font-mono font-bold text-white tracking-wide uppercase">
                 SPACED REPETITION TRAP VAULT (LEITNER SYSTEM)
               </h2>
-              <p className="text-[11px] font-mono text-editorial-dim">
+              <p className="text-[11px] font-mono text-slate-400">
                 Daily (Box 1) &bull; 3-Day (Box 2) &bull; 7-Day (Box 3) Mastery Progression
               </p>
             </div>
@@ -93,14 +93,14 @@ export const LeitnerTrapDeckModal: React.FC = () => {
           <button
             onClick={() => setLeitnerDeckOpen(false)}
             aria-label="Close Leitner deck"
-            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A]"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl glass-pill-btn text-slate-400 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Box Selector Tabs */}
-        <div className="grid grid-cols-3 border-b border-[#1F1F23] bg-[#0E0E12] font-mono text-xs">
+        <div className="grid grid-cols-3 border-b border-white/[0.04] bg-white/[0.02] font-mono text-xs">
           {([1, 2, 3] as const).map((boxNum) => {
             const count = leitnerCards.filter((c) => c.box === boxNum).length;
             const isSelected = activeBox === boxNum;

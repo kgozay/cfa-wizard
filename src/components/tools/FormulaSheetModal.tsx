@@ -40,19 +40,19 @@ export const FormulaSheetModal: React.FC = () => {
       aria-labelledby="formula-sheet-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200"
     >
-      <div className="w-full max-w-4xl bg-[#0B0B0E] border border-[#27272A] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[90vh]">
+      <div className="w-full max-w-4xl liquid-glass-card rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-5 border-b border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between">
+        <div className="p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-lime/10 border border-brand-lime/30 flex items-center justify-center text-brand-lime">
+            <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center text-accent">
               <BookOpen className="w-4 h-4" />
             </div>
             <div>
               <h3 id="formula-sheet-title" className="text-base sm:text-lg font-bold text-white tracking-tight">
                 HIGH-YIELD FORMULA & KEYSTROKE MATRIX
               </h3>
-              <span className="font-mono text-xs text-editorial-dim">
+              <span className="font-mono text-xs text-slate-400">
                 ALL 10 CFA LEVEL 1 TOPICS // KATEX EQUATIONS & TI BA II PLUS SEQUENCES
               </span>
             </div>

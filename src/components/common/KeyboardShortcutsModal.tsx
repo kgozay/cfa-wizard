@@ -66,22 +66,22 @@ export const KeyboardShortcutsModal: React.FC = () => {
       aria-labelledby="shortcuts-hud-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans"
     >
-      <div className="bg-[#0B0B0E] border border-[#27272A] rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+      <div className="liquid-glass-card rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-lime/20 border border-brand-lime/40 flex items-center justify-center text-brand-lime">
+            <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent">
               <Keyboard className="w-4 h-4" />
             </div>
             <div>
               <h2 id="shortcuts-hud-title" className="text-sm font-mono font-bold text-white tracking-wide uppercase flex items-center gap-2">
                 <span>KEYBOARD ERGONOMICS HUD</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-lime/10 text-brand-lime border border-brand-lime/30">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent">
                   SPEED KEYS
                 </span>
               </h2>
-              <p className="text-[11px] font-mono text-editorial-dim">
+              <p className="text-[11px] font-mono text-slate-400">
                 High-velocity hotkeys for zero-latency CFA study workflows
               </p>
             </div>
@@ -90,7 +90,7 @@ export const KeyboardShortcutsModal: React.FC = () => {
           <button
             onClick={handleClose}
             aria-label="Close shortcuts HUD"
-            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-[#141418] text-editorial-dim hover:text-white border border-[#27272A] transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl glass-pill-btn text-slate-400 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

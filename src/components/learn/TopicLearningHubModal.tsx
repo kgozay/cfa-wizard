@@ -116,12 +116,12 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
       aria-labelledby="learn-hub-title"
       className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
     >
-      <div className="bg-[#0A0A0D] border border-[#27272A] rounded-2xl max-w-6xl w-full h-[92vh] flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden font-sans">
+      <div className="liquid-glass-card rounded-2xl max-w-6xl w-full h-[92vh] flex flex-col shadow-2xl overflow-hidden font-sans">
         
         {/* Top Header Bar */}
-        <header className="h-16 px-4 sm:px-6 bg-[#0E0E12] border-b border-[#1F1F23] flex items-center justify-between shrink-0 select-none">
+        <header className="h-16 px-4 sm:px-6 bg-white/[0.02] border-b border-white/[0.04] flex items-center justify-between shrink-0 select-none">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-lime/20 border border-brand-lime/40 flex items-center justify-center text-brand-lime font-bold">
+            <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent font-bold">
               <BookOpen className="w-4 h-4" />
             </div>
             <div>

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
 import { CFAWizardMark } from "@/components/brand/CFAWizardMark";
+import { DarkSmokyBackground } from "@/components/common/DarkSmokyBackground";
 import { TopicContextBar } from "@/components/common/TopicContextBar";
 import { CurrentAssignmentCard } from "@/components/dashboard/CurrentAssignmentCard";
 import { CurriculumTracksGrid } from "@/components/dashboard/CurriculumTracksGrid";
@@ -220,9 +221,11 @@ export default function DiagnosticCockpitPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-background text-foreground selection:bg-accent selection:text-accent-ink font-sans">
-      <header className="sticky top-0 z-40 w-full glass-shell">
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+    <main className="relative min-h-screen flex flex-col bg-background text-foreground selection:bg-accent selection:text-accent-ink font-sans">
+      <DarkSmokyBackground />
+
+      <header className="sticky top-0 z-40 w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 liquid-glass-pill rounded-2xl">
           <Link
             href="/"
             className="flex min-h-11 items-center gap-3 rounded-lg pr-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
@@ -232,41 +235,41 @@ export default function DiagnosticCockpitPage() {
             <span className="hidden text-xs font-medium text-muted sm:inline">Level I study</span>
           </Link>
 
-          <nav aria-label="Study tools" className="hidden items-center gap-1 md:flex">
+          <nav aria-label="Study tools" className="hidden items-center gap-2 md:flex">
             <button
               onClick={() => {
                 if (soundEnabled) sound.playNodeSwitch();
                 setLearnHubInitialTopicId(useCFAStore.getState().activeTopicId || "01");
                 setLearnHubOpen(true);
               }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-muted hover:bg-surface-interactive hover:text-foreground transition-colors"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-medium text-muted hover:text-foreground hover:bg-white/[0.03] transition-colors"
             >
-              <BookOpen className="h-4 w-4" />
+              <BookOpen className="h-4 w-4 text-muted" />
               Learn
             </button>
             <button
               onClick={() => setCalculatorOpen(true)}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-muted hover:bg-surface-interactive hover:text-foreground transition-colors"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-medium text-muted hover:text-foreground hover:bg-white/[0.03] transition-colors"
             >
-              <Calculator className="h-4 w-4" />
+              <Calculator className="h-4 w-4 text-muted" />
               Calculator
             </button>
             <button
               onClick={() => setFormulaSheetOpen(true)}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-muted hover:bg-surface-interactive hover:text-foreground transition-colors"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-medium text-muted hover:text-foreground hover:bg-white/[0.03] transition-colors"
             >
-              <FileText className="h-4 w-4" />
+              <FileText className="h-4 w-4 text-muted" />
               Formulas
             </button>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2.5">
             <button
               onClick={() => {
                 if (soundEnabled) sound.playNodeSwitch();
                 setMockExamOpen(true);
               }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-surface-interactive px-3.5 text-sm font-semibold text-foreground transition-all hover:bg-surface-raised active:scale-[0.98]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl glass-pill-btn px-4 py-2 text-xs font-semibold text-foreground transition-all"
             >
               <Award className="h-4 w-4 text-accent" />
               <span className="hidden sm:inline">Mock exam</span>
@@ -279,17 +282,17 @@ export default function DiagnosticCockpitPage() {
                 aria-expanded={isSettingsOpen}
                 aria-controls="study-tools-menu"
                 aria-label="Open study tools and settings"
-                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl transition-colors ${
+                className={`inline-flex h-10 w-10 items-center justify-center rounded-xl glass-pill-btn transition-colors ${
                   isSettingsOpen
-                    ? "bg-accent/15 text-accent"
-                    : "bg-surface-interactive text-muted hover:bg-surface-raised hover:text-foreground"
+                    ? "bg-white/[0.12] text-accent"
+                    : "text-muted hover:text-foreground"
                 }`}
               >
-                <Settings className="h-5 w-5" />
+                <Settings className="h-4 w-4" />
               </button>
 
               {isSettingsOpen && (
-                <div id="study-tools-menu" className="absolute right-0 z-50 mt-2 w-72 space-y-1 rounded-2xl surface-panel p-2 text-sm shadow-2xl">
+                <div id="study-tools-menu" className="absolute right-0 z-50 mt-2 w-72 space-y-1 rounded-2xl liquid-glass-card p-2 text-sm shadow-2xl">
                   <p className="px-3 py-2 text-sm font-semibold text-foreground">Study tools</p>
 
                   <button
@@ -405,7 +408,7 @@ export default function DiagnosticCockpitPage() {
             <div
               role="tablist"
               aria-label="Study views"
-              className="grid w-full grid-cols-4 gap-1 rounded-xl glass-shell p-1.5"
+              className="grid w-full grid-cols-4 gap-1 rounded-2xl liquid-glass-pill p-1.5"
             >
               {TABS.map((tab, idx) => {
                 const isSelected = activeTab === tab.id;
@@ -425,17 +428,17 @@ export default function DiagnosticCockpitPage() {
                       if (soundEnabled) sound.playKeyClick();
                       setActiveTab(tab.id);
                     }}
-                    className={`relative min-h-[44px] rounded-lg px-2 py-2.5 text-center text-xs sm:text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                    className={`relative min-h-[44px] rounded-xl px-2 py-2.5 text-center text-xs sm:text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                       isSelected
-                        ? "bg-surface-interactive text-accent shadow-sm"
-                        : "text-muted hover:bg-surface-interactive/60 hover:text-foreground active:scale-[0.98]"
+                        ? "text-white"
+                        : "text-muted hover:text-foreground hover:bg-white/[0.02] active:scale-[0.98]"
                     }`}
                   >
                     <span className="truncate">{tab.label}</span>
                     {isSelected && (
                       <span
                         aria-hidden="true"
-                        className="absolute bottom-1 left-3 right-3 sm:left-6 sm:right-6 h-[2px] rounded-full bg-accent transition-all duration-150"
+                        className="absolute bottom-1 left-1/2 -translate-x-1/2 w-10 sm:w-14 h-[2.5px] rounded-full bg-accent active-tab-glow transition-all duration-150"
                       />
                     )}
                   </button>

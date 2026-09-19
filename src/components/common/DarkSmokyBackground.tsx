@@ -19,7 +19,7 @@ export const DarkSmokyBackground: React.FC = () => {
         className="smoke-drift-1 absolute -top-[15%] left-[5%] w-[1100px] h-[1100px] rounded-full pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(58, 77, 105, 0.38) 0%, rgba(35, 48, 68, 0.18) 42%, transparent 72%)",
+            "radial-gradient(circle, rgba(70, 95, 130, 0.45) 0%, rgba(35, 52, 75, 0.22) 45%, transparent 72%)",
         }}
       />
 
@@ -28,7 +28,7 @@ export const DarkSmokyBackground: React.FC = () => {
         className="smoke-drift-2 absolute top-[20%] -right-[15%] w-[1000px] h-[1000px] rounded-full pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(65, 78, 98, 0.32) 0%, rgba(38, 46, 60, 0.14) 45%, transparent 70%)",
+            "radial-gradient(circle, rgba(80, 95, 120, 0.40) 0%, rgba(42, 52, 70, 0.18) 45%, transparent 70%)",
         }}
       />
 
@@ -37,7 +37,7 @@ export const DarkSmokyBackground: React.FC = () => {
         className="smoke-drift-3 absolute -bottom-[20%] left-[15%] w-[1050px] h-[1050px] rounded-full pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(70, 85, 110, 0.34) 0%, rgba(28, 38, 52, 0.12) 48%, transparent 75%)",
+            "radial-gradient(circle, rgba(75, 100, 135, 0.42) 0%, rgba(32, 45, 62, 0.16) 48%, transparent 75%)",
         }}
       />
 
@@ -46,7 +46,7 @@ export const DarkSmokyBackground: React.FC = () => {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 40%, transparent 40%, rgba(9, 10, 15, 0.75) 100%)",
+            "radial-gradient(ellipse at 50% 40%, transparent 40%, rgba(9, 10, 15, 0.5) 100%)",
         }}
       />
     </div>

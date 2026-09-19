@@ -310,7 +310,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
 
       {/* Weak Area Remediation Banner */}
       {weakAreas.length > 0 && (
-        <div className="p-6 bg-surface-raised border border-danger/25 rounded-2xl space-y-4 shadow-sm">
+        <div className="p-6 bg-surface-raised rounded-2xl space-y-4 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -384,8 +384,8 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
 
         {totalQuestionsSolved === 0 ? (
           /* Zero-state compact table */
-          <div className="overflow-hidden rounded-xl border border-divider divide-y divide-divider text-xs">
-            <div className="grid grid-cols-12 px-4 py-2.5 bg-surface-raised/40 font-semibold text-muted uppercase tracking-wider">
+          <div className="overflow-hidden rounded-xl bg-surface-raised/40 divide-y divide-divider text-xs">
+            <div className="grid grid-cols-12 px-4 py-2.5 bg-surface-raised/60 font-semibold text-muted uppercase tracking-wider">
               <span className="col-span-2">Topic</span>
               <span className="col-span-6">Curriculum area</span>
               <span className="col-span-2 text-right">Exam weight</span>
@@ -414,13 +414,13 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
                   key={t.topic.id}
                   className={`p-4 rounded-xl transition-all flex flex-col justify-between gap-3 ${
                     isMastered
-                      ? "bg-surface-interactive border border-accent/30"
+                      ? "bg-accent/[0.08]"
                       : isCompetent
-                      ? "bg-surface-interactive border border-info/30"
+                      ? "bg-info/[0.08]"
                       : isNeedsWork
-                      ? "bg-surface-interactive border border-warning/30"
+                      ? "bg-warning/[0.08]"
                       : isCritical
-                      ? "bg-surface-interactive border border-danger/30"
+                      ? "bg-danger/[0.08]"
                       : "bg-surface-raised"
                   }`}
                 >

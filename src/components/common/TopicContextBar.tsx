@@ -66,7 +66,7 @@ export const TopicContextBar: React.FC<TopicContextBarProps> = ({
     <div
       role="region"
       aria-label="Current topic context"
-      className="glass-shell rounded-xl p-3 sm:px-5 sm:py-3.5 shadow-sm transition-all"
+      className="glass-panel rounded-xl p-3 sm:px-5 sm:py-3.5 shadow-sm transition-all"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Topic Info */}

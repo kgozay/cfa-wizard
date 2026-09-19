@@ -266,7 +266,7 @@ export default function DiagnosticCockpitPage() {
                 if (soundEnabled) sound.playNodeSwitch();
                 setMockExamOpen(true);
               }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-surface-interactive/60 px-3.5 text-sm font-semibold text-foreground transition-all hover:bg-surface-interactive hover:border-accent/40 active:scale-[0.98]"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-surface-interactive px-3.5 text-sm font-semibold text-foreground transition-all hover:bg-surface-raised active:scale-[0.98]"
             >
               <Award className="h-4 w-4 text-accent" />
               <span className="hidden sm:inline">Mock exam</span>
@@ -279,17 +279,17 @@ export default function DiagnosticCockpitPage() {
                 aria-expanded={isSettingsOpen}
                 aria-controls="study-tools-menu"
                 aria-label="Open study tools and settings"
-                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-colors ${
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl transition-colors ${
                   isSettingsOpen
-                    ? "border-accent/50 bg-accent/10 text-accent"
-                    : "border-border text-muted hover:bg-surface-interactive hover:text-foreground"
+                    ? "bg-accent/15 text-accent"
+                    : "bg-surface-interactive text-muted hover:bg-surface-raised hover:text-foreground"
                 }`}
               >
                 <Settings className="h-5 w-5" />
               </button>
 
               {isSettingsOpen && (
-                <div id="study-tools-menu" className="absolute right-0 z-50 mt-2 w-72 space-y-1 rounded-2xl border border-border bg-surface-raised p-2 text-sm shadow-2xl">
+                <div id="study-tools-menu" className="absolute right-0 z-50 mt-2 w-72 space-y-1 rounded-2xl surface-panel p-2 text-sm shadow-2xl">
                   <p className="px-3 py-2 text-sm font-semibold text-foreground">Study tools</p>
 
                   <button
@@ -491,18 +491,18 @@ export default function DiagnosticCockpitPage() {
           aria-labelledby="reset-progress-title"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
         >
-          <div className="w-full max-w-md space-y-4 rounded-2xl border border-[#343B3B] bg-[#171B1C] p-6 shadow-2xl">
-            <div id="reset-progress-title" className="flex items-center gap-2 font-semibold text-red-300">
+          <div className="w-full max-w-md space-y-4 rounded-2xl surface-panel p-6 shadow-2xl">
+            <div id="reset-progress-title" className="flex items-center gap-2 font-semibold text-danger">
               <AlertTriangle className="w-4 h-4" />
               <span>Reset study progress?</span>
             </div>
-            <p className="text-sm leading-relaxed text-[#BCC4C0]">
+            <p className="text-sm leading-relaxed text-muted-strong">
               This removes completed topics, practice scores, mistake history, and review cards. This action cannot be undone.
             </p>
             <div className="flex items-center justify-end gap-2 pt-2 text-sm">
               <button
                 onClick={() => setIsResetConfirmOpen(false)}
-                className="min-h-11 rounded-xl border border-[#343B3B] px-4 font-medium text-[#D4D9D6] hover:bg-[#202627] hover:text-white"
+                className="min-h-11 rounded-xl bg-surface-interactive px-4 font-medium text-foreground hover:bg-surface-raised"
               >
                 Cancel
               </button>

@@ -543,8 +543,8 @@ export const VignetteEngine: React.FC = () => {
             return (
               <div
                 key={q.sessionItemId}
-                className={`p-5 rounded-2xl surface-panel border transition-all ${
-                  chosen ? "border-accent/40" : "border-divider"
+                className={`p-5 rounded-2xl surface-panel transition-all ${
+                  chosen ? "bg-surface-raised" : ""
                 }`}
               >
                 {/* Question Header */}
@@ -574,17 +574,17 @@ export const VignetteEngine: React.FC = () => {
                         type="button"
                         onClick={() => handleSelectOption(q.sessionItemId, opt)}
                         disabled={hasSubmitted}
-                        className={`w-full text-left p-3 rounded-xl border transition-all flex items-start gap-3 select-none min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                        className={`w-full text-left p-3 rounded-xl transition-all flex items-start gap-3 select-none min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                           isSelected
-                            ? "bg-accent/10 border-accent text-foreground shadow-sm"
-                            : "bg-surface-solid border-control text-muted-strong hover:border-control-hover hover:bg-surface-interactive hover:text-foreground"
+                            ? "bg-accent/15 text-foreground shadow-sm"
+                            : "bg-surface-interactive/60 text-muted-strong hover:bg-surface-interactive hover:text-foreground"
                         } ${hasSubmitted ? "cursor-not-allowed opacity-80" : ""}`}
                       >
                         <span
                           className={`inline-flex items-center justify-center w-5 h-5 rounded-md font-mono font-bold text-xs shrink-0 ${
                             isSelected
                               ? "bg-accent text-accent-ink"
-                              : "bg-surface-interactive text-muted border border-control"
+                              : "bg-surface-interactive text-muted"
                           }`}
                         >
                           {opt}

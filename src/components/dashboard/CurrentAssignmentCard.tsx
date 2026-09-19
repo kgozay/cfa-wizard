@@ -166,17 +166,15 @@ export const CurrentAssignmentCard: React.FC<CurrentAssignmentCardProps> = ({
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 onClick={() => onOpenBriefing(topic.id)}
-                className="glass-pill-btn py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
+                className="glass-pill-btn py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center"
               >
-                <BookOpen className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                 <span>Review</span>
               </button>
 
               <button
                 onClick={() => onOpenScenarioSimulator(topic.id)}
-                className="glass-pill-btn py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
+                className="glass-pill-btn py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center"
               >
-                <Wand2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                 <span>Practice setup</span>
               </button>
             </div>

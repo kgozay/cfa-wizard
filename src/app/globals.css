@@ -15,16 +15,16 @@
   --surface-interactive: rgba(255, 255, 255, 0.04);
 
   /* Liquid Glass Material Tokens - pure depth, top specular rim, zero white perimeter outlines */
-  --glass-surface: rgba(16, 19, 27, 0.65);
-  --glass-surface-strong: rgba(20, 24, 34, 0.8);
-  --glass-pill: rgba(22, 27, 38, 0.6);
+  --glass-surface: rgba(16, 20, 28, 0.58);
+  --glass-surface-strong: rgba(20, 24, 34, 0.75);
+  --glass-pill: rgba(22, 28, 38, 0.52);
   --glass-btn: rgba(255, 255, 255, 0.05);
   --glass-btn-hover: rgba(255, 255, 255, 0.1);
 
-  --glass-highlight: rgba(255, 255, 255, 0.09);
-  --glass-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.75);
-  --glass-shadow-soft: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
-  --glass-blur: 16px;
+  --glass-highlight: rgba(255, 255, 255, 0.10);
+  --glass-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.75);
+  --glass-shadow-soft: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  --glass-blur: 20px;
 
   --divider: rgba(255, 255, 255, 0.05);
   --control-boundary: rgba(255, 255, 255, 0.06);
@@ -81,41 +81,58 @@ body {
   0%, 100% { transform: translate3d(0, 0, 0) scale(0.96); opacity: 0.75; }
   50% { transform: translate3d(60px, 50px, 0) scale(1.1); opacity: 0.95; }
 }
+@keyframes smokeDrift4 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.05); opacity: 0.8; }
+  50% { transform: translate3d(-50px, -40px, 0) scale(0.92); opacity: 1; }
+}
+@keyframes smokeDrift5 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.98); opacity: 0.7; }
+  50% { transform: translate3d(50px, -30px, 0) scale(1.08); opacity: 0.9; }
+}
 
 .smoke-drift-1,
 .smoke-orb-1 {
-  animation: smokeDrift1 24s ease-in-out infinite;
+  animation: smokeDrift1 26s ease-in-out infinite;
   will-change: transform;
 }
 .smoke-drift-2,
 .smoke-orb-2 {
-  animation: smokeDrift2 30s ease-in-out infinite;
+  animation: smokeDrift2 32s ease-in-out infinite;
   will-change: transform;
 }
 .smoke-drift-3,
 .smoke-orb-3 {
-  animation: smokeDrift3 26s ease-in-out infinite;
+  animation: smokeDrift3 28s ease-in-out infinite;
+  will-change: transform;
+}
+.smoke-drift-4 {
+  animation: smokeDrift4 34s ease-in-out infinite;
+  will-change: transform;
+}
+.smoke-drift-5 {
+  animation: smokeDrift5 30s ease-in-out infinite;
   will-change: transform;
 }
 
 @layer components {
-  /* Liquid Glass material classes - pure depth, top specular rim, refined glass edge */
+  /* Liquid Glass material classes - pure depth, specular sheen, refined glass edge */
   .liquid-glass-card,
   .glass-panel {
-    background: var(--glass-surface);
-    backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(18, 24, 34, 0.58) 35%, rgba(12, 16, 24, 0.68) 100%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(135%);
     box-shadow:
       inset 0 1px 0 0 var(--glass-highlight),
+      inset 0 0 20px 0 rgba(255, 255, 255, 0.02),
       var(--glass-shadow);
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .liquid-glass-pill,
   .glass-shell {
-    background: var(--glass-pill);
-    backdrop-filter: blur(var(--glass-blur)) saturate(120%);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(22, 28, 38, 0.52) 40%, rgba(16, 20, 30, 0.62) 100%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(125%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(125%);
     box-shadow:
       inset 0 1px 0 0 var(--glass-highlight),
       var(--glass-shadow-soft);

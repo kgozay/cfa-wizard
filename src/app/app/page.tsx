@@ -230,35 +230,35 @@ export default function DiagnosticCockpitPage() {
             href="/"
             className="flex min-h-11 items-center gap-3 rounded-lg pr-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            <CFAWizardMark className="h-5 w-5" />
+            <CFAWizardMark className="h-6 w-6" size={24} />
             <span className="text-base font-bold tracking-tight text-foreground">CFA Wizard</span>
-            <span className="hidden text-xs font-medium text-muted sm:inline">Level I study</span>
+            <span className="hidden text-xs font-medium text-slate-400 sm:inline ml-1">Level I study</span>
           </Link>
 
-          <nav aria-label="Study tools" className="hidden items-center gap-2 md:flex">
+          <nav aria-label="Study tools" className="hidden items-center gap-6 md:flex">
             <button
               onClick={() => {
                 if (soundEnabled) sound.playNodeSwitch();
                 setLearnHubInitialTopicId(useCFAStore.getState().activeTopicId || "01");
                 setLearnHubOpen(true);
               }}
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-medium text-muted hover:text-foreground hover:bg-white/[0.03] transition-colors"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
             >
-              <BookOpen className="h-4 w-4 text-muted" />
+              <BookOpen className="h-4 w-4 text-slate-400" />
               Learn
             </button>
             <button
               onClick={() => setCalculatorOpen(true)}
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-medium text-muted hover:text-foreground hover:bg-white/[0.03] transition-colors"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
             >
-              <Calculator className="h-4 w-4 text-muted" />
+              <Calculator className="h-4 w-4 text-slate-400" />
               Calculator
             </button>
             <button
               onClick={() => setFormulaSheetOpen(true)}
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-medium text-muted hover:text-foreground hover:bg-white/[0.03] transition-colors"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
             >
-              <FileText className="h-4 w-4 text-muted" />
+              <FileText className="h-4 w-4 text-slate-400" />
               Formulas
             </button>
           </nav>
@@ -269,9 +269,9 @@ export default function DiagnosticCockpitPage() {
                 if (soundEnabled) sound.playNodeSwitch();
                 setMockExamOpen(true);
               }}
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl glass-pill-btn px-4 py-2 text-xs font-semibold text-foreground transition-all"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl glass-pill-btn px-4 py-2 text-xs font-semibold text-white transition-all"
             >
-              <Award className="h-4 w-4 text-accent" />
+              <Award className="h-4 w-4 text-slate-400" />
               <span className="hidden sm:inline">Mock exam</span>
               <span className="sm:hidden">Mock</span>
             </button>

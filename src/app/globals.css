@@ -5,13 +5,22 @@
 @tailwind utilities;
 
 :root {
-  --background: #0f1213;
-  --foreground: #f4f6f3;
-  --surface: #15191a;
-  --surface-muted: #1a1f20;
-  --border: #2a3031;
-  --muted: #a8b0ad;
+  --background: #0b100f;
+  --surface: #121816;
+  --surface-raised: #18211d;
+  --surface-interactive: #1d2823;
+  --border: #2a3530;
+  --border-strong: #3a4841;
+  --foreground: #f3f6f2;
+  --muted: #aab5af;
+  --muted-strong: #c5cdc8;
   --accent: #b8d878;
+  --accent-strong: #c9e986;
+  --accent-ink: #11170f;
+  --info: #77cdb1;
+  --warning: #e6bd68;
+  --generated: #aaa5e8;
+  --danger: #e07c7c;
 
   --text-caption: 0.75rem;
   --text-secondary: 0.875rem;
@@ -23,7 +32,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   font-size: var(--text-body);
   line-height: 1.55;
   font-kerning: normal;

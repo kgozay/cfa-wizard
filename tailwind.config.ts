@@ -9,18 +9,35 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0F1213",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         surface: {
-          DEFAULT: "#0D0D0F",
+          DEFAULT: "var(--surface)",
+          raised: "var(--surface-raised)",
+          interactive: "var(--surface-interactive)",
           card: "#121215",
           elevated: "#18181B",
           highlight: "#222226",
         },
         border: {
+          DEFAULT: "var(--border)",
+          strong: "var(--border-strong)",
           subtle: "#1F1F23",
-          strong: "#27272A",
           muted: "#3F3F46",
         },
+        muted: {
+          DEFAULT: "var(--muted)",
+          strong: "var(--muted-strong)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          strong: "var(--accent-strong)",
+          ink: "var(--accent-ink)",
+        },
+        info: "var(--info)",
+        warning: "var(--warning)",
+        generated: "var(--generated)",
+        danger: "var(--danger)",
         brand: {
           lime: "#B8D878",
           neon: "#C8E68A",
@@ -36,7 +53,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "system-ui", "sans-serif"],
+        sans: ["var(--font-plus-jakarta)", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "system-ui", "sans-serif"],
         mono: ['"SFMono-Regular"', "Consolas", '"Liberation Mono"', "monospace"],
       },
       boxShadow: {

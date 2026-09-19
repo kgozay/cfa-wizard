@@ -188,14 +188,45 @@ export default function DiagnosticCockpitPage() {
     setActiveTab("simulator");
   };
 
+  const TABS = [
+    { id: "tracks" as const, label: "Study" },
+    { id: "simulator" as const, label: "Custom practice" },
+    { id: "recall" as const, label: "Review" },
+    { id: "analytics" as const, label: "Progress" },
+  ];
+  const tabRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
+
+  const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    let nextIndex = -1;
+    if (e.key === "ArrowRight") {
+      nextIndex = (index + 1) % TABS.length;
+    } else if (e.key === "ArrowLeft") {
+      nextIndex = (index - 1 + TABS.length) % TABS.length;
+    } else if (e.key === "Home") {
+      nextIndex = 0;
+    } else if (e.key === "End") {
+      nextIndex = TABS.length - 1;
+    }
+
+    if (nextIndex !== -1) {
+      e.preventDefault();
+      const nextTab = TABS[nextIndex];
+      setActiveTab(nextTab.id);
+      tabRefs.current[nextIndex]?.focus();
+      if (soundEnabled) sound.playKeyClick();
+    }
+  };
+
   return (
-    <main className="min-h-screen flex flex-col bg-[#0F1213] text-white selection:bg-brand-lime selection:text-black font-sans">
-      <header className="sticky top-0 z-40 w-full border-b border-[#252B2C] bg-[#0F1213]/95 backdrop-blur-md">
+    <main className="min-h-screen flex flex-col bg-background text-foreground selection:bg-accent selection:text-accent-ink font-sans">
+      <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex min-h-11 items-center gap-3 rounded-lg pr-2 text-white">
-            <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-brand-lime" />
-            <span className="text-base font-semibold tracking-[-0.01em]">CFA Wizard</span>
-            <span className="hidden text-sm text-[#8E9894] sm:inline">Level I study</span>
+          <Link href="/" className="flex min-h-11 items-center gap-3 rounded-lg pr-2 text-foreground">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/20">
+              <span className="h-2 w-2 rounded-full bg-accent" />
+            </span>
+            <span className="text-base font-bold tracking-tight text-foreground">CFA Wizard</span>
+            <span className="hidden text-xs font-medium text-muted sm:inline">Level I study</span>
           </Link>
 
           <nav aria-label="Study tools" className="hidden items-center gap-1 md:flex">
@@ -205,21 +236,21 @@ export default function DiagnosticCockpitPage() {
                 setLearnHubInitialTopicId(useCFAStore.getState().activeTopicId || "01");
                 setLearnHubOpen(true);
               }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#C1C7C4] hover:bg-[#1A1F20] hover:text-white"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-muted hover:bg-surface-interactive hover:text-foreground transition-colors"
             >
               <BookOpen className="h-4 w-4" />
               Learn
             </button>
             <button
               onClick={() => setCalculatorOpen(true)}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#C1C7C4] hover:bg-[#1A1F20] hover:text-white"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-muted hover:bg-surface-interactive hover:text-foreground transition-colors"
             >
               <Calculator className="h-4 w-4" />
               Calculator
             </button>
             <button
               onClick={() => setFormulaSheetOpen(true)}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#C1C7C4] hover:bg-[#1A1F20] hover:text-white"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-muted hover:bg-surface-interactive hover:text-foreground transition-colors"
             >
               <FileText className="h-4 w-4" />
               Formulas
@@ -232,9 +263,9 @@ export default function DiagnosticCockpitPage() {
                 if (soundEnabled) sound.playNodeSwitch();
                 setMockExamOpen(true);
               }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#343B3B] px-3 text-sm font-semibold text-white transition-colors hover:bg-[#1A1F20]"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-surface-interactive/60 px-3.5 text-sm font-semibold text-foreground transition-all hover:bg-surface-interactive hover:border-accent/40 active:scale-[0.98]"
             >
-              <Award className="h-4 w-4" />
+              <Award className="h-4 w-4 text-accent" />
               <span className="hidden sm:inline">Mock exam</span>
               <span className="sm:hidden">Mock</span>
             </button>
@@ -247,16 +278,16 @@ export default function DiagnosticCockpitPage() {
                 aria-label="Open study tools and settings"
                 className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-colors ${
                   isSettingsOpen
-                    ? "border-brand-lime/50 bg-brand-lime/10 text-brand-lime"
-                    : "border-[#343B3B] text-[#C1C7C4] hover:bg-[#1A1F20] hover:text-white"
+                    ? "border-accent/50 bg-accent/10 text-accent"
+                    : "border-border text-muted hover:bg-surface-interactive hover:text-foreground"
                 }`}
               >
                 <Settings className="h-5 w-5" />
               </button>
 
               {isSettingsOpen && (
-                <div id="study-tools-menu" className="absolute right-0 z-50 mt-2 w-72 space-y-1 rounded-2xl border border-[#343B3B] bg-[#171B1C] p-2 text-sm shadow-2xl">
-                  <p className="px-3 py-2 text-sm font-semibold text-white">Study tools</p>
+                <div id="study-tools-menu" className="absolute right-0 z-50 mt-2 w-72 space-y-1 rounded-2xl border border-border bg-surface-raised p-2 text-sm shadow-2xl">
+                  <p className="px-3 py-2 text-sm font-semibold text-foreground">Study tools</p>
 
                   <button
                     onClick={() => {
@@ -264,7 +295,7 @@ export default function DiagnosticCockpitPage() {
                       setLearnHubInitialTopicId(useCFAStore.getState().activeTopicId || "01");
                       setLearnHubOpen(true);
                     }}
-                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526] md:hidden"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-muted-strong hover:bg-surface-interactive md:hidden"
                   >
                     <BookOpen className="h-4 w-4" />
                     Learning hub
@@ -274,7 +305,7 @@ export default function DiagnosticCockpitPage() {
                       setIsSettingsOpen(false);
                       setCalculatorOpen(true);
                     }}
-                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526] md:hidden"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-muted-strong hover:bg-surface-interactive md:hidden"
                   >
                     <Calculator className="h-4 w-4" />
                     BA II Plus calculator
@@ -284,7 +315,7 @@ export default function DiagnosticCockpitPage() {
                       setIsSettingsOpen(false);
                       setFormulaSheetOpen(true);
                     }}
-                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526] md:hidden"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-muted-strong hover:bg-surface-interactive md:hidden"
                   >
                     <FileText className="h-4 w-4" />
                     Formula reference
@@ -295,49 +326,49 @@ export default function DiagnosticCockpitPage() {
                       setIsSettingsOpen(false);
                       setTrapLogOpen(true);
                     }}
-                    className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526]"
+                    className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-muted-strong hover:bg-surface-interactive"
                   >
-                    <span className="flex items-center gap-3"><AlertTriangle className="h-4 w-4" />Mistake review</span>
-                    <span className="text-sm text-[#A8B0AD]">{trapLogs.length}</span>
+                    <span className="flex items-center gap-3"><AlertTriangle className="h-4 w-4 text-warning" />Mistake review</span>
+                    <span className="text-sm font-mono text-muted tabular-nums">{trapLogs.length}</span>
                   </button>
                   <button
                     onClick={() => {
                       setIsSettingsOpen(false);
                       setShortcutsOpen(true);
                     }}
-                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526]"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-muted-strong hover:bg-surface-interactive"
                   >
                     <Keyboard className="h-4 w-4" />
                     Keyboard shortcuts
                   </button>
                   <button
                     onClick={toggleSound}
-                    className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526]"
+                    className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-muted-strong hover:bg-surface-interactive"
                   >
                     <span className="flex items-center gap-3">
-                      {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                      {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4 text-muted" />}
                       Sound
                     </span>
-                    <span className="text-sm text-[#A8B0AD]">{soundEnabled ? "On" : "Off"}</span>
+                    <span className="text-sm text-muted">{soundEnabled ? "On" : "Off"}</span>
                   </button>
                   <button
                     onClick={() => {
                       setIsSettingsOpen(false);
                       setAuthSyncOpen(true);
                     }}
-                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[#D4D9D6] hover:bg-[#202526]"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-muted-strong hover:bg-surface-interactive"
                   >
                     <Cloud className="h-4 w-4" />
                     Backup and sync
                   </button>
 
-                  <div className="my-1 border-t border-[#2A3031]" />
+                  <div className="my-1 border-t border-border" />
                   <button
                     onClick={() => {
                       setIsSettingsOpen(false);
                       setIsResetConfirmOpen(true);
                     }}
-                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-red-300 hover:bg-red-950/30"
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-danger hover:bg-danger/10"
                   >
                     <RefreshCw className="h-4 w-4" />
                     Reset study progress
@@ -365,74 +396,49 @@ export default function DiagnosticCockpitPage() {
             <div
               role="tablist"
               aria-label="Study views"
-              className="grid w-full grid-cols-2 gap-1 rounded-2xl border border-[#293031] bg-[#15191A] p-1.5 sm:grid-cols-4"
+              className="grid w-full grid-cols-2 gap-1 rounded-2xl border border-border/80 bg-surface p-1.5 sm:grid-cols-4"
             >
-              <button
-                role="tab"
-                aria-selected={activeTab === "tracks"}
-                onClick={() => {
-                  if (soundEnabled) sound.playKeyClick();
-                  setActiveTab("tracks");
-                }}
-                className={`min-h-11 rounded-xl px-3 text-sm font-semibold text-center transition-colors ${
-                  activeTab === "tracks"
-                    ? "bg-[#E4E9E6] text-[#111515]"
-                    : "text-[#AAB2AE] hover:bg-[#202627] hover:text-white"
-                }`}
-              >
-                Study
-              </button>
-
-              <button
-                role="tab"
-                aria-selected={activeTab === "simulator"}
-                onClick={() => {
-                  if (soundEnabled) sound.playKeyClick();
-                  setActiveTab("simulator");
-                }}
-                className={`min-h-11 rounded-xl px-3 text-sm font-semibold text-center transition-colors ${
-                  activeTab === "simulator"
-                    ? "bg-[#E4E9E6] text-[#111515]"
-                    : "text-[#AAB2AE] hover:bg-[#202627] hover:text-white"
-                }`}
-              >
-                Custom practice
-              </button>
-
-              <button
-                role="tab"
-                aria-selected={activeTab === "recall"}
-                onClick={() => {
-                  if (soundEnabled) sound.playKeyClick();
-                  setActiveTab("recall");
-                }}
-                className={`min-h-11 rounded-xl px-3 text-sm font-semibold text-center transition-colors ${
-                  activeTab === "recall"
-                    ? "bg-[#E4E9E6] text-[#111515]"
-                    : "text-[#AAB2AE] hover:bg-[#202627] hover:text-white"
-                }`}
-              >
-                Review
-              </button>
-
-              <button
-                role="tab"
-                aria-selected={activeTab === "analytics"}
-                onClick={() => {
-                  if (soundEnabled) sound.playKeyClick();
-                  setActiveTab("analytics");
-                }}
-                className={`min-h-11 rounded-xl px-3 text-sm font-semibold text-center transition-colors ${
-                  activeTab === "analytics"
-                    ? "bg-[#E4E9E6] text-[#111515]"
-                    : "text-[#AAB2AE] hover:bg-[#202627] hover:text-white"
-                }`}
-              >
-                Progress
-              </button>
+              {TABS.map((tab, idx) => {
+                const isSelected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    ref={(el) => {
+                      tabRefs.current[idx] = el;
+                    }}
+                    role="tab"
+                    id={`tab-${tab.id}`}
+                    aria-controls={`tabpanel-${tab.id}`}
+                    aria-selected={isSelected}
+                    tabIndex={isSelected ? 0 : -1}
+                    onKeyDown={(e) => handleTabKeyDown(e, idx)}
+                    onClick={() => {
+                      if (soundEnabled) sound.playKeyClick();
+                      setActiveTab(tab.id);
+                    }}
+                    className={`relative min-h-11 rounded-xl px-3 py-2.5 text-center text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                      isSelected
+                        ? "bg-accent/10 text-accent"
+                        : "text-muted hover:bg-surface-interactive/70 hover:text-foreground active:scale-[0.98]"
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    {isSelected && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute bottom-1 left-6 right-6 h-[2.5px] rounded-full bg-accent transition-all duration-200"
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            <div>
+            <div
+              role="tabpanel"
+              id={`tabpanel-${activeTab}`}
+              aria-labelledby={`tab-${activeTab}`}
+            >
               {activeTab === "tracks" && (
                 <CurriculumTracksGrid
                   onOpenBriefing={handleOpenBriefing}

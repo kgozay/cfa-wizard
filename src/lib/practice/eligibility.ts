@@ -35,3 +35,13 @@ export function isEligibleForMode(
       return false;
   }
 }
+
+/** Reject saved sessions containing an authored answer corrected after they were created. */
+export function hasCurrentAnswerKey(session: PracticeSession): boolean {
+  return !session.presentedItems.some(
+    (item) =>
+      item.sourceItemId.startsWith("authored:vignette-01-quant") &&
+      item.sourceItemId.endsWith(":111") &&
+      item.solution.includes("193.5")
+  );
+}

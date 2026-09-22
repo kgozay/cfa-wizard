@@ -146,6 +146,8 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
       practiceAttempts: valid.practiceAttempts,
       practiceSessions: valid.practiceSessions,
       activePracticeSessionId: valid.activePracticeSessionId,
+      practiceDraft: null,
+      mockExamDraft: null,
       trapLogs: valid.trapLogs,
       customVignettes: valid.customVignettes,
       leitnerCards: valid.leitnerCards,

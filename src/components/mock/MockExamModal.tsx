@@ -16,7 +16,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { MockExamSession, MockExamType } from "@/types/mockExam";
-import { generateMockExamSession, gradeMockExam } from "@/data/mockExamGenerator";
+import { generateMockExamSession, gradeMockExam, getMockExamShortages } from "@/data/mockExamGenerator";
 import { MockScorecardView } from "./MockScorecardView";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { useCFAStore } from "@/store/useCFAStore";
@@ -24,6 +24,8 @@ import { OptionKey } from "@/types/cfa";
 import { sound } from "@/components/common/SoundEffects";
 import { gradeAttempt } from "@/lib/practice/gradeAttempt";
 import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
+import { getMockElapsedSeconds, getMockRemainingSeconds } from "@/lib/practice/mockTiming";
+import { hasCurrentAnswerKey } from "@/lib/practice/eligibility";
 
 interface MockExamModalProps {
   isOpen: boolean;
@@ -36,6 +38,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     customVignettes,
     recordPracticeAttempt,
     savePracticeSession,
+    mockExamDraft,
+    setMockExamDraft,
     setCalculatorOpen,
     calculatorMode,
     setCalculatorMode,
@@ -48,10 +52,12 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState<boolean>(false);
   const [isGraded, setIsGraded] = useState<boolean>(false);
   const [startError, setStartError] = useState<string | null>(null);
+  const [now, setNow] = useState<number>(Date.now());
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const itemTimesRef = useRef<Record<string, number>>({});
   const questionStartedAtRef = useRef<number>(Date.now());
+  const submissionRef = useRef(false);
   const dialogRef = useAccessibleDialog<HTMLDivElement>(isOpen, onClose);
 
   // Initialize or start new mock exam
@@ -68,6 +74,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
         setStartError(null);
         itemTimesRef.current = {};
         questionStartedAtRef.current = Date.now();
+        submissionRef.current = false;
+        setNow(Date.now());
       } catch (error) {
         setStartError(error instanceof Error ? error.message : "Unable to assemble this mock.");
       }
@@ -75,16 +83,44 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     [customVignettes, savePracticeSession, soundEnabled]
   );
 
+  const handleResumeExam = useCallback(() => {
+    if (!mockExamDraft) return;
+    if (!hasCurrentAnswerKey(mockExamDraft.session.practiceSession)) {
+      setMockExamDraft(null);
+      setStartError("This saved mock contains a corrected answer. Start a new mock to use the current question bank.");
+      return;
+    }
+    setSession(mockExamDraft.session);
+    setCurrentIndex(mockExamDraft.currentIndex);
+    itemTimesRef.current = { ...mockExamDraft.itemTimes };
+    questionStartedAtRef.current = mockExamDraft.currentQuestionStartedAt || Date.now();
+    submissionRef.current = false;
+    setIsGraded(false);
+    setNow(Date.now());
+  }, [mockExamDraft, setMockExamDraft]);
+
+  const changeQuestion = useCallback((nextIndex: number) => {
+    if (!session || nextIndex === currentIndex) return;
+    const sessionItemId = session.questions[currentIndex]?.sessionItemId;
+    const changedAt = Date.now();
+    if (sessionItemId) {
+      const elapsed = Math.max(0, Math.round((changedAt - questionStartedAtRef.current) / 1000));
+      itemTimesRef.current[sessionItemId] = (itemTimesRef.current[sessionItemId] || 0) + elapsed;
+    }
+    questionStartedAtRef.current = changedAt;
+    setCurrentIndex(Math.max(0, Math.min(session.questions.length - 1, nextIndex)));
+  }, [currentIndex, session]);
+
   useEffect(() => {
     if (!session || isGraded) return;
-    const sessionItemId = session.questions[currentIndex]?.sessionItemId;
-    questionStartedAtRef.current = Date.now();
-    return () => {
-      if (!sessionItemId) return;
-      const elapsed = Math.max(0, Math.round((Date.now() - questionStartedAtRef.current) / 1000));
-      itemTimesRef.current[sessionItemId] = (itemTimesRef.current[sessionItemId] || 0) + elapsed;
-    };
-  }, [currentIndex, isGraded, session?.id]);
+    setMockExamDraft({
+      session,
+      currentIndex,
+      itemTimes: itemTimesRef.current,
+      currentQuestionStartedAt: questionStartedAtRef.current,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [currentIndex, isGraded, session, setMockExamDraft]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -93,15 +129,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
       return;
     }
 
-    timerRef.current = setInterval(() => {
-      setSession((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          timeSpentSeconds: prev.timeSpentSeconds + 1,
-        };
-      });
-    }, 1000);
+    setNow(Date.now());
+    timerRef.current = setInterval(() => setNow(Date.now()), 1000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -111,7 +140,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   // Answer selection handler
   const handleSelectAnswer = useCallback(
     (questionId: number, option: OptionKey) => {
-      if (!session || isGraded) return;
+      if (!session || isGraded || getMockRemainingSeconds(session) === 0) return;
       if (soundEnabled) sound.playKeyClick();
       setSession((prev) => {
         if (!prev) return prev;
@@ -130,7 +159,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   // Flag toggle handler
   const handleToggleFlag = useCallback(
     (questionId: number) => {
-      if (!session || isGraded) return;
+      if (!session || isGraded || getMockRemainingSeconds(session) === 0) return;
       if (soundEnabled) sound.playKeyClick();
       setSession((prev) => {
         if (!prev) return prev;
@@ -149,14 +178,21 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
 
   // Submission handler
   const handleFinalSubmit = useCallback(() => {
-    if (!session) return;
+    if (!session || submissionRef.current) return;
+    submissionRef.current = true;
     if (soundEnabled) sound.playSuccessChime();
 
-    const { gradedSession, generatedTraps } = gradeMockExam(session);
+    const completedSession = {
+      ...session,
+      timeSpentSeconds: getMockElapsedSeconds(session),
+    };
+    const { gradedSession, generatedTraps } = gradeMockExam(completedSession);
     const currentSessionItemId = session.questions[currentIndex]?.sessionItemId;
     if (currentSessionItemId) {
+      const recordedSeconds = Object.values(itemTimesRef.current).reduce((sum, seconds) => sum + seconds, 0);
+      const remainingTimeForCurrent = Math.max(0, completedSession.timeSpentSeconds - recordedSeconds);
       itemTimesRef.current[currentSessionItemId] = (itemTimesRef.current[currentSessionItemId] || 0)
-        + Math.max(0, Math.round((Date.now() - questionStartedAtRef.current) / 1000));
+        + Math.min(remainingTimeForCurrent, Math.max(0, Math.round((Date.now() - questionStartedAtRef.current) / 1000)));
       questionStartedAtRef.current = Date.now();
     }
     const answers = Object.fromEntries(
@@ -177,9 +213,16 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     setSession(gradedSession);
     setIsGraded(true);
     setIsSubmitConfirmOpen(false);
+    setMockExamDraft(null);
 
     recordPracticeAttempt(attempt, traceableTraps);
-  }, [currentIndex, recordPracticeAttempt, session, soundEnabled]);
+  }, [currentIndex, recordPracticeAttempt, session, setMockExamDraft, soundEnabled]);
+
+  useEffect(() => {
+    if (isOpen && session && !isGraded && getMockRemainingSeconds(session, now) === 0) {
+      handleFinalSubmit();
+    }
+  }, [handleFinalSubmit, isGraded, isOpen, now, session]);
 
   // Keyboard navigation within active mock exam
   useEffect(() => {
@@ -200,9 +243,9 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
       } else if (e.key === "f" || e.key === "F") {
         handleToggleFlag(currentQ.id);
       } else if (e.key === "ArrowLeft") {
-        setCurrentIndex((prev) => Math.max(0, prev - 1));
+        changeQuestion(Math.max(0, currentIndex - 1));
       } else if (e.key === "ArrowRight") {
-        setCurrentIndex((prev) => Math.min(session.questions.length - 1, prev + 1));
+        changeQuestion(Math.min(session.questions.length - 1, currentIndex + 1));
       } else if (e.key === "k" || e.key === "K") {
         setCalculatorMode(calculatorMode === "docked" ? "closed" : "docked");
       }
@@ -210,7 +253,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [calculatorMode, currentIndex, handleSelectAnswer, handleToggleFlag, isGraded, isOpen, session, setCalculatorMode]);
+  }, [calculatorMode, changeQuestion, currentIndex, handleSelectAnswer, handleToggleFlag, isGraded, isOpen, session, setCalculatorMode]);
 
   if (!isOpen) return null;
 
@@ -254,6 +297,15 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
               Select Mock Simulation Tier:
             </label>
 
+            {mockExamDraft && (
+              <button
+                onClick={handleResumeExam}
+                className="w-full rounded-xl border border-brand-lime/50 bg-brand-lime/10 p-4 text-left text-sm text-white"
+              >
+                Resume {mockExamDraft.session.title} ({Object.keys(mockExamDraft.session.userAnswers).length}/{mockExamDraft.session.totalQuestions} answered)
+              </button>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 {
@@ -284,33 +336,45 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
                   time: "270 Minutes (4.5 hrs)",
                   desc: "Full two-session stamina simulation mirroring the complete test day.",
                 },
-              ].map((tier) => (
-                <button
-                  key={tier.id}
-                  onClick={() => setSelectedExamType(tier.id as MockExamType)}
-                  className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between gap-3 ${
-                    selectedExamType === tier.id
-                      ? "bg-brand-lime/10 border-brand-lime text-white shadow-[0_0_15px_rgba(216,255,62,0.12)]"
-                      : "bg-[#121216] border-[#222228] text-zinc-300 hover:border-[#3F3F46]"
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="text-xs font-mono font-bold text-brand-lime">
-                        {tier.badge}
-                      </span>
-                      <span className="text-[11px] font-mono text-zinc-400 flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-zinc-400" />
-                        {tier.time}
-                      </span>
+              ].map((tier) => {
+                const shortages = getMockExamShortages(tier.id as MockExamType);
+                const unavailable = shortages.length > 0;
+                return (
+                  <button
+                    key={tier.id}
+                    onClick={() => setSelectedExamType(tier.id as MockExamType)}
+                    disabled={unavailable}
+                    className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between gap-3 ${
+                      unavailable
+                        ? "bg-[#121216] border-[#222228] text-zinc-500 cursor-not-allowed"
+                        : selectedExamType === tier.id
+                          ? "bg-brand-lime/10 border-brand-lime text-white shadow-[0_0_15px_rgba(216,255,62,0.12)]"
+                          : "bg-[#121216] border-[#222228] text-zinc-300 hover:border-[#3F3F46]"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-xs font-mono font-bold text-brand-lime">
+                          {tier.badge}
+                        </span>
+                        <span className="text-[11px] font-mono text-zinc-400 flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-zinc-400" />
+                          {tier.time}
+                        </span>
+                      </div>
+                      <div className="font-bold text-sm text-white font-sans">{tier.title}</div>
+                      <p className="text-xs text-zinc-400 font-sans mt-1 leading-relaxed">
+                        {tier.desc}
+                      </p>
+                      {unavailable && (
+                        <p className="mt-2 text-xs text-amber-300">
+                          Unavailable: more approved questions needed in {shortages.length} topic{shortages.length === 1 ? "" : "s"}.
+                        </p>
+                      )}
                     </div>
-                    <div className="font-bold text-sm text-white font-sans">{tier.title}</div>
-                    <p className="text-xs text-zinc-400 font-sans mt-1 leading-relaxed">
-                      {tier.desc}
-                    </p>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -360,8 +424,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
 
   // Render Active Exam Session
   const currentQuestion = session.questions[currentIndex];
-  const totalSecondsAllocated = session.allocatedMinutes * 60;
-  const remainingSeconds = Math.max(0, totalSecondsAllocated - session.timeSpentSeconds);
+  const remainingSeconds = getMockRemainingSeconds(session, now);
   const remainingHrs = Math.floor(remainingSeconds / 3600);
   const remainingMins = Math.floor((remainingSeconds % 3600) / 60);
   const remainingSecs = remainingSeconds % 60;
@@ -519,7 +582,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
           {/* Bottom Step Navigation Bar */}
           <div className="max-w-3xl mx-auto w-full pt-6 border-t border-[#1F1F23] flex items-center justify-between gap-4 font-mono text-xs">
             <button
-              onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+              onClick={() => changeQuestion(Math.max(0, currentIndex - 1))}
               disabled={currentIndex === 0}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 disabled:opacity-30 border border-[#27272A] transition-all"
             >
@@ -532,7 +595,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
             </span>
 
             <button
-              onClick={() => setCurrentIndex((prev) => Math.min(session.questions.length - 1, prev + 1))}
+              onClick={() => changeQuestion(Math.min(session.questions.length - 1, currentIndex + 1))}
               disabled={currentIndex === session.questions.length - 1}
               className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-lime hover:bg-brand-neon text-black font-bold disabled:opacity-30 transition-all shadow-lime-sm"
             >
@@ -582,7 +645,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
                     <button
                       key={q.id}
                       onClick={() => {
-                        setCurrentIndex(idx);
+                        changeQuestion(idx);
                         if (soundEnabled) sound.playKeyClick();
                       }}
                       className={`h-9 rounded-lg border font-bold flex items-center justify-center relative transition-all ${

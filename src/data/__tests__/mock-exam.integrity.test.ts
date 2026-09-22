@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { generateMockExamSession } from "../mockExamGenerator";
+import { generateMockExamSession, getMockExamShortages } from "../mockExamGenerator";
+import { getMockElapsedSeconds, getMockRemainingSeconds } from "@/lib/practice/mockTiming";
 
 describe("Mock Exam Integrity", () => {
   it("generates quick diagnostic mock with unique question IDs and sessionItemIds", () => {
@@ -40,6 +41,21 @@ describe("Mock Exam Integrity", () => {
   });
 
   it("rejects mock sizes that would require repeated source questions", () => {
+    expect(getMockExamShortages("quick_diagnostic_45")).toEqual([]);
+    expect(getMockExamShortages("half_session_1").length).toBeGreaterThan(0);
+    expect(getMockExamShortages("half_session_2").length).toBeGreaterThan(0);
+    expect(getMockExamShortages("full_180").length).toBeGreaterThan(0);
     expect(() => generateMockExamSession("full_180")).toThrow(/without repeating questions/);
+  });
+
+  it("ends mock time at the deadline even after a page has been closed", () => {
+    const session = {
+      startedAt: "2026-01-01T00:00:00.000Z",
+      allocatedMinutes: 68,
+      timeSpentSeconds: 0,
+    };
+    expect(getMockRemainingSeconds(session, Date.parse(session.startedAt) + 60_000)).toBe(4020);
+    expect(getMockRemainingSeconds(session, Date.parse(session.startedAt) + 4_080_000)).toBe(0);
+    expect(getMockElapsedSeconds(session, Date.parse(session.startedAt) + 8_000_000)).toBe(4080);
   });
 });

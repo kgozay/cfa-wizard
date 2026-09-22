@@ -30,6 +30,7 @@ import { DiagnosticAutopsyView } from "@/components/diagnostic/DiagnosticAutopsy
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPracticeSession } from "@/lib/practice/createSession";
 import { gradeAttempt } from "@/lib/practice/gradeAttempt";
+import { hasCurrentAnswerKey } from "@/lib/practice/eligibility";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
 
@@ -40,6 +41,7 @@ export const VignetteEngine: React.FC = () => {
     closeVignetteDrill,
     recordPracticeAttempt,
     savePracticeSession,
+    setPracticeDraft,
     setCalculatorOpen,
     setCalculatorMode,
     calculatorMode,
@@ -91,6 +93,7 @@ export const VignetteEngine: React.FC = () => {
       shuffleQuestions: true,
     });
     savePracticeSession(session, true);
+    setPracticeDraft(null);
     setPracticeSession(session);
     setSelectedAnswers({});
     setItemTimes({});
@@ -99,7 +102,8 @@ export const VignetteEngine: React.FC = () => {
     setHasSubmitted(false);
     setReviewResult(null);
     setElapsedSeconds(0);
-  }, [drillQuestionCount, isPacingTimerEnabled, savePracticeSession, vignette]);
+    setScratchpadText("");
+  }, [drillQuestionCount, isPacingTimerEnabled, savePracticeSession, setPracticeDraft, vignette]);
 
   useEffect(() => {
     const state = useCFAStore.getState();
@@ -110,21 +114,27 @@ export const VignetteEngine: React.FC = () => {
     if (
       stored &&
       !stored.completedAt &&
+      hasCurrentAnswerKey(stored) &&
       stored.sourceSetIds.includes(vignette.id) &&
       stored.presentedItems.length === expectedCount
     ) {
+      const draft = state.practiceDraft?.sessionId === stored.id ? state.practiceDraft : null;
       setPracticeSession(stored);
-      setSelectedAnswers({});
+      setSelectedAnswers(draft?.answers || {});
       setItemTimes({});
-      itemTimesRef.current = {};
-      lastAnswerAtRef.current = Date.now();
+      itemTimesRef.current = draft?.itemTimes || {};
+      lastAnswerAtRef.current = draft?.lastAnswerAt || Date.now();
       setHasSubmitted(false);
       setReviewResult(null);
-      setElapsedSeconds(0);
+      setElapsedSeconds(Math.max(
+        draft?.elapsedSeconds || 0,
+        isPacingTimerEnabled ? Math.max(0, Math.floor((Date.now() - Date.parse(stored.startedAt)) / 1000)) : 0
+      ));
+      setScratchpadText(draft?.scratchpadText || "");
       return;
     }
     startNewSession();
-  }, [drillQuestionCount, startNewSession, vignette.id, vignette.questions.length]);
+  }, [drillQuestionCount, isPacingTimerEnabled, startNewSession, vignette.id, vignette.questions.length]);
 
   const activeQuestions = useMemo(
     () =>
@@ -176,11 +186,20 @@ export const VignetteEngine: React.FC = () => {
       itemTimesRef.current = { ...itemTimesRef.current, [sessionItemId]: seconds };
       setItemTimes(itemTimesRef.current);
     }
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [sessionItemId]: option,
-    }));
-  }, [hasSubmitted, selectedAnswers, soundEnabled]);
+    const answers = { ...selectedAnswers, [sessionItemId]: option };
+    setSelectedAnswers(answers);
+    if (practiceSession) {
+      setPracticeDraft({
+        sessionId: practiceSession.id,
+        answers,
+        itemTimes: itemTimesRef.current,
+        elapsedSeconds,
+        scratchpadText,
+        lastAnswerAt: lastAnswerAtRef.current,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  }, [elapsedSeconds, hasSubmitted, practiceSession, scratchpadText, selectedAnswers, setPracticeDraft, soundEnabled]);
 
   const handleSubmitDiagnostic = useCallback(() => {
     if (!isFormComplete || !practiceSession) return;
@@ -342,7 +361,11 @@ export const VignetteEngine: React.FC = () => {
         const existingStems = new Set(activeQuestions.map((question) => question.stem.trim().toLowerCase()));
         const newQs = data.vignette.questions
           .filter((question: VignetteQuestion) => !existingStems.has(question.stem.trim().toLowerCase()))
-          .map((question: VignetteQuestion, idx: number) => ({ ...question, id: Date.now() + idx }));
+          .map((question: VignetteQuestion, idx: number) => ({
+            ...question,
+            id: Date.now() + idx,
+            provenance: data.provenance,
+          }));
         if (newQs.length === 0) throw new Error("No new questions were returned.");
         addQuestionsToActiveVignette(newQs);
       }
@@ -359,6 +382,9 @@ export const VignetteEngine: React.FC = () => {
   const isWarning = elapsedSeconds > targetTimeSeconds * 0.75;
 
   const currentTopic = CFA_CURRICULUM.find((t) => t.id === vignette.topicId);
+  const containsDraftItems = practiceSession?.presentedItems.some(
+    (item) => item.contentStatus === "draft" || item.origin === "ai-draft"
+  );
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
@@ -492,10 +518,12 @@ export const VignetteEngine: React.FC = () => {
               </span>
             </div>
 
-            {vignette.provenance && (
+            {(vignette.provenance || containsDraftItems) && (
               <p className="mb-4 text-xs text-warning" role="status">
-                {vignette.provenance.origin === "ai-draft" ? "AI draft" : "Procedural fallback"}
-                {" · "}{vignette.provenance.status}. Generated content is excluded from readiness analytics and mock exams.
+                {vignette.provenance
+                  ? `${vignette.provenance.origin === "ai-draft" ? "AI draft" : "Procedural fallback"} · ${vignette.provenance.status}`
+                  : "Mixed authored and generated draft questions"}
+                . This set is excluded from readiness analytics and mock exams.
               </p>
             )}
 
@@ -527,7 +555,21 @@ export const VignetteEngine: React.FC = () => {
               </div>
               <textarea
                 value={scratchpadText}
-                onChange={(e) => setScratchpadText(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setScratchpadText(value);
+                  if (practiceSession) {
+                    setPracticeDraft({
+                      sessionId: practiceSession.id,
+                      answers: selectedAnswers,
+                      itemTimes: itemTimesRef.current,
+                      elapsedSeconds,
+                      scratchpadText: value,
+                      lastAnswerAt: lastAnswerAtRef.current,
+                      updatedAt: new Date().toISOString(),
+                    });
+                  }
+                }}
                 placeholder="Type intermediate keystrokes, cash flows, or formula steps..."
                 rows={4}
                 className="w-full bg-surface-solid border border-control rounded-lg p-3 text-xs sm:text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent font-mono"

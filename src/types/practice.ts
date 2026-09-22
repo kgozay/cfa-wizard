@@ -76,6 +76,16 @@ export interface PracticeSession {
   targetSecondsPerItem?: number;
 }
 
+export interface PracticeDraft {
+  sessionId: string;
+  answers: Record<string, OptionKey>;
+  itemTimes: Record<string, number>;
+  elapsedSeconds: number;
+  scratchpadText: string;
+  lastAnswerAt: number;
+  updatedAt: string;
+}
+
 export interface ItemAttempt {
   id: string;
   sessionId: string;

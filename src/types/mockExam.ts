@@ -58,3 +58,11 @@ export interface MockExamSession {
   questions: MockQuestionItem[];
   practiceSession: PracticeSession;
 }
+
+export interface MockExamDraft {
+  session: MockExamSession;
+  currentIndex: number;
+  itemTimes: Record<string, number>;
+  currentQuestionStartedAt: number;
+  updatedAt: string;
+}

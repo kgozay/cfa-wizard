@@ -40,4 +40,13 @@ describe("Question Bank Integrity & Characterization", () => {
       expect(typeof id).toBe("number");
     });
   });
+
+  it("grades the two-asset volatility item against its calculated value", () => {
+    const item = CFA_VIGNETTES.flatMap((vignette) => vignette.questions).find((question) => question.id === 111);
+    expect(item).toBeDefined();
+    const variance = (0.6 * 15) ** 2 + (0.4 * 25) ** 2 + 2 * 0.6 * 0.4 * 0.2 * 15 * 25;
+    expect(variance).toBe(217);
+    expect(item?.options[item.correctOption]).toBe(`${Math.sqrt(variance).toFixed(2)}%`);
+    expect(item?.algebraicSolution).toContain("sqrt(217) = 14.73%");
+  });
 });

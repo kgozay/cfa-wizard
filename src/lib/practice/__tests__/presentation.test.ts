@@ -4,6 +4,7 @@ import { legacyVignetteToPracticeItems } from "../adapters";
 import { presentPracticeItem } from "../presentItem";
 import { createPracticeSession } from "../createSession";
 import { createPRNG } from "../random";
+import { hasCurrentAnswerKey } from "../eligibility";
 
 describe("Option Presentation & Answer Permutation", () => {
   const quantVignette = CFA_VIGNETTES[0];
@@ -59,6 +60,27 @@ describe("Option Presentation & Answer Permutation", () => {
 
     expect(session.presentedItems.length).toBe(5);
     expect(session.itemIds.length).toBe(5);
+  });
+
+  it("rejects an unfinished saved session with the corrected old answer key", () => {
+    const item = items.find((candidate) => candidate.id.endsWith(":111"))!;
+    const current = createPracticeSession({ mode: "practice", items: [item] });
+    expect(hasCurrentAnswerKey(current)).toBe(true);
+    const outdated = {
+      ...current,
+      presentedItems: current.presentedItems.map((presented) => ({
+        ...presented,
+        solution: "81 + 100 + 36 = 193.5",
+      })),
+    };
+    expect(hasCurrentAnswerKey(outdated)).toBe(false);
+    expect(hasCurrentAnswerKey({
+      ...outdated,
+      presentedItems: outdated.presentedItems.map((presented) => ({
+        ...presented,
+        sourceItemId: "authored:vignette-01-quant-expanded-123:111",
+      })),
+    })).toBe(false);
   });
 
   it("eliminates Option A bias across random presentations (statistical integrity test)", () => {

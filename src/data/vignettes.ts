@@ -217,18 +217,18 @@ export const CFA_VIGNETTES: VignetteSet[] = [
         losCode: "LOS 5.b",
         stem: "Portfolio P allocates 60% to Asset 1 (σ_1 = 15%) and 40% to Asset 2 (σ_2 = 25%). If the correlation coefficient between Asset 1 and Asset 2 is +0.20, the portfolio standard deviation σ_p is closest to:",
         options: {
-          A: "13.91%",
-          B: "15.62%",
+          A: "14.73%",
+          B: "13.45%",
           C: "19.00%"
         },
         correctOption: "A",
-        algebraicSolution: "σ_p^2 = w1^2*σ1^2 + w2^2*σ2^2 + 2*w1*w2*ρ*σ1*σ2 = (0.60^2 * 15^2) + (0.40^2 * 25^2) + 2*(0.60)*(0.40)*(0.20)*(15)*(25) = (0.36 * 225) + (0.16 * 625) + 36.0 = 81 + 100 + 36 = 193.5. σ_p = sqrt(193.5) = 13.91%.",
-        calculatorKeystrokes: "(0.36 [\\times] 225) [+] (0.16 [\\times] 625) [+] (2 [\\times] 0.60 [\\times] 0.40 [\\times] 0.20 [\\times] 15 [\\times] 25) [=] 193.5 [\\sqrt{x}] => 13.91",
+        algebraicSolution: "σ_p^2 = w1^2*σ1^2 + w2^2*σ2^2 + 2*w1*w2*ρ*σ1*σ2 = (0.60^2 * 15^2) + (0.40^2 * 25^2) + 2*(0.60)*(0.40)*(0.20)*(15)*(25) = 81 + 100 + 36 = 217. σ_p = sqrt(217) = 14.73%.",
+        calculatorKeystrokes: "(0.36 [\\times] 225) [+] (0.16 [\\times] 625) [+] (2 [\\times] 0.60 [\\times] 0.40 [\\times] 0.20 [\\times] 15 [\\times] 25) [=] 217 [\\sqrt{x}] => 14.73",
         trapCategory: "Portfolio Mathematics & Covariance",
         errorModeDefault: "FORMULA_SCALAR",
         distractorAutopsy: {
-          A: "CORRECT: σ_p = sqrt(81 + 100 + 36) = sqrt(217) or 13.91%.",
-          B: "Distractor B forgets the covariance term (sqrt(81 + 100) = 13.45%) or miscalculates weights.",
+          A: "CORRECT: σ_p = sqrt(81 + 100 + 36) = sqrt(217) = 14.73%.",
+          B: "Distractor B omits the covariance term: sqrt(81 + 100) = 13.45%.",
           C: "Distractor C computes linear weighted average: (0.60 * 15%) + (0.40 * 25%) = 19.00%, ignoring diversification benefits."
         }
       },

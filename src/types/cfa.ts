@@ -62,6 +62,7 @@ export interface DistractorAutopsyMap {
 /** @deprecated Use canonical PracticeItem from @/types/practice instead */
 export interface VignetteQuestion {
   id: number;
+  provenance?: import("./practice").ContentProvenance;
   stem: string;
   options: {
     A: string;

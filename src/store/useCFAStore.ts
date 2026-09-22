@@ -9,7 +9,8 @@ import {
   VignetteSet,
   InterleavedSprintSession
 } from "@/types/cfa";
-import { PracticeAttempt, PracticeSession } from "@/types/practice";
+import { PracticeAttempt, PracticeDraft, PracticeSession } from "@/types/practice";
+import { MockExamDraft } from "@/types/mockExam";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { migrateV3ToV4 } from "./migrations";
 
@@ -29,6 +30,8 @@ interface CFAState {
   practiceAttempts: PracticeAttempt[];
   practiceSessions: Record<string, PracticeSession>;
   activePracticeSessionId: string | null;
+  practiceDraft: PracticeDraft | null;
+  mockExamDraft: MockExamDraft | null;
   trapLogs: TrapLogEntry[];
   customVignettes: VignetteSet[];
   leitnerCards: LeitnerCard[];
@@ -61,6 +64,8 @@ interface CFAState {
   recordPracticeAttempt: (attempt: PracticeAttempt, trapEntries?: TrapLogEntry[]) => void;
   savePracticeSession: (session: PracticeSession, makeActive?: boolean) => void;
   clearActivePracticeSession: () => void;
+  setPracticeDraft: (draft: PracticeDraft | null) => void;
+  setMockExamDraft: (draft: MockExamDraft | null) => void;
   getLatestAttemptForTopic: (topicId: string) => PracticeAttempt | undefined;
   logErrorMode: (trapEntryId: string, errorMode: ErrorMode) => void;
   updateLeitnerCard: (cardId: string, isCorrect: boolean) => void;
@@ -105,6 +110,8 @@ export const useCFAStore = create<CFAState>()(
       practiceAttempts: [],
       practiceSessions: {},
       activePracticeSessionId: null,
+      practiceDraft: null,
+      mockExamDraft: null,
       trapLogs: [],
       customVignettes: [],
       leitnerCards: [],
@@ -145,9 +152,14 @@ export const useCFAStore = create<CFAState>()(
           (item) => item.id === vignetteId || item.topicId === vignetteId
         );
         if (v) {
+          const activeSession = get().activePracticeSessionId
+            ? get().practiceSessions[get().activePracticeSessionId!]
+            : undefined;
+          const canResume = activeSession && !activeSession.completedAt && activeSession.sourceSetIds.includes(v.id);
           set({
             activeVignetteId: v.id,
-            activePracticeSessionId: null,
+            activePracticeSessionId: canResume ? activeSession.id : null,
+            practiceDraft: canResume ? get().practiceDraft : null,
             activeTopicId: v.topicId,
             inProgressTopicId: v.topicId,
             isBriefingModalOpen: false,
@@ -204,6 +216,7 @@ export const useCFAStore = create<CFAState>()(
           practiceSessions,
           trapLogs: currentTraps,
           completedTopicIds: updatedCompleted,
+          practiceDraft: get().practiceDraft?.sessionId === attempt.sessionId ? null : get().practiceDraft,
         });
       },
 
@@ -215,6 +228,8 @@ export const useCFAStore = create<CFAState>()(
       },
 
       clearActivePracticeSession: () => set({ activePracticeSessionId: null }),
+      setPracticeDraft: (draft) => set({ practiceDraft: draft }),
+      setMockExamDraft: (draft) => set({ mockExamDraft: draft }),
 
       getLatestAttemptForTopic: (topicId: string) => {
         const attempts = get().practiceAttempts.filter((a) => a.topicIds.includes(topicId));
@@ -310,7 +325,16 @@ export const useCFAStore = create<CFAState>()(
           // Clone base vignette into customVignettes with added questions
           const baseV = CFA_VIGNETTES.find((v) => v.id === activeVignetteId);
           if (baseV) {
-            const updatedQuestions = [...baseV.questions, ...questions];
+            const authoredProvenance = {
+              origin: "authored" as const,
+              status: "approved" as const,
+              sourceIds: [baseV.id],
+              createdAt: new Date().toISOString(),
+            };
+            const updatedQuestions = [
+              ...baseV.questions.map((question) => ({ ...question, provenance: authoredProvenance })),
+              ...questions,
+            ];
             const newVignette: VignetteSet = {
               ...baseV,
               id: `${baseV.id}-expanded-${Date.now()}`,
@@ -365,6 +389,8 @@ export const useCFAStore = create<CFAState>()(
           practiceAttempts: [],
           practiceSessions: {},
           activePracticeSessionId: null,
+          practiceDraft: null,
+          mockExamDraft: null,
           trapLogs: [],
           customVignettes: [],
           leitnerCards: [],
@@ -392,6 +418,8 @@ export const useCFAStore = create<CFAState>()(
         practiceAttempts: state.practiceAttempts,
         practiceSessions: state.practiceSessions,
         activePracticeSessionId: state.activePracticeSessionId,
+        practiceDraft: state.practiceDraft,
+        mockExamDraft: state.mockExamDraft,
         activeVignetteId: state.activeVignetteId,
         trapLogs: state.trapLogs,
         customVignettes: state.customVignettes,

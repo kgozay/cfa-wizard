@@ -6,6 +6,23 @@ import { PracticeItem } from "@/types/practice";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPracticeSession } from "@/lib/practice/createSession";
 
+const MOCK_TOPIC_QUOTAS: Record<MockExamType, Record<string, number>> = {
+  quick_diagnostic_45: { "10": 8, "01": 5, "02": 3, "04": 6, "03": 4, "05": 5, "06": 6, "07": 2, "08": 2, "09": 4 },
+  half_session_1: { "10": 26, "01": 20, "02": 16, "04": 28 },
+  half_session_2: { "03": 14, "05": 20, "06": 22, "07": 10, "08": 10, "09": 14 },
+  full_180: { "10": 30, "01": 20, "02": 14, "04": 24, "03": 16, "05": 22, "06": 24, "07": 10, "08": 10, "09": 10 },
+};
+
+export function getMockExamShortages(examType: MockExamType): Array<{ topicId: string; requested: number; available: number }> {
+  const availableByTopic = CFA_VIGNETTES.reduce<Record<string, number>>((counts, vignette) => {
+    counts[vignette.topicId] = (counts[vignette.topicId] || 0) + vignette.questions.length;
+    return counts;
+  }, {});
+  return Object.entries(MOCK_TOPIC_QUOTAS[examType])
+    .map(([topicId, requested]) => ({ topicId, requested, available: availableByTopic[topicId] || 0 }))
+    .filter(({ requested, available }) => available < requested);
+}
+
 // Fisher-Yates in-place shuffle helper
 export function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
@@ -37,7 +54,7 @@ export function generateMockExamSession(
   });
 
   // Target questions per topic based on mock type and CFA official weights
-  let targetCounts: Record<string, number> = {};
+  const targetCounts = MOCK_TOPIC_QUOTAS[examType];
   let totalTarget = 45;
   let allocatedMinutes = 68; // ~90 sec / Q
   let title = "Quick Diagnostic Mock (45 Questions)";
@@ -46,63 +63,23 @@ export function generateMockExamSession(
     totalTarget = 45;
     allocatedMinutes = 68;
     title = "Level 1 Diagnostic Practice Mock (45 Questions)";
-    targetCounts = {
-      "10": 8, // Ethics (18%)
-      "01": 5, // Quant (11%)
-      "02": 3, // Econ (7%)
-      "04": 6, // FSA (13%)
-      "03": 4, // Corp Issuers (9%)
-      "05": 5, // Equity (11%)
-      "06": 6, // Fixed Income (13%)
-      "07": 2, // Derivs (5%)
-      "08": 2, // Alts (5%)
-      "09": 4, // Portfolio (9%)
-    };
   } else if (examType === "half_session_1") {
     totalTarget = 90;
     allocatedMinutes = 135;
     title = "Level 1 Mock Exam: Session 1 (Ethics, Quant, Econ, FSA)";
-    targetCounts = {
-      "10": 26, // Ethics
-      "01": 20, // Quant
-      "02": 16, // Econ
-      "04": 28, // FSA
-    };
   } else if (examType === "half_session_2") {
     totalTarget = 90;
     allocatedMinutes = 135;
     title = "Level 1 Mock Exam: Session 2 (Corp Issuers, Equity, FI, Derivs, Alts, PM)";
-    targetCounts = {
-      "03": 14, // Corp Issuers
-      "05": 20, // Equity
-      "06": 22, // Fixed Income
-      "07": 10, // Derivatives
-      "08": 10, // Alternatives
-      "09": 14, // Portfolio Management
-    };
   } else {
     // full_180
     totalTarget = 180;
     allocatedMinutes = 270;
     title = "Level 1 Full Simulation Mock (180 Questions)";
-    targetCounts = {
-      "10": 30, // Ethics ~16.7%
-      "01": 20, // Quant ~11%
-      "02": 14, // Econ ~7.8%
-      "04": 24, // FSA ~13.3%
-      "03": 16, // Corp Issuers ~8.9%
-      "05": 22, // Equity ~12.2%
-      "06": 24, // Fixed Income ~13.3%
-      "07": 10, // Derivatives ~5.5%
-      "08": 10, // Alternatives ~5.5%
-      "09": 10, // Portfolio Management ~5.5%
-    };
   }
 
   // Sample questions according to target counts without repeating questions
-  const shortages = Object.entries(targetCounts)
-    .map(([topicId, count]) => ({ topicId, requested: count, available: topicQuestionPool[topicId]?.length || 0 }))
-    .filter(({ requested, available }) => available < requested);
+  const shortages = getMockExamShortages(examType);
   if (shortages.length > 0) {
     const details = shortages
       .map(({ topicId, requested, available }) => `topic ${topicId}: ${available}/${requested}`)

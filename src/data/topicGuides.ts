@@ -452,7 +452,7 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   },
   {
     topicId: "07",
-    topicName: "Derivatives",
+    topicName: "Derivatives and Risk Management",
     weight: "6–9%",
     highYieldTheme: "Put-Call Parity Synthetic Equivalence, Forward Pricing vs Valuation, and Futures Mark-to-Market",
     firstPrinciplesSummary:

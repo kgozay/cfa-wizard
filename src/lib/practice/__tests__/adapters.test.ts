@@ -28,7 +28,7 @@ describe("Legacy Adapters", () => {
         totalConverted++;
       }
     }
-    expect(totalConverted).toBe(200);
+    expect(totalConverted).toBe(338);
   });
 
   it("converts legacy VignetteSessionResult into a canonical PracticeAttempt", () => {

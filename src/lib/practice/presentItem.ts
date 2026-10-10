@@ -11,6 +11,43 @@ export interface ItemPermutation {
   displayedToAuthoring: Record<OptionKey, OptionKey>;
 }
 
+const NUMERIC_OPTION = /^\s*([-+−]?)\s*\$?\s*([-+−]?)\s*(\d[\d,]*(?:\.\d+)?|\.\d+)\s*(%|x|years?|days?|million|billion|bps?|basis points)?\s*$/i;
+
+/** Parses a purely quantitative option ("$1,026.73", "-4.50%", "6.0x", "7.00 years"). */
+export function parseNumericOption(text: string): number | null {
+  const match = text.trim().match(NUMERIC_OPTION);
+  if (!match) return null;
+  const negative = [match[1], match[2]].some((sign) => sign === "-" || sign === "−");
+  const value = Number(match[3].replace(/,/g, ""));
+  return Number.isFinite(value) ? (negative ? -value : value) : null;
+}
+
+/**
+ * Orders options the way CFA Institute presents them on the Level I exam:
+ * quantitative choices from smallest to largest, word choices from shortest
+ * to longest. Returns the authoring-key -> displayed-key mapping.
+ */
+export function createExamOrderPermutation(options: Record<OptionKey, string>): Record<OptionKey, OptionKey> {
+  const keys = [...OPTION_KEYS];
+  const numeric = keys.map((key) => parseNumericOption(options[key]));
+  const allNumeric = numeric.every((value) => value !== null);
+  const ordered = [...keys].sort((a, b) => {
+    if (allNumeric) {
+      const diff = (numeric[keys.indexOf(a)] as number) - (numeric[keys.indexOf(b)] as number);
+      if (diff !== 0) return diff;
+    } else {
+      const diff = options[a].trim().length - options[b].trim().length;
+      if (diff !== 0) return diff;
+    }
+    return keys.indexOf(a) - keys.indexOf(b);
+  });
+  return {
+    [ordered[0]]: "A",
+    [ordered[1]]: "B",
+    [ordered[2]]: "C",
+  } as Record<OptionKey, OptionKey>;
+}
+
 /**
  * Creates a pseudo-random permutation of the keys A, B, C.
  */
@@ -64,7 +101,9 @@ export function presentPracticeItem(
   if (existingPermutation) {
     authoringToDisplayed = existingPermutation;
   } else {
-    authoringToDisplayed = createOptionPermutation(prng).authoringToDisplayed;
+    // Exam order is deterministic, so the PRNG is no longer needed for option order
+    void prng;
+    authoringToDisplayed = createExamOrderPermutation(item.options);
   }
 
   // Build the reverse mapping: displayed -> authoring

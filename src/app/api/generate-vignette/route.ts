@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { VignetteSet, VignetteQuestion } from "@/types/cfa";
-import { CFA_CURRICULUM } from "@/data/curriculum";
+import { CFA_CURRICULUM, moduleCodeFor } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { GenerationRequestSchema } from "@/lib/generation/requestSchema";
 import { GenerationResponseSchema } from "@/lib/generation/responseSchema";
@@ -8,6 +8,7 @@ import { createAIDraftProvenance, createFallbackProvenance } from "@/lib/generat
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPRNG, shuffleArray } from "@/lib/practice/random";
 import { buildTemplateQuestion, templatesForTopic } from "@/lib/generation/templates";
+import { buildGenerationPrompt, GENERATION_RESPONSE_SCHEMA, validateGeneratedItem } from "@/lib/generation/itemRules";
 
 /**
  * Procedural Question Bank & Dynamic Generator
@@ -19,7 +20,9 @@ function generateProceduralVignette(
   difficulty: "Standard" | "High Trap" | "Institutional",
   customPrompt: string,
   targetCount: number = 5,
-  excludeStems: string[] = []
+  excludeStems: string[] = [],
+  moduleTitle?: string,
+  seedQuestions: VignetteQuestion[] = []
 ): VignetteSet {
   const topic = CFA_CURRICULUM.find((t) => t.id === topicId) || CFA_CURRICULUM[0];
   const timestamp = Date.now();
@@ -1201,8 +1204,9 @@ function generateProceduralVignette(
     }
   }
 
-  // Assemble the requested count: shuffled fixed items first, then freshly
-  // parameterized template items, then (topics without templates) authored items.
+  // Assemble the requested count. Validated AI items (if any) come first; then
+  // shuffled fixed items, freshly parameterized templates and authored items.
+  // A targeted learning module narrows every source to that module first.
   const rand = createPRNG(`${vignetteId}-${Math.random()}`);
   const excluded = new Set(excludeStems.map((value) => value.trim().toLowerCase()));
   const seen = new Set<string>(excluded);
@@ -1213,30 +1217,53 @@ function generateProceduralVignette(
     seen.add(key);
     selected.push({ ...question, id: selected.length + 1 } as VignetteQuestion);
   };
-  const templates = templatesForTopic(topic.id);
+  const fillFromTemplates = (pool: ReturnType<typeof templatesForTopic>) => {
+    for (let attempt = 0; pool.length > 0 && selected.length < targetCount && attempt < targetCount * 10; attempt++) {
+      take(buildTemplateQuestion(pool[attempt % pool.length], rand));
+    }
+  };
+  const topicTemplates = templatesForTopic(topic.id);
+  const authoredPool = shuffleArray(baseVignette?.questions || [], rand);
   const fixedPool = shuffleArray(questions, rand);
+
+  seedQuestions.forEach(take);
+  if (moduleTitle) {
+    const moduleCode = moduleCodeFor(topic.id, moduleTitle);
+    fillFromTemplates(topicTemplates.filter((template) => template.module === moduleTitle));
+    authoredPool.filter((question) => question.losCode === moduleCode).forEach(take);
+  }
   // Mix fixed and template items so every set differs, not just its tail
   fixedPool.slice(0, Math.ceil(targetCount / 2)).forEach(take);
-  for (let attempt = 0; templates.length > 0 && selected.length < targetCount && attempt < targetCount * 10; attempt++) {
-    take(buildTemplateQuestion(templates[attempt % templates.length], rand));
-  }
+  fillFromTemplates(topicTemplates);
   fixedPool.forEach(take);
-  shuffleArray(baseVignette?.questions || [], rand).forEach(take);
+  authoredPool.forEach(take);
   const slicedQuestions = shuffleArray(selected, rand).map((q, idx) => ({ ...q, id: idx + 1 }));
 
   return {
     id: vignetteId,
     topicId: topic.id,
     topicName: topic.name,
-    subReading: topic.subReadings[0]?.title || "Institutional Diagnostics",
+    subReading: moduleTitle || topic.subReadings[0]?.title || topic.name,
     difficulty,
-    vignetteStem: stem,
+    // A module-targeted set gets a neutral brief; the topic-wide scenario may not match its items
+    vignetteStem: moduleTitle
+      ? `Practice set for ${topic.name}, ${moduleCodeFor(topic.id, moduleTitle)}: ${moduleTitle}. Each question stands alone.${cleanPrompt ? ` Requested focus: "${cleanPrompt}".` : ""}`
+      : stem,
     questions: slicedQuestions,
   };
 }
 
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+
+interface AiGenerationResult {
+  questions: VignetteQuestion[];
+  rejected: number;
+  model: string;
+}
+
 /**
- * Optional Google Gemini API Dynamic Generator
+ * Optional Gemini generation. Every returned item is validated against the
+ * Level I item rules; invalid items are dropped and backfilled by the caller.
  */
 async function generateWithGemini(
   apiKey: string,
@@ -1244,54 +1271,22 @@ async function generateWithGemini(
   difficulty: string,
   customPrompt: string,
   questionCount: number,
-  excludeStems: string[] = []
-): Promise<VignetteSet | null> {
+  excludeStems: string[] = [],
+  moduleTitle?: string
+): Promise<AiGenerationResult | null> {
+  const model = process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
   try {
-    const prompt = `You are a CFA Charterholder and senior CFA Exam item writer.
-Create a realistic CFA Level 1 Institutional Case Vignette and exactly ${questionCount} multiple-choice questions for:
-Topic ID: ${topic.id}
-Topic Name: ${topic.name}
-Weight: ${topic.weight}
-Difficulty: ${difficulty}
-High Yield Trap Focus: ${topic.highYieldTrapArea}
-${customPrompt ? `Candidate Custom Focus / Scenario: "${customPrompt}"` : ""}
-${excludeStems.length > 0 ? `Do not repeat or closely paraphrase these existing questions:\n${excludeStems.slice(-20).map((stem) => `- ${stem}`).join("\n")}` : ""}
-
-Generate a JSON object matching this exact schema:
-{
-  "id": "ai-vignette-${topic.id}-${Date.now()}",
-  "topicId": "${topic.id}",
-  "topicName": "${topic.name}",
-  "subReading": "${topic.subReadings[0]?.title || topic.name}",
-  "difficulty": "${difficulty}",
-  "vignetteStem": "A rich 3-4 sentence institutional case scenario description...",
-  "questions": [
-    {
-      "id": 1,
-      "losCode": "LOS ${topic.id}.a",
-      "stem": "Question stem...",
-      "options": {
-        "A": "Option A text",
-        "B": "Option B text",
-        "C": "Option C text"
-      },
-      "correctOption": "A",
-      "algebraicSolution": "LaTeX mathematical derivation...",
-      "calculatorKeystrokes": "TI BA II Plus keystrokes sequence...",
-      "trapCategory": "Name of primary trap",
-      "errorModeDefault": "FORMULA_SCALAR",
-      "distractorAutopsy": {
-        "A": "Why A is correct or incorrect",
-        "B": "Why B is a trap",
-        "C": "Why C is a trap"
-      }
-    }
-  ]
-}
-Return ONLY pure JSON. No markdown backticks, no markdown fence.`;
+    const prompt = buildGenerationPrompt({
+      topic,
+      moduleTitle,
+      difficulty,
+      focus: customPrompt,
+      questionCount,
+      excludeStems,
+    });
 
     const res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
       {
         method: "POST",
         headers: {
@@ -1301,10 +1296,12 @@ Return ONLY pure JSON. No markdown backticks, no markdown fence.`;
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.3,
+            temperature: 0.4,
             responseMimeType: "application/json",
+            responseSchema: GENERATION_RESPONSE_SCHEMA,
           },
         }),
+        signal: AbortSignal.timeout(45_000),
       }
     );
 
@@ -1313,34 +1310,40 @@ Return ONLY pure JSON. No markdown backticks, no markdown fence.`;
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) return null;
 
-    const parsed = JSON.parse(rawText);
-    if (parsed && Array.isArray(parsed.questions) && parsed.questions.length > 0) {
-      const validQuestions = parsed.questions.filter((q: unknown) => {
-        if (!q || typeof q !== "object") return false;
-        const item = q as Record<string, unknown>;
-        const options = item.options as Record<string, string> | undefined;
-        return (
-          typeof item.stem === "string" &&
-          item.stem.trim().length > 0 &&
-          options &&
-          typeof options.A === "string" &&
-          typeof options.B === "string" &&
-          typeof options.C === "string" &&
-          typeof item.correctOption === "string" &&
-          ["A", "B", "C"].includes(item.correctOption)
-        );
-      });
-
-      if (validQuestions.length === parsed.questions.length) {
-        return {
-          ...parsed,
-          questions: validQuestions,
-        } as VignetteSet;
+    const parsed = JSON.parse(rawText) as { questions?: unknown[] };
+    const knownStems = new Set(
+      [...CFA_VIGNETTES.flatMap((vignette) => vignette.questions.map((question) => question.stem)), ...excludeStems].map(
+        (stem) => stem.trim().toLowerCase().replace(/\s+/g, " ")
+      )
+    );
+    const valid: VignetteQuestion[] = [];
+    let rejected = 0;
+    for (const candidate of parsed.questions || []) {
+      const item = candidate as Partial<VignetteQuestion> & { losModule?: string };
+      const check = validateGeneratedItem(item, knownStems);
+      if (!check.valid) {
+        rejected += 1;
+        continue;
       }
+      knownStems.add(item.stem!.trim().toLowerCase().replace(/\s+/g, " "));
+      const moduleMatch = topic.subReadings.find((module) => module.title === (item.losModule || moduleTitle));
+      valid.push({
+        id: valid.length + 1,
+        losCode: moduleMatch ? moduleCodeFor(topic.id, moduleMatch.title) : undefined,
+        stem: item.stem!.trim(),
+        options: { A: item.options!.A.trim(), B: item.options!.B.trim(), C: item.options!.C.trim() },
+        correctOption: item.correctOption!,
+        algebraicSolution: item.algebraicSolution!,
+        calculatorKeystrokes: item.calculatorKeystrokes || "",
+        trapCategory: item.trapCategory!,
+        errorModeDefault: item.errorModeDefault,
+        distractorAutopsy: item.distractorAutopsy!,
+      });
+      if (valid.length >= questionCount) break;
     }
-    return null;
+    return { questions: valid, rejected, model };
   } catch (err) {
-    console.warn("Gemini generation failed, falling back to procedural engine:", err);
+    console.warn("AI generation failed, falling back to templates:", err);
     return null;
   }
 }
@@ -1364,26 +1367,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { topicId, difficulty, questionCount, focus, excludeItemIds = [], excludeStems = [] } = requestParsed.data;
+    const { topicId, difficulty, questionCount, focus, excludeItemIds = [], excludeStems = [], moduleTitle } = requestParsed.data;
     const topic = CFA_CURRICULUM.find((t) => t.id === topicId);
     if (!topic) {
       return NextResponse.json({ error: `Topic ${topicId} not found` }, { status: 404 });
     }
-
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    let vignette: VignetteSet | null = null;
-    let isAiGenerated = false;
-
-    if (apiKey) {
-      vignette = await generateWithGemini(apiKey, topic, difficulty, focus || "", questionCount, excludeStems);
-      if (vignette) {
-        isAiGenerated = true;
-      }
+    if (moduleTitle && !topic.subReadings.some((module) => module.title === moduleTitle)) {
+      return NextResponse.json({ error: `Unknown learning module for topic ${topicId}` }, { status: 400 });
     }
 
-    if (!vignette) {
-      const diffLabel = difficulty === "high-trap" ? "High Trap" : difficulty === "institutional" ? "Institutional" : "Standard";
-      vignette = generateProceduralVignette(topic.id, diffLabel, focus || "", questionCount, excludeStems);
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const ai = apiKey
+      ? await generateWithGemini(apiKey, topic, difficulty, focus || "", questionCount, excludeStems, moduleTitle)
+      : null;
+    const aiQuestions = ai?.questions || [];
+    const isAiGenerated = aiQuestions.length > 0;
+    const diffLabel = difficulty === "high-trap" ? "High Trap" : difficulty === "institutional" ? "Institutional" : "Standard";
+    // AI items first; anything the model did not supply (or that failed validation) is filled from templates
+    let vignette: VignetteSet = generateProceduralVignette(
+      topic.id,
+      diffLabel,
+      focus || "",
+      questionCount,
+      excludeStems,
+      moduleTitle,
+      aiQuestions
+    );
+    const filledCount = vignette.questions.length - Math.min(aiQuestions.length, vignette.questions.length);
+    const warnings: string[] = [];
+    if (!apiKey) {
+      warnings.push("No AI model is configured, so questions were generated from randomized templates.");
+    } else if (!isAiGenerated) {
+      warnings.push("AI generation failed or returned no valid questions, so questions were generated from randomized templates.");
+    } else if (filledCount > 0) {
+      warnings.push(`${filledCount} question${filledCount === 1 ? "" : "s"} came from randomized templates because AI items were missing or failed validation.`);
+    }
+    if (ai && ai.rejected > 0) {
+      warnings.push(`${ai.rejected} AI-generated item${ai.rejected === 1 ? " was" : "s were"} rejected by quality checks.`);
     }
 
     if (vignette.questions.length !== questionCount) {
@@ -1402,7 +1422,7 @@ export async function POST(req: NextRequest) {
     }
 
     const provenance = isAiGenerated
-      ? createAIDraftProvenance({ sourceIds: [topic.id], model: "gemini-2.5-flash" })
+      ? createAIDraftProvenance({ sourceIds: [topic.id], model: ai?.model || "gemini" })
       : createFallbackProvenance({ sourceIds: [topic.id] });
 
     vignette = { ...vignette, provenance };
@@ -1417,7 +1437,7 @@ export async function POST(req: NextRequest) {
       vignette,
       items,
       provenance,
-      warnings: isAiGenerated ? [] : ["Generated from randomized question templates because no AI model is configured or AI generation failed."],
+      warnings,
     });
     if (!response.success) {
       console.error("Generated response failed contract validation", response.error.flatten());

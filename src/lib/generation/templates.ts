@@ -1,4 +1,5 @@
 import { VignetteQuestion } from "@/types/cfa";
+import { moduleCodeFor } from "@/data/curriculum";
 
 /**
  * Parametric question templates used when no AI model is configured. Each build
@@ -10,6 +11,8 @@ export type TemplateQuestion = Omit<VignetteQuestion, "id">;
 export interface QuestionTemplate {
   key: string;
   topicId: string;
+  /** Official 2027 learning module title the template assesses */
+  module: string;
   build: (rand: () => number) => TemplateQuestion;
 }
 
@@ -28,6 +31,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 01 Quantitative Methods ----------------
   {
     key: "quant-ear",
+    module: "Types of Financial Returns",
     topicId: "01",
     build: (rand) => {
       const rate = between(rand, 4, 12, 0.25);
@@ -35,7 +39,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const ear = (Math.pow(1 + rate / 100 / m, m) - 1) * 100;
       const continuous = (Math.exp(rate / 100) - 1) * 100;
       return {
-        losCode: "LOS 1.b",
         stem: `A deposit pays a stated annual rate of ${pct(rate)} compounded ${label}. Its effective annual rate (EAR) is closest to:`,
         options: { A: pct(ear, 3), B: pct(rate, 3), C: pct(continuous, 3) },
         correctOption: "A",
@@ -53,6 +56,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "quant-annuity-pv",
+    module: "The Time Value of Money in Finance",
     topicId: "01",
     build: (rand) => {
       const pmt = between(rand, 5000, 60000, 2500);
@@ -61,7 +65,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const r = rate / 100;
       const pvOrd = (pmt * (1 - Math.pow(1 + r, -n))) / r;
       return {
-        losCode: "LOS 2.d",
         stem: `An investor will receive ${money(pmt)} at the end of each year for ${n} years. At a discount rate of ${pct(rate)}, the present value of these payments is closest to:`,
         options: { A: money(pvOrd), B: money(pvOrd * (1 + r)), C: money(pmt * n) },
         correctOption: "A",
@@ -79,6 +82,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "quant-z",
+    module: "Statistical Distributions for Financial Asset Prices and Returns",
     topicId: "01",
     build: (rand) => {
       const mean = between(rand, 4, 12, 1);
@@ -86,7 +90,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const [k, tail] = pick(rand, [[1, 15.87], [2, 2.28], [3, 0.13]] as const);
       const threshold = mean - k * sd;
       return {
-        losCode: "LOS 5.c",
         stem: `Annual returns are normally distributed with a mean of ${pct(mean, 1)} and a standard deviation of ${pct(sd, 1)}. The probability of a return below ${pct(threshold, 1)} is closest to:`,
         options: { A: pct(tail, 2), B: pct(tail * 2, 2), C: pct(100 - tail, 2) },
         correctOption: "A",
@@ -106,6 +109,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 02 Economics ----------------
   {
     key: "econ-elasticity",
+    module: "The Firm and Market Structures",
     topicId: "02",
     build: (rand) => {
       const p1 = between(rand, 10, 40, 1);
@@ -117,7 +121,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const q2 = q1 * (1 - pctQty / 100);
       const label = Math.abs(e) > 1 ? "elastic" : Math.abs(e) < 1 ? "inelastic" : "unit elastic";
       return {
-        losCode: "LOS 8.b",
         stem: `When the price of a good rises from ${money(p1, 2)} to ${money(p2, 2)}, quantity demanded falls from ${q1.toLocaleString()} to ${Math.round(q2).toLocaleString()} units. Using the initial values, the own-price elasticity of demand is closest to:`,
         options: { A: num(e, 2), B: num(1 / e, 2), C: num(-e, 2) },
         correctOption: "A",
@@ -135,13 +138,13 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "econ-cross-rate",
+    module: "Exchange Rate Calculations",
     topicId: "02",
     build: (rand) => {
       const usdEur = between(rand, 1.02, 1.25, 0.005);
       const jpyUsd = between(rand, 120, 160, 0.5);
       const jpyEur = usdEur * jpyUsd;
       return {
-        losCode: "LOS 12.c",
         stem: `The spot rate is ${num(usdEur, 3)} USD/EUR (USD per EUR) and ${num(jpyUsd, 1)} JPY/USD (JPY per USD). The JPY/EUR cross rate is closest to:`,
         options: { A: num(jpyEur, 2), B: num(jpyUsd / usdEur, 2), C: num(usdEur / jpyUsd, 5) },
         correctOption: "A",
@@ -159,13 +162,13 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "econ-real-rate",
+    module: "Monetary Policy",
     topicId: "02",
     build: (rand) => {
       const nominal = between(rand, 3, 9, 0.25);
       const inflation = between(rand, 1, 5, 0.25);
       const real = ((1 + nominal / 100) / (1 + inflation / 100) - 1) * 100;
       return {
-        losCode: "LOS 11.d",
         stem: `A government bond yields a nominal ${pct(nominal)} and expected inflation is ${pct(inflation)}. Using the exact Fisher relation, the real interest rate is closest to:`,
         options: { A: pct(real, 3), B: pct(nominal + inflation, 3), C: pct(inflation - nominal, 3) },
         correctOption: "A",
@@ -185,6 +188,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 03 Corporate Finance ----------------
   {
     key: "cf-npv",
+    module: "Capital Investments and Capital Allocation",
     topicId: "03",
     build: (rand) => {
       const outlay = between(rand, 500, 2000, 50);
@@ -195,7 +199,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const pv = (cf * (1 - Math.pow(1 + r, -n))) / r;
       const npv = pv - outlay;
       return {
-        losCode: "LOS 14.b",
         stem: `A project costs $${outlay.toLocaleString()} million today and generates $${cf.toLocaleString()} million at the end of each of the next ${n} years. At a cost of capital of ${pct(rate, 1)}, the project's NPV is closest to:`,
         options: {
           A: millions(npv),
@@ -217,6 +220,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "cf-wacc",
+    module: "Capital Structure",
     topicId: "03",
     build: (rand) => {
       const wd = between(rand, 0.2, 0.5, 0.05);
@@ -226,7 +230,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const wacc = wd * rd * (1 - t / 100) + (1 - wd) * re;
       const noTax = wd * rd + (1 - wd) * re;
       return {
-        losCode: "LOS 16.b",
         stem: `A company's target capital structure is ${Math.round(wd * 100)}% debt and ${Math.round((1 - wd) * 100)}% equity. Its before-tax cost of debt is ${pct(rd)}, cost of equity is ${pct(re)}, and marginal tax rate is ${t}%. Its WACC is closest to:`,
         options: { A: pct(wacc), B: pct(noTax), C: pct((rd + re) / 2) },
         correctOption: "A",
@@ -246,6 +249,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 04 Financial Statement Analysis ----------------
   {
     key: "fsa-dupont",
+    module: "Financial Analysis Techniques",
     topicId: "04",
     build: (rand) => {
       const margin = between(rand, 4, 15, 0.5);
@@ -254,7 +258,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const roe = margin * turnover * leverage;
       const roa = margin * turnover;
       return {
-        losCode: "LOS 21.e",
         stem: `A company has a net profit margin of ${pct(margin, 1)}, total asset turnover of ${num(turnover, 1)}x, and financial leverage (average assets / average equity) of ${num(leverage, 1)}x. Its ROE is closest to:`,
         options: { A: pct(roe), B: pct(roa), C: pct(margin * leverage) },
         correctOption: "A",
@@ -272,6 +275,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "fsa-ddb",
+    module: "Analysis of Long-Term Assets",
     topicId: "04",
     build: (rand) => {
       const cost = between(rand, 50000, 400000, 10000);
@@ -281,7 +285,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const year2 = (cost - year1) * rate;
       const sl = cost / life;
       return {
-        losCode: "LOS 17.c",
         stem: `Equipment costs ${money(cost)} and has a ${life}-year useful life with no residual value. Using the double-declining-balance method, depreciation expense in Year 2 is closest to:`,
         options: { A: money(year2), B: money(year1), C: money(sl) },
         correctOption: "A",
@@ -301,6 +304,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 05 Equities ----------------
   {
     key: "eq-gordon",
+    module: "Discounted Cash Flow (DCF) and Growth Models",
     topicId: "05",
     build: (rand) => {
       const d0 = between(rand, 1, 5, 0.25);
@@ -309,7 +313,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const d1 = d0 * (1 + g / 100);
       const value = d1 / ((r - g) / 100);
       return {
-        losCode: "LOS 26.e",
         stem: `A company just paid a dividend of ${money(d0, 2)}. Dividends are expected to grow at ${pct(g, 1)} forever and the required return is ${pct(r, 1)}. The intrinsic value per share is closest to:`,
         options: { A: money(value, 2), B: money(d0 / ((r - g) / 100), 2), C: money(d1 / (r / 100), 2) },
         correctOption: "A",
@@ -327,6 +330,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "eq-margin-call",
+    module: "Equity Issuance and Trading",
     topicId: "05",
     build: (rand) => {
       const price = between(rand, 20, 100, 1);
@@ -334,7 +338,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const mm = between(rand, 0.25, 0.35, 0.05);
       const call = (price * (1 - im)) / (1 - mm);
       return {
-        losCode: "LOS 22.e",
         stem: `An investor buys shares at ${money(price, 2)} with an initial margin of ${Math.round(im * 100)}%. The maintenance margin is ${Math.round(mm * 100)}%. The price below which the investor receives a margin call is closest to:`,
         options: { A: money(call, 2), B: money(price * (1 - mm), 2), C: money((price * (1 - im)) / mm, 2) },
         correctOption: "A",
@@ -354,6 +357,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 06 Fixed Income ----------------
   {
     key: "fi-duration",
+    module: "Yield-Based Bond Duration Measures and Properties",
     topicId: "06",
     build: (rand) => {
       const modDur = between(rand, 3, 12, 0.1);
@@ -361,7 +365,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const direction = pick(rand, ["rise", "fall"] as const);
       const change = -modDur * (bp / 10000) * 100 * (direction === "rise" ? 1 : -1);
       return {
-        losCode: "LOS 32.d",
         stem: `A bond has a modified duration of ${num(modDur, 1)}. If its yield to maturity ${direction}s by ${bp} basis points, the approximate percentage change in price (ignoring convexity) is closest to:`,
         options: {
           A: `${change > 0 ? "+" : ""}${pct(change)}`,
@@ -383,6 +386,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "fi-zero-price",
+    module: "Yield and Yield Spread Measures for Fixed-Rate Bonds",
     topicId: "06",
     build: (rand) => {
       const years = between(rand, 2, 10, 1);
@@ -391,7 +395,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const annual = 1000 / Math.pow(1 + y / 100, years);
       const wrong = 1000 / Math.pow(1 + y / 100, years * 2);
       return {
-        losCode: "LOS 30.b",
         stem: `A zero-coupon bond maturing in ${years} years with a $1,000 par value is priced to yield ${pct(y)} quoted on a semiannual bond basis. Its price is closest to:`,
         options: { A: money(semi, 2), B: money(annual, 2), C: money(wrong, 2) },
         correctOption: "A",
@@ -411,6 +414,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 07 Derivatives ----------------
   {
     key: "der-forward",
+    module: "Arbitrage, Replication, and the Cost of Carry in Pricing Derivatives",
     topicId: "07",
     build: (rand) => {
       const spot = between(rand, 40, 150, 1);
@@ -419,7 +423,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const t = months / 12;
       const fwd = spot * Math.pow(1 + r / 100, t);
       return {
-        losCode: "LOS 35.b",
         stem: `A non-dividend-paying stock trades at ${money(spot, 2)}. The annual risk-free rate is ${pct(r)} (annual compounding). The no-arbitrage price of a ${months}-month forward contract is closest to:`,
         options: {
           A: money(fwd, 2),
@@ -441,6 +444,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "der-parity",
+    module: "Option Replication Using Put–Call Parity",
     topicId: "07",
     build: (rand) => {
       const spot = between(rand, 40, 120, 1);
@@ -451,7 +455,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const put = Math.max(between(rand, 2, 8, 0.25), Math.ceil((pvK - spot) * 4) / 4 + between(rand, 1, 4, 0.25));
       const call = put + spot - pvK;
       return {
-        losCode: "LOS 37.e",
         stem: `A one-year European put on a non-dividend-paying stock with a strike of ${money(strike, 2)} costs ${money(put, 2)}. The stock trades at ${money(spot, 2)} and the risk-free rate is ${pct(r)}. By put-call parity, the price of the matching European call is closest to:`,
         options: { A: money(call, 2), B: money(put + spot - strike, 2), C: money(put, 2) },
         correctOption: "A",
@@ -471,13 +474,13 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 08 Alternative Investments ----------------
   {
     key: "alt-cap-rate",
+    module: "Real Estate and Infrastructure",
     topicId: "08",
     build: (rand) => {
       const noi = between(rand, 0.8, 6, 0.1);
       const cap = between(rand, 4, 9, 0.25);
       const value = noi / (cap / 100);
       return {
-        losCode: "LOS 38.c",
         stem: `A commercial property is expected to generate net operating income (NOI) of $${num(noi, 1)} million next year. Comparable properties trade at a capitalization rate of ${pct(cap)}. The property's value is closest to:`,
         options: {
           A: `$${num(value, 1)} million`,
@@ -499,6 +502,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "alt-fees",
+    module: "Alternative Investment Performance and Returns",
     topicId: "08",
     build: (rand) => {
       const start = between(rand, 100, 500, 10);
@@ -511,7 +515,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const net = ((end - mgmtFee - incFee) / start - 1) * 100;
       const netSimple = gross - mgmt - gross * (incentive / 100);
       return {
-        losCode: "LOS 36.d",
         stem: `A hedge fund charges a 2% management fee on year-end assets and a 20% incentive fee on gains net of the management fee, with no hurdle rate. Assets grow from $${start} million to $${num(end, 1)} million before fees. The investor's net return is closest to:`,
         options: { A: pct(net), B: pct(gross - mgmt), C: pct(netSimple) },
         correctOption: "A",
@@ -531,6 +534,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 09 Portfolio Construction ----------------
   {
     key: "pc-capm",
+    module: "Portfolio Risk and Return: Part II",
     topicId: "09",
     build: (rand) => {
       const rf = between(rand, 2, 5, 0.25);
@@ -538,7 +542,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const beta = between(rand, 0.6, 1.8, 0.05);
       const req = rf + beta * (rm - rf);
       return {
-        losCode: "LOS 41.d",
         stem: `The risk-free rate is ${pct(rf)}, the expected market return is ${pct(rm)}, and a stock's beta is ${num(beta, 2)}. Using the CAPM, its required return is closest to:`,
         options: { A: pct(req), B: pct(beta * rm), C: pct(rf + beta * rm) },
         correctOption: "A",
@@ -556,6 +559,7 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
   {
     key: "pc-sharpe",
+    module: "Portfolio Risk and Return: Part II",
     topicId: "09",
     build: (rand) => {
       const rp = between(rand, 6, 16, 0.5);
@@ -564,7 +568,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       const beta = between(rand, 0.7, 1.5, 0.05);
       const sharpe = (rp - rf) / sd;
       return {
-        losCode: "LOS 41.e",
         stem: `A portfolio returned ${pct(rp, 1)} with a standard deviation of ${pct(sd, 1)} and a beta of ${num(beta, 2)}. The risk-free rate is ${pct(rf, 1)}. The portfolio's Sharpe ratio is closest to:`,
         options: { A: num(sharpe, 3), B: num(rp / sd, 3), C: num((rp - rf) / beta, 3) },
         correctOption: "A",
@@ -580,6 +583,526 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       };
     },
   },
+
+  // ---------------- Additional 2027 module coverage ----------------
+  {
+    key: "quant-twr",
+    topicId: "01",
+    module: "Benchmarking Returns",
+    build: (rand) => {
+      const r1 = between(rand, -15, 30, 1);
+      const r2 = between(rand, -15, 30, 1);
+      const twr = (Math.sqrt((1 + r1 / 100) * (1 + r2 / 100)) - 1) * 100;
+      const cumulative = ((1 + r1 / 100) * (1 + r2 / 100) - 1) * 100;
+      return {
+        stem: `A fund returned ${r1 >= 0 ? "+" : ""}${r1}% in Year 1 and ${r2 >= 0 ? "+" : ""}${r2}% in Year 2. Its annualized time-weighted rate of return is closest to:`,
+        options: { A: pct(twr), B: pct((r1 + r2) / 2), C: pct(cumulative) },
+        correctOption: "A",
+        algebraicSolution: `TWR = [(1 + ${num(r1 / 100, 2)})(1 + ${num(r2 / 100, 2)})]^(1/2) - 1 = ${pct(twr)}.`,
+        calculatorKeystrokes: `${num(1 + r1 / 100, 2)} [×] ${num(1 + r2 / 100, 2)} [=] [√x] [-] 1 [=] ${num(twr / 100, 4)}`,
+        trapCategory: "Geometric vs. Arithmetic Linking",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Link the sub-period returns geometrically, then annualize.",
+          B: "This is the arithmetic mean, which overstates compound growth when returns vary.",
+          C: "This is the cumulative two-year return, not an annual rate.",
+        },
+      };
+    },
+  },
+  {
+    key: "quant-ci",
+    topicId: "01",
+    module: "Estimation and Hypothesis Testing",
+    build: (rand) => {
+      const n = pick(rand, [25, 36, 49, 64, 100, 144] as const);
+      const mean = between(rand, 4, 14, 0.5);
+      const sd = between(rand, 10, 30, 1);
+      const se = sd / Math.sqrt(n);
+      const range = (z: number, spread: number) => `${pct(mean - z * spread)} to ${pct(mean + z * spread)}`;
+      return {
+        stem: `A sample of ${n} returns has a mean of ${pct(mean, 1)} and a standard deviation of ${pct(sd, 0)}. The 95% confidence interval for the population mean (z = 1.96) is closest to:`,
+        options: { A: range(1.96, se), B: range(1.645, se), C: range(1.96, sd) },
+        correctOption: "A",
+        algebraicSolution: `Standard error = ${sd}% / √${n} = ${pct(se)}. CI = ${mean}% ± 1.96 × ${pct(se)} = ${range(1.96, se)}.`,
+        calculatorKeystrokes: `${sd} [÷] ${n} [√x] [=] ${num(se, 4)} [×] 1.96 [=] ${num(1.96 * se, 4)}`,
+        trapCategory: "Standard Error in Confidence Intervals",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Use the standard error of the mean with the 95% reliability factor.",
+          B: "This uses the 90% reliability factor (1.645).",
+          C: "This uses the standard deviation instead of the standard error.",
+        },
+      };
+    },
+  },
+  {
+    key: "quant-cv",
+    topicId: "01",
+    module: "Statistical Characteristics of Asset Returns",
+    build: (rand) => {
+      const mean = between(rand, 4, 15, 0.5);
+      const sd = between(rand, 6, 30, 0.5);
+      return {
+        stem: `An asset has a mean return of ${pct(mean, 1)} and a standard deviation of ${pct(sd, 1)}. Its coefficient of variation is closest to:`,
+        options: { A: num(sd / mean, 2), B: num(mean / sd, 2), C: num(sd - mean, 2) },
+        correctOption: "A",
+        algebraicSolution: `CV = σ / mean = ${sd} / ${mean} = ${num(sd / mean, 2)}.`,
+        calculatorKeystrokes: `${sd} [÷] ${mean} [=] ${num(sd / mean, 2)}`,
+        trapCategory: "Coefficient of Variation Inversion",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. CV measures risk per unit of mean return.",
+          B: "This inverts the ratio.",
+          C: "This subtracts instead of dividing.",
+        },
+      };
+    },
+  },
+  {
+    key: "econ-forward",
+    topicId: "02",
+    module: "Exchange Rate Calculations",
+    build: (rand) => {
+      const spot = between(rand, 1.05, 1.3, 0.005);
+      const iUsd = between(rand, 1, 6, 0.25);
+      const iEur = between(rand, 1, 6, 0.25);
+      const fwd = (spot * (1 + iUsd / 100)) / (1 + iEur / 100);
+      const inverted = (spot * (1 + iEur / 100)) / (1 + iUsd / 100);
+      return {
+        stem: `The spot rate is ${num(spot, 4)} USD/EUR (USD per EUR). The one-year USD interest rate is ${pct(iUsd)} and the one-year EUR interest rate is ${pct(iEur)}. The one-year forward rate (USD/EUR) is closest to:`,
+        options: { A: num(fwd, 4), B: num(inverted, 4), C: num(spot, 4) },
+        correctOption: "A",
+        algebraicSolution: `F = S × (1 + i_USD) / (1 + i_EUR) = ${num(spot, 4)} × ${num(1 + iUsd / 100, 4)} / ${num(1 + iEur / 100, 4)} = ${num(fwd, 4)}.`,
+        calculatorKeystrokes: `${num(spot, 4)} [×] ${num(1 + iUsd / 100, 4)} [÷] ${num(1 + iEur / 100, 4)} [=] ${num(fwd, 4)}`,
+        trapCategory: "Covered Interest Parity Orientation",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. The price currency's (USD) rate goes in the numerator.",
+          B: "This inverts the interest rate ratio.",
+          C: "This ignores the interest rate differential.",
+        },
+      };
+    },
+  },
+  {
+    key: "econ-multiplier",
+    topicId: "02",
+    module: "Fiscal Policy",
+    build: (rand) => {
+      const mpc = between(rand, 0.6, 0.9, 0.05);
+      const t = between(rand, 10, 35, 5);
+      const multiplier = 1 / (1 - mpc * (1 - t / 100));
+      return {
+        stem: `The marginal propensity to consume is ${num(mpc, 2)} and the tax rate is ${t}%. The fiscal multiplier is closest to:`,
+        options: { A: num(multiplier, 2), B: num(1 / (1 - mpc), 2), C: num(1 / mpc, 2) },
+        correctOption: "A",
+        algebraicSolution: `Multiplier = 1 / [1 - MPC(1 - t)] = 1 / [1 - ${num(mpc, 2)} × ${num(1 - t / 100, 2)}] = ${num(multiplier, 2)}.`,
+        calculatorKeystrokes: `${num(mpc, 2)} [×] ${num(1 - t / 100, 2)} [=] -> 1 [-] Ans [=] [1/x] => ${num(multiplier, 2)}`,
+        trapCategory: "Fiscal Multiplier with Taxes",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Taxes reduce the share of each extra unit of income that is spent.",
+          B: "This ignores taxes.",
+          C: "This is 1 / MPC, which is not the multiplier.",
+        },
+      };
+    },
+  },
+  {
+    key: "cf-ccc",
+    topicId: "03",
+    module: "Working Capital and Liquidity",
+    build: (rand) => {
+      const dso = between(rand, 20, 75, 1);
+      const doh = between(rand, 20, 120, 1);
+      const dpo = between(rand, 15, 70, 1);
+      return {
+        stem: `A company has days of sales outstanding of ${dso}, days of inventory on hand of ${doh} and days of payables of ${dpo}. Its cash conversion cycle is closest to:`,
+        options: { A: `${dso + doh - dpo} days`, B: `${dso + doh + dpo} days`, C: `${dso + doh} days` },
+        correctOption: "A",
+        algebraicSolution: `CCC = DSO + DOH - DPO = ${dso} + ${doh} - ${dpo} = ${dso + doh - dpo} days.`,
+        calculatorKeystrokes: `${dso} [+] ${doh} [-] ${dpo} [=] ${dso + doh - dpo}`,
+        trapCategory: "Cash Conversion Cycle Signs",
+        errorModeDefault: "SIGN_INVERSION",
+        distractorAutopsy: {
+          A: "Correct. Supplier credit shortens the cash conversion cycle.",
+          B: "This adds payables days instead of subtracting them.",
+          C: "This ignores payables days.",
+        },
+      };
+    },
+  },
+  {
+    key: "cf-roic",
+    topicId: "03",
+    module: "Capital Investments and Capital Allocation",
+    build: (rand) => {
+      const ebit = between(rand, 80, 600, 10);
+      const t = between(rand, 20, 30, 1);
+      const ic = Math.round(ebit * between(rand, 4, 9, 0.5));
+      const equity = Math.round(ic * between(rand, 0.5, 0.8, 0.05));
+      const nopat = ebit * (1 - t / 100);
+      return {
+        stem: `A company earns EBIT of $${ebit} million and pays tax at ${t}%. It has invested capital (debt plus equity) of $${ic.toLocaleString()} million, of which $${equity.toLocaleString()} million is equity. Its ROIC is closest to:`,
+        options: { A: pct((nopat / ic) * 100, 1), B: pct((ebit / ic) * 100, 1), C: pct((nopat / equity) * 100, 1) },
+        correctOption: "A",
+        algebraicSolution: `ROIC = EBIT × (1 - t) / Invested capital = ${ebit} × ${num(1 - t / 100, 2)} / ${ic} = ${pct((nopat / ic) * 100, 1)}.`,
+        calculatorKeystrokes: `${ebit} [×] ${num(1 - t / 100, 2)} [÷] ${ic} [=] ${num(nopat / ic, 4)}`,
+        trapCategory: "ROIC Numerator and Denominator",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. ROIC divides after-tax operating profit by total invested capital.",
+          B: "This uses pre-tax EBIT.",
+          C: "This divides by equity only.",
+        },
+      };
+    },
+  },
+  {
+    key: "fsa-etr",
+    topicId: "04",
+    module: "Analysis of Income Taxes",
+    build: (rand) => {
+      const pretax = between(rand, 20, 200, 5);
+      const etr = between(rand, 15, 30, 0.5);
+      const cashRate = Math.max(5, etr - between(rand, 2, 8, 0.5));
+      const statutory = etr + between(rand, 1, 6, 1);
+      return {
+        stem: `A company reports pre-tax income of $${pretax} million, income tax expense of $${num((pretax * etr) / 100, 2)} million and cash taxes paid of $${num((pretax * cashRate) / 100, 2)} million. The statutory tax rate is ${num(statutory, 1)}%. Its effective tax rate is closest to:`,
+        options: { A: pct(etr, 1), B: pct(cashRate, 1), C: pct(statutory, 1) },
+        correctOption: "A",
+        algebraicSolution: `Effective tax rate = Income tax expense / Pre-tax income = ${num((pretax * etr) / 100, 2)} / ${pretax} = ${pct(etr, 1)}.`,
+        calculatorKeystrokes: `${num((pretax * etr) / 100, 2)} [÷] ${pretax} [=] ${num(etr / 100, 4)}`,
+        trapCategory: "Effective vs. Cash vs. Statutory Tax Rate",
+        errorModeDefault: "CONCEPTUAL_CONFUSION",
+        distractorAutopsy: {
+          A: "Correct. The effective rate uses reported income tax expense.",
+          B: "This is the cash tax rate.",
+          C: "This is the statutory rate.",
+        },
+      };
+    },
+  },
+  {
+    key: "fsa-gross-margin",
+    topicId: "04",
+    module: "Analyzing Income Statements",
+    build: (rand) => {
+      const revenue = between(rand, 200, 2000, 10);
+      const cogs = Math.round(revenue * between(rand, 0.35, 0.8, 0.01));
+      const gp = revenue - cogs;
+      return {
+        stem: `A company reports revenue of $${revenue.toLocaleString()} million and cost of goods sold of $${cogs.toLocaleString()} million. Its gross profit margin is closest to:`,
+        options: { A: pct((gp / revenue) * 100, 1), B: pct((gp / cogs) * 100, 1), C: pct((cogs / revenue) * 100, 1) },
+        correctOption: "A",
+        algebraicSolution: `Gross margin = (Revenue - COGS) / Revenue = ${gp} / ${revenue} = ${pct((gp / revenue) * 100, 1)}.`,
+        calculatorKeystrokes: `(${revenue} [-] ${cogs}) [÷] ${revenue} [=] ${num(gp / revenue, 4)}`,
+        trapCategory: "Common-Size Margin Denominator",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Margins are expressed as a percentage of revenue.",
+          B: "This divides gross profit by COGS.",
+          C: "This is COGS as a percentage of revenue.",
+        },
+      };
+    },
+  },
+  {
+    key: "eq-residual-income",
+    topicId: "05",
+    module: "Discounted Cash Flow (DCF) and Growth Models",
+    build: (rand) => {
+      const bv = between(rand, 10, 60, 1);
+      const r = between(rand, 7, 12, 0.5);
+      const roe = between(rand, r + 1, r + 10, 0.5);
+      return {
+        stem: `A company has book value per share of ${money(bv, 2)}, an expected ROE of ${pct(roe, 1)} and a required return on equity of ${pct(r, 1)}. Next year's residual income per share is closest to:`,
+        options: { A: money(((roe - r) / 100) * bv, 2), B: money((r / 100) * bv, 2), C: money((roe / 100) * bv, 2) },
+        correctOption: "A",
+        algebraicSolution: `RI = (ROE - r) × BV = (${num(roe / 100, 3)} - ${num(r / 100, 3)}) × ${bv} = ${money(((roe - r) / 100) * bv, 2)}.`,
+        calculatorKeystrokes: `(${num(roe / 100, 3)} [-] ${num(r / 100, 3)}) [×] ${bv} [=] ${num(((roe - r) / 100) * bv, 2)}`,
+        trapCategory: "Residual Income Calculation",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Residual income is earnings above the equity charge.",
+          B: "This is the equity charge.",
+          C: "This is expected earnings per share.",
+        },
+      };
+    },
+  },
+  {
+    key: "eq-justified-pb",
+    topicId: "05",
+    module: "Relative Value Equity Valuation Approaches",
+    build: (rand) => {
+      const g = between(rand, 2, 6, 0.5);
+      const r = between(rand, g + 3, g + 6, 0.5);
+      const roe = between(rand, r + 2, r + 8, 0.5);
+      return {
+        stem: `A company has an ROE of ${pct(roe, 1)}, a sustainable growth rate of ${pct(g, 1)} and a required return of ${pct(r, 1)}. Its justified price-to-book ratio is closest to:`,
+        options: { A: num((roe - g) / (r - g), 2), B: num(roe / r, 2), C: num(roe / (r - g), 2) },
+        correctOption: "A",
+        algebraicSolution: `Justified P/B = (ROE - g) / (r - g) = (${roe} - ${g}) / (${r} - ${g}) = ${num((roe - g) / (r - g), 2)}.`,
+        calculatorKeystrokes: `(${roe} [-] ${g}) [÷] (${r} [-] ${g}) [=] ${num((roe - g) / (r - g), 2)}`,
+        trapCategory: "Justified P/B from Fundamentals",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. The justified P/B uses (ROE - g) / (r - g).",
+          B: "This ignores growth.",
+          C: "This omits growth from the numerator.",
+        },
+      };
+    },
+  },
+  {
+    key: "fi-accrued",
+    topicId: "06",
+    module: "Fixed-Income Bond Valuation: Prices and Yields",
+    build: (rand) => {
+      const coupon = between(rand, 2, 9, 0.5);
+      const days = between(rand, 10, 170, 1);
+      const periodCoupon = (coupon / 2) * 10;
+      return {
+        stem: `A bond pays a ${pct(coupon, 1)} annual coupon semiannually on $1,000 par. Settlement is ${days} days into a 182-day coupon period. The accrued interest is closest to:`,
+        options: {
+          A: money((periodCoupon * days) / 182, 2),
+          B: money((periodCoupon * (182 - days)) / 182, 2),
+          C: money(periodCoupon, 2),
+        },
+        correctOption: "A",
+        algebraicSolution: `AI = ${money(periodCoupon, 2)} × ${days}/182 = ${money((periodCoupon * days) / 182, 2)}.`,
+        calculatorKeystrokes: `${num(periodCoupon, 2)} [×] ${days} [÷] 182 [=] ${num((periodCoupon * days) / 182, 2)}`,
+        trapCategory: "Accrued Interest Day Fraction",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Accrue the coupon for the days elapsed since the last payment.",
+          B: "This uses the days remaining in the period.",
+          C: "This is the full semiannual coupon.",
+        },
+      };
+    },
+  },
+  {
+    key: "fi-tbill",
+    topicId: "06",
+    module: "Yield and Yield Spread Measures for Floating-Rate Instruments",
+    build: (rand) => {
+      const rate = between(rand, 1.5, 6, 0.25);
+      const days = pick(rand, [30, 60, 90, 120, 180] as const);
+      const price = 100 * (1 - (rate / 100) * (days / 360));
+      const addOn = 100 / (1 + (rate / 100) * (days / 360));
+      return {
+        stem: `A ${days}-day money market instrument is quoted at a discount rate of ${pct(rate)} (360-day year). Its price per 100 of face value is closest to:`,
+        options: { A: num(price, 3), B: num(addOn, 3), C: num(100 * (1 - rate / 100), 3) },
+        correctOption: "A",
+        algebraicSolution: `Price = 100 × (1 - ${num(rate / 100, 4)} × ${days}/360) = ${num(price, 3)}.`,
+        calculatorKeystrokes: `${num(rate / 100, 4)} [×] ${days} [÷] 360 [=] -> 1 [-] Ans [×] 100 [=] ${num(price, 3)}`,
+        trapCategory: "Discount Rate vs. Add-On Rate",
+        errorModeDefault: "PERIODICITY_MISMATCH",
+        distractorAutopsy: {
+          A: "Correct. A discount rate is applied to face value for the fraction of the year.",
+          B: "This treats the quote as an add-on rate.",
+          C: "This applies a full year of discount.",
+        },
+      };
+    },
+  },
+  {
+    key: "fi-convexity",
+    topicId: "06",
+    module: "Yield-Based Bond Convexity and Portfolio Properties",
+    build: (rand) => {
+      const modDur = between(rand, 3, 12, 0.5);
+      const convexity = between(rand, 20, 150, 5);
+      const bp = pick(rand, [50, 100, 150] as const);
+      const dy = bp / 10000;
+      const up = rand() < 0.5;
+      const durationPart = -modDur * (up ? dy : -dy) * 100;
+      const convexityPart = 0.5 * convexity * dy * dy * 100;
+      return {
+        stem: `A bond has a modified duration of ${num(modDur, 1)} and an annual convexity of ${convexity}. If its yield ${up ? "rises" : "falls"} by ${bp} basis points, the estimated percentage price change is closest to:`,
+        options: {
+          A: pct(durationPart + convexityPart),
+          B: pct(durationPart),
+          C: pct(durationPart - convexityPart),
+        },
+        correctOption: "A",
+        algebraicSolution: `%ΔP ≈ -ModDur × Δy + ½ × Convexity × (Δy)² = ${pct(durationPart)} + ${pct(convexityPart)} = ${pct(durationPart + convexityPart)}.`,
+        calculatorKeystrokes: `0.5 [×] ${convexity} [×] ${num(dy, 4)} [x²] [=] ${num(convexityPart / 100, 5)}`,
+        trapCategory: "Convexity Adjustment Sign",
+        errorModeDefault: "SIGN_INVERSION",
+        distractorAutopsy: {
+          A: "Correct. Positive convexity always adds to the duration estimate.",
+          B: "This ignores convexity.",
+          C: "This subtracts the convexity adjustment.",
+        },
+      };
+    },
+  },
+  {
+    key: "der-call-profit",
+    topicId: "07",
+    module: "Forward Commitment and Contingent Claim Features and Instruments",
+    build: (rand) => {
+      const strike = between(rand, 30, 120, 5);
+      const premium = between(rand, 1, 8, 0.5);
+      const st = strike + between(rand, -10, 20, 1);
+      const payoff = Math.max(0, st - strike);
+      return {
+        stem: `An investor buys a call option with a strike price of ${money(strike, 2)} for a premium of ${money(premium, 2)}. At expiration the stock price is ${money(st, 2)}. The investor's profit is closest to:`,
+        options: { A: money(payoff - premium, 2), B: money(payoff, 2), C: money(payoff + premium, 2) },
+        correctOption: "A",
+        algebraicSolution: `Payoff = max(0, ${st} - ${strike}) = ${money(payoff, 2)}. Profit = payoff - premium = ${money(payoff - premium, 2)}.`,
+        calculatorKeystrokes: `max(0, ${st} [-] ${strike}) [-] ${premium} [=] ${num(payoff - premium, 2)}`,
+        trapCategory: "Option Payoff vs. Profit",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Profit subtracts the premium paid from the exercise payoff.",
+          B: "This is the payoff before the premium.",
+          C: "This adds the premium instead of subtracting it.",
+        },
+      };
+    },
+  },
+  {
+    key: "der-binomial",
+    topicId: "07",
+    module: "Valuing a Derivative Using a One-Period Binomial Model",
+    build: (rand) => {
+      const s0 = between(rand, 40, 120, 5);
+      const u = between(rand, 1.1, 1.3, 0.05);
+      const d = between(rand, 0.8, 0.95, 0.05);
+      const r = between(rand, 2, 6, 1);
+      const q = (1 + r / 100 - d) / (u - d);
+      const upPayoff = Math.max(0, s0 * u - s0);
+      const value = (q * upPayoff) / (1 + r / 100);
+      return {
+        stem: `A stock at ${money(s0, 2)} will be worth ${money(s0 * u, 2)} or ${money(s0 * d, 2)} in one year. The risk-free rate is ${r}%. Using a one-period binomial model, the value of a call with a ${money(s0, 2)} strike is closest to:`,
+        options: { A: money(value, 2), B: money(q * upPayoff, 2), C: money((0.5 * upPayoff) / (1 + r / 100), 2) },
+        correctOption: "A",
+        algebraicSolution: `q = (1 + r - d) / (u - d) = (${num(1 + r / 100, 2)} - ${num(d, 2)}) / (${num(u, 2)} - ${num(d, 2)}) = ${num(q, 4)}. Call = q × ${num(upPayoff, 2)} / ${num(1 + r / 100, 2)} = ${money(value, 2)}.`,
+        calculatorKeystrokes: `${num(q, 4)} [×] ${num(upPayoff, 2)} [÷] ${num(1 + r / 100, 2)} [=] ${num(value, 2)}`,
+        trapCategory: "Risk-Neutral Valuation",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Discount the risk-neutral expected payoff at the risk-free rate.",
+          B: "This forgets to discount the expected payoff.",
+          C: "This assumes a 50% up probability instead of the risk-neutral probability.",
+        },
+      };
+    },
+  },
+  {
+    key: "der-forward-value",
+    topicId: "07",
+    module: "Pricing and Valuation of Forward Contracts and for an Underlying with Varying Maturities",
+    build: (rand) => {
+      const f0 = between(rand, 50, 150, 1);
+      const st = f0 + between(rand, -8, 8, 1);
+      const r = between(rand, 2, 6, 0.5);
+      const months = pick(rand, [3, 6, 9] as const);
+      const t = months / 12;
+      const value = st - f0 / Math.pow(1 + r / 100, t);
+      return {
+        stem: `A long forward contract has a forward price of ${money(f0, 2)} and ${months} months remaining. The spot price is now ${money(st, 2)} and the annual risk-free rate is ${pct(r, 1)}. The value of the long position is closest to:`,
+        options: {
+          A: money(value, 2),
+          B: money(st - f0, 2),
+          C: money(st * Math.pow(1 + r / 100, t) - f0, 2),
+        },
+        correctOption: "A",
+        algebraicSolution: `V = S_t - F_0 / (1 + r)^(T - t) = ${num(st, 2)} - ${num(f0, 2)} / ${num(1 + r / 100, 3)}^${num(t, 2)} = ${money(value, 2)}.`,
+        calculatorKeystrokes: `${num(1 + r / 100, 3)} [yˣ] ${num(t, 2)} [=] -> ${f0} [÷] Ans [=] -> ${st} [-] Ans [=] ${num(value, 2)}`,
+        trapCategory: "Forward Value During the Contract",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Compare the spot price with the present value of the forward price.",
+          B: "This ignores the time value of money.",
+          C: "This compounds the spot price instead of discounting the forward price.",
+        },
+      };
+    },
+  },
+  {
+    key: "alt-hurdle",
+    topicId: "08",
+    module: "Alternative Investment Performance and Returns",
+    build: (rand) => {
+      const gross = between(rand, 10, 30, 1);
+      const mgmt = pick(rand, [1, 1.5, 2] as const);
+      const hurdle = pick(rand, [6, 7, 8] as const);
+      const netOfMgmt = gross - mgmt;
+      const incentive = Math.max(0, 0.2 * (netOfMgmt - hurdle));
+      const net = netOfMgmt - incentive;
+      return {
+        stem: `A fund earns a gross return of ${gross}% on beginning assets. It charges a ${mgmt}% management fee on beginning assets and a 20% incentive fee on gains net of the management fee above a hard hurdle of ${hurdle}%. The investor's net return is closest to:`,
+        options: { A: pct(net, 1), B: pct(netOfMgmt - 0.2 * netOfMgmt, 1), C: pct(netOfMgmt, 1) },
+        correctOption: "A",
+        algebraicSolution: `Gain after management fee = ${gross}% - ${mgmt}% = ${num(netOfMgmt, 1)}%. Incentive = 20% × (${num(netOfMgmt, 1)}% - ${hurdle}%) = ${num(incentive, 2)}%. Net = ${pct(net, 1)}.`,
+        calculatorKeystrokes: `0.2 [×] (${num(netOfMgmt, 1)} [-] ${hurdle}) [=] ${num(incentive, 2)} -> ${num(netOfMgmt, 1)} [-] ${num(incentive, 2)} [=] ${num(net, 2)}`,
+        trapCategory: "Hard Hurdle Fee Calculation",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. With a hard hurdle, the incentive fee applies only to gains above the hurdle.",
+          B: "This ignores the hurdle.",
+          C: "This deducts only the management fee.",
+        },
+      };
+    },
+  },
+  {
+    key: "pc-jensen",
+    topicId: "09",
+    module: "Portfolio Risk and Return: Part II",
+    build: (rand) => {
+      const rf = between(rand, 1, 5, 0.5);
+      const rm = between(rand, rf + 4, rf + 8, 0.5);
+      const beta = between(rand, 0.6, 1.6, 0.1);
+      const rp = between(rand, 6, 18, 0.5);
+      const capm = rf + beta * (rm - rf);
+      return {
+        stem: `A portfolio with a beta of ${num(beta, 1)} returned ${pct(rp, 1)}. The risk-free rate is ${pct(rf, 1)} and the market returned ${pct(rm, 1)}. Jensen's alpha is closest to:`,
+        options: { A: pct(rp - capm), B: pct(rp - rm), C: pct(rp - rf) },
+        correctOption: "A",
+        algebraicSolution: `Required return = ${rf} + ${num(beta, 1)} × (${rm} - ${rf}) = ${pct(capm)}. Alpha = ${rp}% - ${pct(capm)} = ${pct(rp - capm)}.`,
+        calculatorKeystrokes: `(${rm} [-] ${rf}) [×] ${num(beta, 1)} [+] ${rf} [=] ${num(capm, 2)} -> ${rp} [-] Ans [=] ${num(rp - capm, 2)}`,
+        trapCategory: "Jensen's Alpha",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Alpha is the return above the CAPM required return.",
+          B: "This compares with the market without adjusting for beta.",
+          C: "This is the excess return over the risk-free rate.",
+        },
+      };
+    },
+  },
+  {
+    key: "pc-utility",
+    topicId: "09",
+    module: "Portfolio Risk and Return: Part I",
+    build: (rand) => {
+      const er = between(rand, 5, 15, 0.5);
+      const sd = between(rand, 8, 30, 1);
+      const a = pick(rand, [2, 3, 4, 5, 6] as const);
+      const utility = er - 0.5 * a * (sd * sd) / 100;
+      return {
+        stem: `An investor with risk aversion A = ${a} evaluates a portfolio with an expected return of ${pct(er, 1)} and a standard deviation of ${pct(sd, 0)}. Using U = E(R) - 0.5 × A × σ², the utility is closest to:`,
+        options: { A: pct(utility), B: pct(er - (a * sd * sd) / 100), C: pct(er) },
+        correctOption: "A",
+        algebraicSolution: `U = ${num(er / 100, 3)} - 0.5 × ${a} × ${num(sd / 100, 2)}² = ${pct(utility)}.`,
+        calculatorKeystrokes: `0.5 [×] ${a} [×] ${num(sd / 100, 2)} [x²] [=] -> ${num(er / 100, 3)} [-] Ans [=] ${num(utility / 100, 4)}`,
+        trapCategory: "Utility Function Calculation",
+        errorModeDefault: "FORMULA_SCALAR",
+        distractorAutopsy: {
+          A: "Correct. Utility subtracts half of A times variance from the expected return.",
+          B: "This omits the 0.5 factor.",
+          C: "This ignores the risk penalty.",
+        },
+      };
+    },
+  },
 ];
 
 export function templatesForTopic(topicId: string): QuestionTemplate[] {
@@ -589,7 +1112,7 @@ export function templatesForTopic(topicId: string): QuestionTemplate[] {
 /** Builds a template item, retrying until its three options are distinct. */
 export function buildTemplateQuestion(template: QuestionTemplate, rand: () => number): TemplateQuestion {
   for (let attempt = 0; attempt < 20; attempt++) {
-    const question = template.build(rand);
+    const question = { ...template.build(rand), losCode: moduleCodeFor(template.topicId, template.module) };
     const { A, B, C } = question.options;
     if (A !== B && B !== C && A !== C) return question;
   }

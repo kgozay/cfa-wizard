@@ -99,30 +99,35 @@ describe("Option Presentation & Answer Permutation", () => {
     })).toBe(false);
   });
 
-  it("eliminates Option A bias across random presentations (statistical integrity test)", () => {
-    // Generate 600 presented items across various seeds
-    const counts = { A: 0, B: 0, C: 0 };
-    const totalSamples = 600;
+  it("orders options like the exam: numbers ascending, words shortest to longest", () => {
+    const numeric = presentPracticeItem(
+      { ...testItem, options: { A: "$1,026.73", B: "-$4.50", C: "$973.27" }, correctOption: "C" },
+      "session-order",
+      1
+    );
+    expect(Object.values(numeric.options)).toEqual(["-$4.50", "$973.27", "$1,026.73"]);
+    expect(numeric.options[numeric.correctOption]).toBe("$973.27");
 
-    for (let i = 0; i < totalSamples; i++) {
-      const prng = createPRNG(`sample-seed-${i}`);
-      // Use an item where original authoring key is A
-      const presented = presentPracticeItem(items[2], `session-${i}`, 1, prng);
-      counts[presented.correctOption]++;
-    }
-
-    const pctA = (counts.A / totalSamples) * 100;
-    const pctB = (counts.B / totalSamples) * 100;
-    const pctC = (counts.C / totalSamples) * 100;
-
-    // Expected ~33.3% each; tolerance 25% to 42%
-    expect(pctA).toBeGreaterThan(25);
-    expect(pctA).toBeLessThan(42);
-
-    expect(pctB).toBeGreaterThan(25);
-    expect(pctB).toBeLessThan(42);
-
-    expect(pctC).toBeGreaterThan(25);
-    expect(pctC).toBeLessThan(42);
+    const words = presentPracticeItem(
+      { ...testItem, options: { A: "Increases bank reserves a lot", B: "Raises rates", C: "Cuts reserves" }, correctOption: "A" },
+      "session-order",
+      2
+    );
+    expect(Object.values(words.options)).toEqual(["Raises rates", "Cuts reserves", "Increases bank reserves a lot"]);
+    expect(words.correctOption).toBe("C");
   });
+
+  it("keeps the correct answer spread across A, B and C over the whole bank", () => {
+    const counts = { A: 0, B: 0, C: 0 };
+    const all = CFA_VIGNETTES.flatMap((vignette) => legacyVignetteToPracticeItems(vignette));
+    all.forEach((item) => {
+      counts[presentPracticeItem(item, "session-balance", 1).correctOption]++;
+    });
+    (["A", "B", "C"] as const).forEach((key) => {
+      const pct = (counts[key] / all.length) * 100;
+      expect(pct).toBeGreaterThan(25);
+      expect(pct).toBeLessThan(42);
+    });
+  });
+
 });

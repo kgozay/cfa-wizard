@@ -6,14 +6,15 @@ import { PracticeItem } from "@/types/practice";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPracticeSession } from "@/lib/practice/createSession";
 
-// Quotas follow the February 2027 Level I topic weights: Quant, FSA, Equities, Fixed Income
-// 11–14%; Ethics 10–15%; Portfolio Construction 8–12%; Economics, Corporate Finance,
-// Derivatives and Alternative Investments 6–9%. The two half mocks together make one full mock.
+// Quotas follow CFA Institute's 2027 Level I weights and session split (cfainstitute.org):
+// Session 1 = Ethics 10–15%, Quant 11–14%, Economics 6–9%, FSA 11–14%, Corporate Finance 6–9%;
+// Session 2 = Equities 11–14%, Fixed Income 11–14%, Derivatives 6–9%, Alternatives 6–9%,
+// Portfolio Construction 8–12%. Half mock A is Session 1, half mock B is Session 2.
 export const MOCK_TOPIC_QUOTAS: Record<MockExamType, Record<string, number>> = {
-  quick_diagnostic_45: { "01": 6, "02": 3, "03": 3, "04": 6, "05": 6, "06": 6, "07": 3, "08": 3, "09": 4, "10": 5 },
-  half_session_1: { "01": 11, "02": 6, "03": 7, "04": 11, "05": 11, "06": 11, "07": 7, "08": 6, "09": 9, "10": 11 },
-  half_session_2: { "01": 11, "02": 7, "03": 6, "04": 11, "05": 11, "06": 11, "07": 6, "08": 7, "09": 9, "10": 11 },
-  full_180: { "01": 22, "02": 13, "03": 13, "04": 22, "05": 22, "06": 22, "07": 13, "08": 13, "09": 18, "10": 22 },
+  quick_diagnostic_45: { "10": 5, "01": 6, "02": 3, "04": 6, "03": 3, "05": 6, "06": 6, "07": 3, "08": 3, "09": 4 },
+  half_session_1: { "10": 21, "01": 21, "02": 13, "04": 22, "03": 13 },
+  half_session_2: { "05": 22, "06": 22, "07": 14, "08": 14, "09": 18 },
+  full_180: { "10": 21, "01": 21, "02": 13, "04": 22, "03": 13, "05": 22, "06": 22, "07": 14, "08": 14, "09": 18 },
 };
 
 export function getMockExamShortages(examType: MockExamType): Array<{ topicId: string; requested: number; available: number }> {
@@ -69,11 +70,11 @@ export function generateMockExamSession(
   } else if (examType === "half_session_1") {
     totalTarget = 90;
     allocatedMinutes = 135;
-    title = "Level I Half Mock A (90 Questions)";
+    title = "Level I Session 1 Mock (90 Questions)";
   } else if (examType === "half_session_2") {
     totalTarget = 90;
     allocatedMinutes = 135;
-    title = "Level I Half Mock B (90 Questions)";
+    title = "Level I Session 2 Mock (90 Questions)";
   } else {
     // full_180
     totalTarget = 180;

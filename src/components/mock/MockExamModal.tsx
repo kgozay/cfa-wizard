@@ -726,17 +726,17 @@ const MOCK_TIERS: Array<{ id: MockExamType; title: string; badge: string; time: 
   },
   {
     id: "half_session_1",
-    title: "Half mock A",
+    title: "Session 1 mock",
     badge: "90 questions",
     time: "2 h 15 min",
-    desc: "One exam session's length, covering all ten topics at their exam weights.",
+    desc: "Exam session 1: Ethics, Quantitative Methods, Economics, Financial Statement Analysis and Corporate Finance.",
   },
   {
     id: "half_session_2",
-    title: "Half mock B",
+    title: "Session 2 mock",
     badge: "90 questions",
     time: "2 h 15 min",
-    desc: "A second session-length mock. Together, A and B make a full exam.",
+    desc: "Exam session 2: Equities, Fixed Income, Derivatives, Alternative Investments and Portfolio Construction.",
   },
   {
     id: "full_180",

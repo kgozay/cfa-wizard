@@ -20,6 +20,13 @@ Submission calls `gradeAttempt`, producing one append-only `PracticeAttempt` wit
 
 `POST /api/generate-vignette` accepts the strict `GenerationRequestSchema`. Unknown fields, invalid enum values, and unsupported counts are rejected. Responses must contain exactly the requested number of unique questions and pass `GenerationResponseSchema`; otherwise the route returns an explicit validation error. Provenance is attached to both the response and the persisted vignette.
 
+### Content sources and curriculum alignment
+
+- Topic names, weights and the session split follow CFA Institute's 2027 Level I table; learning modules in `src/data/curriculum.ts` mirror the official 2027 topic outline.
+- The authored bank is `src/data/vignettes.ts` plus `additionalQuestions.ts` and `expansionQuestions2027.ts` (tagged to 2027 modules as "Module N").
+- Options are presented in exam order: numeric choices ascending, word choices shortest to longest (`createExamOrderPermutation`).
+- AI generation (optional) uses Gemini when `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) is set; `GEMINI_MODEL` overrides the default model. The prompt carries the official module outcomes and CFA Institute item-writing rules (`src/lib/generation/itemRules.ts`), and every returned item is validated; rejected or missing items are backfilled from randomized numeric templates (`src/lib/generation/templates.ts`). Requests may target a single learning module via `moduleTitle`.
+
 ## Persistence and backups
 
 Zustand persists version 4 domain state under `cfa-wizard-storage-v3`; the key name is retained to preserve existing browser data. Store migrations convert supported legacy results to canonical attempts.

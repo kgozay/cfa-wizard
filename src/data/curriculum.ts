@@ -15,13 +15,18 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Hypothesis Testing & Significance: Reject $H_0$ when test statistic exceeds critical value, or when $p\\text{-value} \\le \\alpha$. Type I Error = rejecting true null ($\alpha$); Type II Error = failing to reject false null ($\beta$); Power = $1 - \\beta$."
     ],
     subReadings: [
-      { id: "01-1", readingNumber: 1, title: "Rates and Returns", losCode: "LOS 1.a-c", losStatement: "Calculate and interpret different measures of return and compounding rates.", coreTrap: "Failing to convert stated annual rate to effective annual rate with m compounding periods." },
-      { id: "01-2", readingNumber: 2, title: "Time Value of Money in Finance", losCode: "LOS 2.a-e", losStatement: "Calculate PV, FV, and payments for ordinary annuities and annuities due.", coreTrap: "Calculating lease/retirement cash flows in [END] mode when payments occur at beginning of period." },
-      { id: "01-3", readingNumber: 3, title: "Statistical Measures of Asset Returns", losCode: "LOS 3.a-d", losStatement: "Calculate and interpret mean, variance, standard deviation, skewness, and kurtosis.", coreTrap: "Confusing sample variance (dividing by n - 1) with population variance (dividing by N)." },
-      { id: "01-4", readingNumber: 4, title: "Probability Trees and Conditional Expectations", losCode: "LOS 4.a-f", losStatement: "Apply Bayes' formula and conditional probability trees to evaluate outcomes.", coreTrap: "Inverting conditional probability conditional statement P(A|B) vs P(B|A)." },
-      { id: "01-5", readingNumber: 5, title: "Portfolio Mathematics & Covariance", losCode: "LOS 5.a-c", losStatement: "Calculate portfolio expected return and variance for two-asset portfolios.", coreTrap: "Forgetting the 2 * w1 * w2 * Cov(1,2) interaction term in portfolio variance." },
-      { id: "01-6", readingNumber: 6, title: "Hypothesis Testing & Parametric Tests", losCode: "LOS 6.a-g", losStatement: "Formulate null/alternative hypotheses and evaluate t-test, z-test, and F-test statistics.", coreTrap: "Confusing one-tailed critical values (alpha) with two-tailed critical values (alpha / 2)." },
-      { id: "01-7", readingNumber: 7, title: "Simple Linear Regression", losCode: "LOS 7.a-e", losStatement: "Interpret regression coefficients, R-squared, standard error of estimate, and ANOVA tables.", coreTrap: "Assuming correlation implies causation, or misinterpreting the intercept as a rate of return." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "01-1", readingNumber: 1, title: "Returns of Financial Assets and Instruments", losCode: "Module 1", losStatement: "Describe and interpret returns, required rates of return, risk-free rates, risk premia and inflation.", coreTrap: "Adding the inflation premium to a real rate additively when the exact (multiplicative) relation is required." },
+      { id: "01-2", readingNumber: 2, title: "Types of Financial Returns", losCode: "Module 2", losStatement: "Calculate and compare holding period, arithmetic, geometric, harmonic, gross/net and real returns.", coreTrap: "Using the arithmetic mean instead of the geometric mean for multi-period compound growth." },
+      { id: "01-3", readingNumber: 3, title: "Benchmarking Returns", losCode: "Module 3", losStatement: "Calculate money-weighted and time-weighted returns and index values under different weighting methods.", coreTrap: "Using the money-weighted return to evaluate a manager who does not control external cash flows." },
+      { id: "01-4", readingNumber: 4, title: "The Time Value of Money in Finance", losCode: "Module 4", losStatement: "Value fixed-income and equity cash flows, infer implied returns and growth, and apply cash flow additivity.", coreTrap: "Leaving the calculator in [END] mode for annuity-due cash flows." },
+      { id: "01-5", readingNumber: 5, title: "Statistical Characteristics of Asset Returns", losCode: "Module 5", losStatement: "Calculate central tendency, dispersion, skewness, kurtosis, covariance, correlation, semi-deviation and CV.", coreTrap: "Dividing by n instead of n - 1 for a sample variance." },
+      { id: "01-6", readingNumber: 6, title: "Statistical Distributions for Financial Asset Prices and Returns", losCode: "Module 6", losStatement: "Calculate expected values, conditional expectations and apply Bayesian updating.", coreTrap: "Confusing P(A|B) with P(B|A) when updating probabilities." },
+      { id: "01-7", readingNumber: 7, title: "Estimation and Hypothesis Testing", losCode: "Module 7", losStatement: "Apply the central limit theorem, confidence intervals, hypothesis tests, Type I/II errors and non-parametric tests.", coreTrap: "Using a one-tailed critical value for a two-tailed test." },
+      { id: "01-8", readingNumber: 8, title: "The Return and Risk of a Financial Portfolio", losCode: "Module 8", losStatement: "Calculate portfolio return and risk, the minimum-variance portfolio, CAL and CML.", coreTrap: "Omitting the covariance term from two-asset portfolio variance." },
+      { id: "01-9", readingNumber: 9, title: "Simulation of Financial Asset Prices and Returns", losCode: "Module 9", losStatement: "Describe historical simulation, bootstrap resampling and Monte Carlo simulation.", coreTrap: "Assuming historical simulation can capture scenarios that never occurred in the data." },
+      { id: "01-10", readingNumber: 10, title: "Applications of Simple Linear Regression in Finance", losCode: "Module 10", losStatement: "Interpret least-squares estimates, assumptions, ANOVA, prediction intervals and CAPM regressions.", coreTrap: "Reading R-squared as SSE/SST instead of 1 - SSE/SST." },
+      { id: "01-11", readingNumber: 11, title: "Introduction to Financial Data Science", losCode: "Module 11", losStatement: "Describe how big data, machine learning and AI are used in investment management.", coreTrap: "Confusing supervised learning (labelled data) with unsupervised learning." }
     ],
     formulas: [
       {
@@ -103,11 +108,15 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Currency Cross-Rates & Bid-Ask: Base currency rule: When multiplying cross rates $(A/B \\times B/C = A/C)$, Bid cross $= Bid \\times Bid$ and Ask cross $= Ask \\times Ask$. When inverting $(B/A)$, $Bid_{B/A} = 1 / Ask_{A/B}$."
     ],
     subReadings: [
-      { id: "02-1", readingNumber: 8, title: "Topics in Demand and Supply Analysis", losCode: "LOS 8.a-e", losStatement: "Calculate and interpret price, cross-price, and income elasticities of demand.", coreTrap: "Confusing elasticity along a linear demand curve (elastic above midpoint, inelastic below)." },
-      { id: "02-2", readingNumber: 9, title: "The Firm and Market Structures", losCode: "LOS 9.a-f", losStatement: "Compare market structures and analyze short-run vs long-run profit maximization.", coreTrap: "Assuming monopolistic competition firms earn positive economic profits in the long run." },
-      { id: "02-3", readingNumber: 10, title: "Aggregate Output, Prices, and Economic Growth", losCode: "LOS 10.a-g", losStatement: "Explain aggregate demand (AD), short-run aggregate supply (SRAS), and long-run aggregate supply (LRAS).", coreTrap: "Treating stagflation as an AD shift instead of a leftward shift in SRAS." },
-      { id: "02-4", readingNumber: 11, title: "Monetary and Fiscal Policy", losCode: "LOS 11.a-f", losStatement: "Analyze roles of central bank tools, inflation targets, fiscal budget deficits, and crowding out.", coreTrap: "Ignoring the crowding-out effect where government deficits drive up real interest rates and reduce private investment." },
-      { id: "02-5", readingNumber: 12, title: "Currency Exchange Rates & Cross-Rates", losCode: "LOS 12.a-e", losStatement: "Calculate and interpret currency cross-rates, triangular arbitrage, and forward points.", coreTrap: "Inverting bid-ask spreads incorrectly when calculating the reciprocal exchange rate." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "02-1", readingNumber: 1, title: "The Firm and Market Structures", losCode: "Module 1", losStatement: "Determine breakeven and shutdown points and compare perfect competition, monopolistic competition, oligopoly and monopoly.", coreTrap: "Shutting down when price is below average total cost rather than below average variable cost." },
+      { id: "02-2", readingNumber: 2, title: "Understanding Business Cycles", losCode: "Module 2", losStatement: "Describe business and credit cycles and how economic indicators behave over the cycle.", coreTrap: "Treating lagging indicators (e.g. unemployment duration) as leading indicators." },
+      { id: "02-3", readingNumber: 3, title: "Fiscal Policy", losCode: "Module 3", losStatement: "Describe fiscal policy objectives, tools, implementation lags and whether policy is expansionary or contractionary.", coreTrap: "Judging fiscal stance from the budget balance alone without adjusting for the cycle." },
+      { id: "02-4", readingNumber: 4, title: "Monetary Policy", losCode: "Module 4", losStatement: "Describe central bank roles, tools, transmission and limits, and interaction with fiscal policy.", coreTrap: "Assuming an open-market purchase drains reserves rather than adding them." },
+      { id: "02-5", readingNumber: 5, title: "Introduction to Geopolitics", losCode: "Module 5", losStatement: "Describe cooperation versus competition, globalization, international organizations and geopolitical risk.", coreTrap: "Mixing up the roles of the IMF, World Bank and WTO." },
+      { id: "02-6", readingNumber: 6, title: "International Trade", losCode: "Module 6", losStatement: "Describe gains and costs of trade, tariffs, quotas, export subsidies and trading blocs.", coreTrap: "Forgetting that a quota's rent may accrue to foreign exporters rather than the government." },
+      { id: "02-7", readingNumber: 7, title: "Capital Flows and the FX Market", losCode: "Module 7", losStatement: "Describe FX market participants, nominal vs real rates, exchange rate regimes and capital controls.", coreTrap: "Calculating the percentage change of the wrong currency in a direct quote." },
+      { id: "02-8", readingNumber: 8, title: "Exchange Rate Calculations", losCode: "Module 8", losStatement: "Calculate cross rates and forward rates from interest rate parity, points and premiums.", coreTrap: "Inverting the interest rate ratio when computing a forward rate." }
     ],
     formulas: [
       {
@@ -142,10 +151,14 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Leverage & Breakeven: Degree of Operating Leverage $(DOL) = \\frac{Q(P - V)}{Q(P - V) - F}$. Degree of Financial Leverage $(DFL) = \\frac{EBIT}{EBIT - I}$. Total Leverage $DTL = DOL \\times DFL$."
     ],
     subReadings: [
-      { id: "03-1", readingNumber: 13, title: "Corporate Governance & Conflicts", losCode: "LOS 13.a-d", losStatement: "Describe corporate governance structures, stakeholder management, and agency conflicts.", coreTrap: "Confusing shareholder theory with stakeholder theory in ESG evaluations." },
-      { id: "03-2", readingNumber: 14, title: "Capital Investments & Capital Allocation", losCode: "LOS 14.a-e", losStatement: "Calculate and interpret NPV, IRR, Payback Period, and Profitability Index.", coreTrap: "Selecting a project based on superior IRR over higher absolute NPV in mutually exclusive projects." },
-      { id: "03-3", readingNumber: 15, title: "Working Capital & Liquidity Management", losCode: "LOS 15.a-d", losStatement: "Calculate operating cycle, cash conversion cycle, and liquidity ratios.", coreTrap: "Subtracting days payable outstanding from operating cycle instead of adding days sales outstanding." },
-      { id: "03-4", readingNumber: 16, title: "Cost of Capital & Capital Structure", losCode: "LOS 16.a-f", losStatement: "Calculate and interpret WACC, target weights, and marginal cost of capital schedule.", coreTrap: "Omission of the (1 - t) tax shield on pre-tax cost of debt in WACC computations." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "03-1", readingNumber: 1, title: "Organizational Forms, Corporate Issuer Features, and Ownership", losCode: "Module 1", losStatement: "Compare business forms and public versus private corporate issuers.", coreTrap: "Assuming limited partners have unlimited liability." },
+      { id: "03-2", readingNumber: 2, title: "Investors and Other Stakeholders", losCode: "Module 2", losStatement: "Compare lender and shareholder claims, stakeholder interests and ESG factors.", coreTrap: "Treating debtholders' payoff as unlimited upside like shareholders'." },
+      { id: "03-3", readingNumber: 3, title: "Corporate Governance: Conflicts, Mechanisms, Risks, and Benefits", losCode: "Module 3", losStatement: "Describe principal-agent conflicts, governance mechanisms and the risks of weak governance.", coreTrap: "Assuming board independence alone eliminates agency costs." },
+      { id: "03-4", readingNumber: 4, title: "Working Capital and Liquidity", losCode: "Module 4", losStatement: "Explain the cash conversion cycle, liquidity measures and working capital management.", coreTrap: "Adding days payables instead of subtracting it in the cash conversion cycle." },
+      { id: "03-5", readingNumber: 5, title: "Capital Investments and Capital Allocation", losCode: "Module 5", losStatement: "Calculate NPV, IRR and ROIC, describe allocation pitfalls and real options.", coreTrap: "Ranking mutually exclusive projects by IRR when NPV and IRR conflict." },
+      { id: "03-6", readingNumber: 6, title: "Capital Structure", losCode: "Module 6", losStatement: "Calculate WACC, explain MM propositions and optimal versus target capital structure.", coreTrap: "Forgetting the (1 - t) tax shield on the cost of debt." },
+      { id: "03-7", readingNumber: 7, title: "Business Models", losCode: "Module 7", losStatement: "Describe key features and types of business models.", coreTrap: "Confusing a platform (network) model with a traditional pipeline model." }
     ],
     formulas: [
       {
@@ -196,11 +209,19 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Deferred Taxes: When tax rate changes, DTA/DTL balances are revalued with the adjustment flowing directly through income statement income tax expense. If DTL is expected never to reverse, treat as Equity."
     ],
     subReadings: [
-      { id: "04-1", readingNumber: 17, title: "Financial Reporting Mechanics & Statements", losCode: "LOS 17.a-d", losStatement: "Describe components of income statement, balance sheet, cash flows, and note disclosures.", coreTrap: "Misclassifying interest received (US GAAP CFO vs IFRS CFO or CFI) and dividends paid." },
-      { id: "04-2", readingNumber: 18, title: "Inventories: LIFO, FIFO, and Reserve Adjustments", losCode: "LOS 18.a-g", losStatement: "Calculate inventory balances, COGS, and tax impacts under LIFO and FIFO systems.", coreTrap: "Forgetting to multiply LIFO Reserve change by tax rate when calculating retained earnings adjustment." },
-      { id: "04-3", readingNumber: 19, title: "Long-Lived Assets & Capitalization vs Expensing", losCode: "LOS 19.a-f", losStatement: "Evaluate financial statement effects of capitalizing versus expensing expenditures.", coreTrap: "Overlooking the impact of capitalized interest on CFI outflows and future depreciation." },
-      { id: "04-4", readingNumber: 20, title: "Income Taxes & Deferred Tax Liabilities", losCode: "LOS 20.a-e", losStatement: "Calculate deferred tax assets, liabilities, valuation allowances, and effective tax rates.", coreTrap: "Failing to revalue DTL when tax rates change (the change immediately impacts income statement)." },
-      { id: "04-5", readingNumber: 21, title: "Financial Reporting Quality & Red Flags", losCode: "LOS 21.a-e", losStatement: "Identify aggressive revenue recognition and earnings management red flags.", coreTrap: "Assuming aggressive revenue recognition only impacts the current period rather than future DSO." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "04-1", readingNumber: 1, title: "Introduction to Financial Statement Analysis", losCode: "Module 1", losStatement: "Describe the analysis framework, filings, notes, MD&A, audit reports and other information sources.", coreTrap: "Relying on the audit opinion as a guarantee against fraud." },
+      { id: "04-2", readingNumber: 2, title: "Analyzing Income Statements", losCode: "Module 2", losStatement: "Apply revenue and expense recognition, non-recurring items, EPS and common-size analysis.", coreTrap: "Including antidilutive securities in diluted EPS." },
+      { id: "04-3", readingNumber: 3, title: "Analyzing Balance Sheets", losCode: "Module 3", losStatement: "Explain reporting for intangibles, goodwill, financial instruments and non-current liabilities.", coreTrap: "Amortizing goodwill instead of testing it for impairment." },
+      { id: "04-4", readingNumber: 4, title: "Analyzing Statements of Cash Flows I", losCode: "Module 4", losStatement: "Link the statements and prepare direct and indirect cash flow statements under IFRS and US GAAP.", coreTrap: "Reversing the sign of working capital changes in the indirect method." },
+      { id: "04-5", readingNumber: 5, title: "Analyzing Statements of Cash Flows II", losCode: "Module 5", losStatement: "Interpret common-size cash flows and calculate FCFF, FCFE and coverage ratios.", coreTrap: "Adding back pre-tax rather than after-tax interest in FCFF." },
+      { id: "04-6", readingNumber: 6, title: "Analysis of Inventories", losCode: "Module 6", losStatement: "Apply lower of cost and NRV and analyze FIFO versus weighted-average effects under inflation.", coreTrap: "Assuming LIFO is permitted under IFRS." },
+      { id: "04-7", readingNumber: 7, title: "Analysis of Long-Term Assets", losCode: "Module 7", losStatement: "Compare treatment of purchased, internally developed and acquired intangibles, impairment and derecognition.", coreTrap: "Capitalizing research-phase costs under IFRS." },
+      { id: "04-8", readingNumber: 8, title: "Topics in Long-Term Liabilities and Equity", losCode: "Module 8", losStatement: "Explain lease accounting for lessees and lessors, pensions and share-based compensation.", coreTrap: "Treating all lessee leases as off-balance-sheet under IFRS 16." },
+      { id: "04-9", readingNumber: 9, title: "Analysis of Income Taxes", losCode: "Module 9", losStatement: "Contrast accounting and taxable profit, deferred taxes and effective, statutory and cash tax rates.", coreTrap: "Recording a DTA where a DTL arises (tax depreciation faster than book)." },
+      { id: "04-10", readingNumber: 10, title: "Financial Reporting Quality", losCode: "Module 10", losStatement: "Assess reporting quality, conservative versus aggressive accounting, non-GAAP measures and warning signs.", coreTrap: "Equating high reported earnings with high-quality earnings." },
+      { id: "04-11", readingNumber: 11, title: "Financial Analysis Techniques", losCode: "Module 11", losStatement: "Calculate activity, liquidity, solvency and profitability ratios and apply DuPont analysis.", coreTrap: "Using revenue instead of COGS for inventory turnover." },
+      { id: "04-12", readingNumber: 12, title: "Introduction to Financial Statement Modeling", losCode: "Module 12", losStatement: "Build sales-based pro forma models and account for analyst biases, competition and inflation.", coreTrap: "Extrapolating short-term growth into the long-term forecast horizon." }
     ],
     formulas: [
       {
@@ -235,11 +256,19 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Market Efficiency & Anomalies: Weak-form (past prices/volume), Semi-strong (all public information), Strong-form (all public and private insider info). If semi-strong holds, fundamental analysis cannot earn abnormal returns."
     ],
     subReadings: [
-      { id: "05-1", readingNumber: 22, title: "Market Organization and Structure", losCode: "LOS 22.a-e", losStatement: "Explain financial market structure, order types, leverage/margin calls, and trading mechanisms.", coreTrap: "Calculating margin call price using wrong equity maintenance threshold ratio." },
-      { id: "05-2", readingNumber: 23, title: "Security Market Indices", losCode: "LOS 23.a-d", losStatement: "Calculate and compare price-weighted, value-weighted, and equal-weighted index returns.", coreTrap: "Failing to adjust price-weighted index divisor after a stock split." },
-      { id: "05-3", readingNumber: 24, title: "Market Efficiency & Anomalies", losCode: "LOS 24.a-d", losStatement: "Distinguish weak, semi-strong, and strong forms of market efficiency.", coreTrap: "Assuming technical analysis can generate abnormal returns in semi-strong efficient markets." },
-      { id: "05-4", readingNumber: 25, title: "Discounted Dividend Valuation (DDM)", losCode: "LOS 25.a-f", losStatement: "Calculate intrinsic value using constant growth and multistage dividend discount models.", coreTrap: "Using D_0 instead of D_1 in the Gordon Growth model numerator." },
-      { id: "05-5", readingNumber: 26, title: "Relative Valuation Approaches & Price Multiples", losCode: "LOS 26.a-e", losStatement: "Calculate P/E, P/B, P/S, and EV/EBITDA multiples and interpret valuation discrepancies.", coreTrap: "Using trailing earnings P/E when evaluating forward growth expectations." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "05-1", readingNumber: 1, title: "Equity Instrument Features", losCode: "Module 1", losStatement: "Describe types of equity instruments and contrast public and private equity.", coreTrap: "Confusing cumulative preference shares with participating preference shares." },
+      { id: "05-2", readingNumber: 2, title: "Equity Jurisdictions, Classes, and the Voting Process", losCode: "Module 2", losStatement: "Describe economic and voting rights across share classes and the proxy voting process.", coreTrap: "Assuming every share class carries one vote per share." },
+      { id: "05-3", readingNumber: 3, title: "Equity Issuance and Trading", losCode: "Module 3", losStatement: "Describe primary and secondary markets, trading venues, liquidity measures, float and equity indexes.", coreTrap: "Including restricted insider holdings in free float." },
+      { id: "05-4", readingNumber: 4, title: "Sources of Equity Returns", losCode: "Module 4", losStatement: "Describe dividends, buybacks and splits, dividend chronology and price versus total return.", coreTrap: "Buying on the ex-dividend date and expecting to receive the dividend." },
+      { id: "05-5", readingNumber: 5, title: "Introduction to Equity Valuation", losCode: "Module 5", losStatement: "Contrast price and value, book value, market cap and EV, and categories of valuation models.", coreTrap: "Treating market capitalization as equivalent to enterprise value." },
+      { id: "05-6", readingNumber: 6, title: "Discounted Cash Flow (DCF) and Growth Models", losCode: "Module 6", losStatement: "Value equity with DDM, FCFE, FCFF and multistage models, and value preferred stock.", coreTrap: "Using D0 instead of D1 in the Gordon growth model." },
+      { id: "05-7", readingNumber: 7, title: "Relative Value Equity Valuation Approaches", losCode: "Module 7", losStatement: "Use price and EV multiples, comparables, forecasted fundamentals and peer groups.", coreTrap: "Pairing an enterprise value numerator with an equity-level denominator like net income." },
+      { id: "05-8", readingNumber: 8, title: "Financial Statement Forecasting in Equity Valuation", losCode: "Module 8", losStatement: "Explain forecast model construction and estimate value from model outputs.", coreTrap: "Forecasting margins that are inconsistent with the company's competitive position." },
+      { id: "05-9", readingNumber: 9, title: "Industry and Competitive Analysis", losCode: "Module 9", losStatement: "Classify industries and analyze them with Porter's five forces and PESTLE.", coreTrap: "Treating high industry growth as automatically implying high profitability." },
+      { id: "05-10", readingNumber: 10, title: "Company Analysis: Past, Present, and Future", losCode: "Module 10", losStatement: "Evaluate competitive strategy, revenue drivers, profitability, working capital and capital structure.", coreTrap: "Ignoring the capital intensity behind reported growth." },
+      { id: "05-11", readingNumber: 11, title: "Equity Analyst Research Reports", losCode: "Module 11", losStatement: "Describe research report elements and compare sell-side and buy-side reports.", coreTrap: "Assuming the same model must give the same value regardless of assumptions." },
+      { id: "05-12", readingNumber: 12, title: "The Capital Asset Pricing Model, Market Model, and Other Factor-Based Equity Models", losCode: "Module 12", losStatement: "Use the CAPM and market model for required return and describe APT and multifactor models.", coreTrap: "Multiplying beta by the market return instead of the market risk premium." }
     ],
     formulas: [
       {
@@ -290,11 +319,26 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Spot Rates & Forward Rates: $(1 + S_2)^2 = (1 + S_1)(1 + 1f_1)$. Forward rate $1f_1$ is the 1-year forward rate starting 1 year from today."
     ],
     subReadings: [
-      { id: "06-1", readingNumber: 27, title: "Fixed-Income Securities: Defining Elements", losCode: "LOS 27.a-d", losStatement: "Describe fixed-income provisions, covenants, collateral, and cash flow structures.", coreTrap: "Confusing affirmative covenants with negative (restrictive) debt covenants." },
-      { id: "06-2", readingNumber: 28, title: "Introduction to Fixed-Income Valuation", losCode: "LOS 28.a-f", losStatement: "Calculate bond prices using spot rates, discount factors, and yield to maturity.", coreTrap: "Failing to divide annual coupon by 2 and multiply maturity years by 2 for semiannual bonds." },
-      { id: "06-3", readingNumber: 29, title: "Yield and Spread Measures for Fixed-Rate Bonds", losCode: "LOS 29.a-e", losStatement: "Calculate current yield, yield to call, G-spread, I-spread, and Z-spread.", coreTrap: "Confusing nominal spread over benchmark with zero-volatility (Z-spread) over spot curve." },
-      { id: "06-4", readingNumber: 30, title: "Fixed-Income Risk & Return (Duration & Convexity)", losCode: "LOS 30.a-g", losStatement: "Calculate and interpret Macaulay, Modified, and Effective duration and convexity.", coreTrap: "Omission of the 1/2 multiplier in the Taylor series second-order convexity adjustment." },
-      { id: "06-5", readingNumber: 31, title: "Credit Analysis Fundamentals", losCode: "LOS 31.a-d", losStatement: "Evaluate corporate and sovereign credit risk using the Four Cs of credit.", coreTrap: "Treating structural subordination as legal pari passu equality across holding company debt." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "06-1", readingNumber: 1, title: "Fixed-Income Instrument Features", losCode: "Module 1", losStatement: "Describe bond features, indentures and affirmative versus negative covenants.", coreTrap: "Classifying a restriction on asset sales as an affirmative covenant." },
+      { id: "06-2", readingNumber: 2, title: "Fixed-Income Cash Flows and Types", losCode: "Module 2", losStatement: "Describe cash flow structures and contingency provisions benefiting issuers or investors.", coreTrap: "Assuming a call provision benefits bondholders." },
+      { id: "06-3", readingNumber: 3, title: "Fixed-Income Issuance and Trading", losCode: "Module 3", losStatement: "Describe market segments, participants, indexes and primary versus secondary markets.", coreTrap: "Assuming bonds trade mainly on exchanges like equities." },
+      { id: "06-4", readingNumber: 4, title: "Fixed-Income Markets for Corporate Issuers", losCode: "Module 4", losStatement: "Compare short-term funding, repos, and investment-grade versus high-yield funding.", coreTrap: "Confusing the repo rate with the haircut." },
+      { id: "06-5", readingNumber: 5, title: "Fixed-Income Markets for Government Issuers", losCode: "Module 5", losStatement: "Describe sovereign, non-sovereign, quasi-government and supranational funding.", coreTrap: "Assuming sovereign local-currency debt carries the same default risk as foreign-currency debt." },
+      { id: "06-6", readingNumber: 6, title: "Fixed-Income Bond Valuation: Prices and Yields", losCode: "Module 6", losStatement: "Price bonds on and between coupon dates, relate price to coupon, maturity and yield, and use matrix pricing.", coreTrap: "Quoting the full price where the flat (clean) price is required." },
+      { id: "06-7", readingNumber: 7, title: "Yield and Yield Spread Measures for Fixed-Rate Bonds", losCode: "Module 7", losStatement: "Convert yields across compounding periods and interpret yield spreads.", coreTrap: "Comparing yields with different periodicities without converting them." },
+      { id: "06-8", readingNumber: 8, title: "Yield and Yield Spread Measures for Floating-Rate Instruments", losCode: "Module 8", losStatement: "Interpret quoted and discount margins and money market yields.", coreTrap: "Using a 365-day convention for a money market rate quoted on a 360-day basis." },
+      { id: "06-9", readingNumber: 9, title: "The Term Structure of Interest Rates: Spot, Par, and Forward Curves", losCode: "Module 9", losStatement: "Price bonds with spot rates and derive par and forward rates.", coreTrap: "Averaging spot rates instead of compounding them to find a forward rate." },
+      { id: "06-10", readingNumber: 10, title: "Interest Rate Risk and Return", losCode: "Module 10", losStatement: "Calculate sources of bond return and relate Macaulay duration to the investment horizon.", coreTrap: "Ignoring reinvestment risk when the horizon is shorter than Macaulay duration." },
+      { id: "06-11", readingNumber: 11, title: "Yield-Based Bond Duration Measures and Properties", losCode: "Module 11", losStatement: "Calculate modified duration, money duration and PVBP and how coupon, maturity and yield affect them.", coreTrap: "Assuming a higher coupon increases duration." },
+      { id: "06-12", readingNumber: 12, title: "Yield-Based Bond Convexity and Portfolio Properties", losCode: "Module 12", losStatement: "Apply the convexity adjustment and portfolio duration and convexity.", coreTrap: "Subtracting rather than adding the positive convexity adjustment." },
+      { id: "06-13", readingNumber: 13, title: "Curve-Based and Empirical Fixed-Income Risk Measures", losCode: "Module 13", losStatement: "Use effective duration and convexity, key rate duration and empirical duration.", coreTrap: "Using modified duration for a callable bond." },
+      { id: "06-14", readingNumber: 14, title: "Credit Risk", losCode: "Module 14", losStatement: "Describe probability of default, loss given default, rating agencies and spread drivers.", coreTrap: "Treating expected loss as PD alone instead of PD x LGD." },
+      { id: "06-15", readingNumber: 15, title: "Credit Analysis for Government Issuers", losCode: "Module 15", losStatement: "Explain considerations for sovereign and non-sovereign government credit.", coreTrap: "Ignoring a sovereign's ability to print its own currency when assessing local-currency debt." },
+      { id: "06-16", readingNumber: 16, title: "Credit Analysis for Corporate Issuers", losCode: "Module 16", losStatement: "Evaluate corporate creditworthiness, credit ratios and seniority rankings.", coreTrap: "Assuming all debt of an issuer receives the same rating regardless of seniority." },
+      { id: "06-17", readingNumber: 17, title: "Fixed-Income Securitization", losCode: "Module 17", losStatement: "Explain benefits of securitization and the parties and their roles.", coreTrap: "Thinking the originator keeps the securitized assets on its balance sheet after a true sale." },
+      { id: "06-18", readingNumber: 18, title: "Asset-Backed Security (ABS) Instrument and Market Features", losCode: "Module 18", losStatement: "Describe covered bonds, credit enhancement, non-mortgage ABS and CDOs.", coreTrap: "Confusing covered bonds (dynamic pool, recourse to issuer) with standard ABS." },
+      { id: "06-19", readingNumber: 19, title: "Mortgage-Backed Security (MBS) Instrument and Market Features", losCode: "Module 19", losStatement: "Describe prepayment risk, time tranching, RMBS, CMOs and CMBS.", coreTrap: "Assuming falling rates reduce prepayments." }
     ],
     formulas: [
       {
@@ -336,7 +380,7 @@ export const CFA_CURRICULUM: CFATopic[] = [
   },
   {
     id: "07",
-    name: "Derivatives",
+    name: "Derivatives and Risk Management",
     shortName: "Derivatives",
     weight: "6–9%",
     weightCategory: "MEDIUM",
@@ -348,9 +392,17 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Option Moneyness & Value: Call Option Value $= \\max(0, S_t - X) + \\text{Time Value}$. Put Option Value $= \\max(0, X - S_t) + \\text{Time Value}$."
     ],
     subReadings: [
-      { id: "07-1", readingNumber: 32, title: "Derivative Instrument Features & Markets", losCode: "LOS 32.a-d", losStatement: "Describe derivatives characteristics, exchange-traded vs OTC, and margin mechanics.", coreTrap: "Confusing futures daily mark-to-market settlement with forward expiration settlement." },
-      { id: "07-2", readingNumber: 33, title: "Pricing & Valuation of Forward Commitments", losCode: "LOS 33.a-e", losStatement: "Calculate forward prices and value forward contracts at initiation, during life, and at expiration.", coreTrap: "Confusing forward price F_0 (fixed at t=0) with forward contract value V_t (changes over time)." },
-      { id: "07-3", readingNumber: 34, title: "Valuation of Contingent Claims (Options)", losCode: "LOS 34.a-f", losStatement: "Calculate option payoff, profit, intrinsic value, and apply Put-Call Parity.", coreTrap: "Inverting signs in synthetic option replication under Put-Call Parity." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "07-1", readingNumber: 1, title: "Derivative Instrument and Derivative Market Features", losCode: "Module 1", losStatement: "Define derivatives and contrast OTC and exchange-traded markets.", coreTrap: "Assuming OTC contracts are standardized and centrally cleared like exchange contracts." },
+      { id: "07-2", readingNumber: 2, title: "Forward Commitment and Contingent Claim Features and Instruments", losCode: "Module 2", losStatement: "Compare forwards, futures, swaps, options and credit derivatives and compute option payoffs and profits.", coreTrap: "Forgetting to subtract the premium when computing option profit." },
+      { id: "07-3", readingNumber: 3, title: "Derivative Benefits, Risks, and Issuer and Investor Uses", losCode: "Module 3", losStatement: "Describe benefits and risks of derivatives and how issuers and investors use them.", coreTrap: "Treating hedging with derivatives as eliminating all risk." },
+      { id: "07-4", readingNumber: 4, title: "Arbitrage, Replication, and the Cost of Carry in Pricing Derivatives", losCode: "Module 4", losStatement: "Explain arbitrage, replication and the cost of carry.", coreTrap: "Pricing a forward from the expected future spot price instead of the cost of carry." },
+      { id: "07-5", readingNumber: 5, title: "Pricing and Valuation of Forward Contracts and for an Underlying with Varying Maturities", losCode: "Module 5", losStatement: "Distinguish forward price and value at initiation, during the life and at expiration; interest rate forwards.", coreTrap: "Thinking a forward contract has non-zero value at initiation." },
+      { id: "07-6", readingNumber: 6, title: "Pricing and Valuation of Futures Contracts", losCode: "Module 6", losStatement: "Compare forward and futures prices and explain why they differ.", coreTrap: "Ignoring daily mark-to-market settlement of futures." },
+      { id: "07-7", readingNumber: 7, title: "Pricing and Valuation of Interest Rate and Other Swaps", losCode: "Module 7", losStatement: "Relate swaps to a series of forwards and contrast swap price and value.", coreTrap: "Assuming each implied forward in a swap has zero value at initiation." },
+      { id: "07-8", readingNumber: 8, title: "Pricing and Valuation of Options", losCode: "Module 8", losStatement: "Explain exercise value, moneyness, time value and factors affecting option value.", coreTrap: "Assuming higher volatility lowers option value." },
+      { id: "07-9", readingNumber: 9, title: "Option Replication Using Put\u2013Call Parity", losCode: "Module 9", losStatement: "Apply put\u2013call parity and put\u2013call forward parity for European options.", coreTrap: "Using the undiscounted strike in put\u2013call parity." },
+      { id: "07-10", readingNumber: 10, title: "Valuing a Derivative Using a One-Period Binomial Model", losCode: "Module 10", losStatement: "Value a derivative with a one-period binomial model and explain risk neutrality.", coreTrap: "Using real-world probabilities instead of risk-neutral probabilities." }
     ],
     formulas: [
       {
@@ -385,10 +437,14 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Commodities & Futures Curves: Contango: Futures price $>$ Spot price (negative roll yield due to storage costs). Backwardation: Futures price $<$ Spot price (positive roll yield due to convenience yield)."
     ],
     subReadings: [
-      { id: "08-1", readingNumber: 35, title: "Overview of Alternative Investments", losCode: "LOS 35.a-d", losStatement: "Compare alternative investments with traditional investments in terms of risk, return, and liquidity.", coreTrap: "Overlooking survivorship and backfill biases in alternative investment benchmark indices." },
-      { id: "08-2", readingNumber: 36, title: "Private Equity & Venture Capital", losCode: "LOS 36.a-e", losStatement: "Explain private equity structures, fee waterfalls, LBO mechanics, and exit routes.", coreTrap: "Calculating carried interest before clawback provisions or hurdle rate thresholds." },
-      { id: "08-3", readingNumber: 37, title: "Real Estate & Infrastructure", losCode: "LOS 37.a-d", losStatement: "Calculate real estate value using direct capitalization method and gross income multiplier.", coreTrap: "Subtracting financing costs/mortgage interest from NOI (NOI is strictly unlevered operating income)." },
-      { id: "08-4", readingNumber: 38, title: "Hedge Funds & Fee Calculations", losCode: "LOS 38.a-e", losStatement: "Calculate management and incentive fees under independent and net-of-fee structures.", coreTrap: "Applying 20% incentive fee to profits below the high-water mark." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "08-1", readingNumber: 1, title: "Alternative Investment Features, Methods, and Structures", losCode: "Module 1", losStatement: "Describe categories, direct, co-investment and fund investing, and ownership and fee structures.", coreTrap: "Assuming co-investment requires paying full fund-level fees." },
+      { id: "08-2", readingNumber: 2, title: "Alternative Investment Performance and Returns", losCode: "Module 2", losStatement: "Appraise performance and calculate returns before and after fees.", coreTrap: "Charging the incentive fee on gross gains when it is based on gains net of the management fee." },
+      { id: "08-3", readingNumber: 3, title: "Investments in Private Capital: Equity and Debt", losCode: "Module 3", losStatement: "Explain private equity and private debt features and diversification benefits.", coreTrap: "Treating mezzanine debt as senior secured debt." },
+      { id: "08-4", readingNumber: 4, title: "Real Estate and Infrastructure", losCode: "Module 4", losStatement: "Explain features and investment characteristics of real estate and infrastructure.", coreTrap: "Valuing property by multiplying NOI by the cap rate instead of dividing." },
+      { id: "08-5", readingNumber: 5, title: "Natural Resources", losCode: "Module 5", losStatement: "Explain raw land, timberland, farmland and commodities and their risk, return and diversification.", coreTrap: "Ignoring roll yield when explaining commodity futures returns." },
+      { id: "08-6", readingNumber: 6, title: "Hedge Funds", losCode: "Module 6", losStatement: "Explain hedge fund features, vehicles and sources of risk, return and diversification.", coreTrap: "Ignoring lockups and redemption notice periods when assessing liquidity." },
+      { id: "08-7", readingNumber: 7, title: "Introduction to Digital Assets", losCode: "Module 7", losStatement: "Describe distributed ledger applications and the features, vehicles and risks of digital assets.", coreTrap: "Confusing permissioned with permissionless networks." }
     ],
     formulas: [
       {
@@ -435,10 +491,13 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Investment Policy Statement (IPS): Return objective (required vs desired), Risk tolerance (willingness vs ability - the lower dominates), and Constraints: Liquidity, Time horizon, Tax concerns, Legal/regulatory, Unique circumstances (RRTTLLU)."
     ],
     subReadings: [
-      { id: "09-1", readingNumber: 39, title: "Portfolio Management: An Overview", losCode: "LOS 39.a-d", losStatement: "Describe the portfolio management process and individual vs institutional investors.", coreTrap: "Assuming an investor with high willingness to take risk can take high risk when ability is low." },
-      { id: "09-2", readingNumber: 40, title: "Portfolio Risk and Return: Part I", losCode: "LOS 40.a-g", losStatement: "Calculate portfolio risk and return, minimum-variance frontier, and utility theory.", coreTrap: "Ignoring the correlation term when calculating standard deviation of a 2-asset portfolio." },
-      { id: "09-3", readingNumber: 41, title: "Portfolio Risk and Return: Part II (CAPM & SML)", losCode: "LOS 41.a-h", losStatement: "Apply CAPM, calculate Beta, construct SML, and calculate Sharpe, Treynor, and Jensen's Alpha.", coreTrap: "Concluding that an asset plotting ABOVE the SML is overvalued instead of undervalued." },
-      { id: "09-4", readingNumber: 42, title: "Basics of Portfolio Planning and Construction", losCode: "LOS 42.a-f", losStatement: "Describe components of an IPS, asset allocation, and ESG integration.", coreTrap: "Failing to account for client tax status when establishing the return objective." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "09-1", readingNumber: 1, title: "Portfolio Risk and Return: Part I", losCode: "Module 1", losStatement: "Explain risk aversion, utility, portfolio variance, diversification and the efficient frontier.", coreTrap: "Assuming correlation of +1 still provides diversification benefits." },
+      { id: "09-2", readingNumber: 2, title: "Portfolio Risk and Return: Part II", losCode: "Module 2", losStatement: "Explain CAL, CML, systematic risk, beta, CAPM, SML and the Sharpe, Treynor, M2 and Jensen's alpha measures.", coreTrap: "Expecting a return premium for diversifiable risk." },
+      { id: "09-3", readingNumber: 3, title: "Portfolio Management: An Overview", losCode: "Module 3", losStatement: "Describe the portfolio approach, process, investor types, pension plans and pooled products.", coreTrap: "Placing the risk of a defined contribution plan on the sponsor rather than the participant." },
+      { id: "09-4", readingNumber: 4, title: "Basics of Portfolio Planning and Construction", losCode: "Module 4", losStatement: "Describe the IPS, objectives, willingness versus ability to take risk, constraints and ESG integration.", coreTrap: "Letting high willingness override low ability to take risk." },
+      { id: "09-5", readingNumber: 5, title: "The Behavioral Biases of Individuals", losCode: "Module 5", losStatement: "Compare cognitive errors and emotional biases and their market implications.", coreTrap: "Classifying loss aversion as a cognitive error rather than an emotional bias." },
+      { id: "09-6", readingNumber: 6, title: "Introduction to Risk Management", losCode: "Module 6", losStatement: "Define risk governance, risk tolerance, risk budgeting and methods for modifying risk.", coreTrap: "Equating risk management with risk minimization." }
     ],
     formulas: [
       {
@@ -474,7 +533,7 @@ export const CFA_CURRICULUM: CFATopic[] = [
   },
   {
     id: "10",
-    name: "Ethics",
+    name: "Ethical and Professional Standards",
     shortName: "Ethics",
     weight: "10–15%",
     weightCategory: "HIGH",
@@ -486,10 +545,17 @@ export const CFA_CURRICULUM: CFATopic[] = [
       "Material Nonpublic Information (Standard II-A): The Mosaic Theory allows trading on public information combined with non-material nonpublic insights, but trading on selective corporate analyst call leaks constitutes an immediate violation."
     ],
     subReadings: [
-      { id: "10-1", readingNumber: 43, title: "Code of Ethics and Standards of Professional Conduct", losCode: "LOS 43.a-c", losStatement: "Describe the structure of the CFA Institute Professional Conduct Program and the Code of Ethics.", coreTrap: "Failing to recognize that members must follow the stricter of local law vs Code & Standards." },
-      { id: "10-2", readingNumber: 44, title: "Guidance for Standards I–VII", losCode: "LOS 44.a-g", losStatement: "Demonstrate application of Standards I(A) through VII(B) to complex real-world ethical dilemmas.", coreTrap: "Treating personal account disclosure after client trades as sufficient when priority was not given." },
-      { id: "10-3", readingNumber: 45, title: "Introduction to GIPS Standards", losCode: "LOS 45.a-e", losStatement: "Explain the scope, purpose, definition of a firm, and composite construction rules under GIPS.", coreTrap: "Claiming GIPS compliance for a single isolated fund or composite instead of the entire firm." },
-      { id: "10-4", readingNumber: 46, title: "GIPS Provisions & Composite Construction", losCode: "LOS 46.a-d", losStatement: "Apply GIPS presentation standards, benchmark selection, and composite inclusion rules.", coreTrap: "Excluding terminated portfolios from historical composite performance (survivorship bias)." }
+      // Official 2027 Level I learning modules (CFA Institute topic outline)
+      { id: "10-1", readingNumber: 1, title: "Ethics and Trust in the Investment Profession", losCode: "Module 1", losStatement: "Explain ethics, professionalism, challenges to ethical behavior and a framework for ethical decisions.", coreTrap: "Assuming that legal conduct is always ethical." },
+      { id: "10-2", readingNumber: 2, title: "Code of Ethics and Standards of Professional Conduct", losCode: "Module 2", losStatement: "Describe the Professional Conduct Program and the components of the Code and Standards.", coreTrap: "Thinking a violation finding requires a criminal conviction." },
+      { id: "10-3", readingNumber: 3, title: "Guidance for Standard I: Professionalism", losCode: "Module 3", losStatement: "Apply standards on knowledge of the law, independence, misrepresentation, misconduct and competence.", coreTrap: "Following local law when the Code and Standards are stricter." },
+      { id: "10-4", readingNumber: 4, title: "Guidance for Standard II: Integrity of Capital Markets", losCode: "Module 4", losStatement: "Apply standards on material nonpublic information and market manipulation.", coreTrap: "Treating mosaic theory as permitting the use of material nonpublic information." },
+      { id: "10-5", readingNumber: 5, title: "Guidance for Standard III: Duties to Clients", losCode: "Module 5", losStatement: "Apply standards on loyalty, fair dealing, suitability, performance presentation and confidentiality.", coreTrap: "Placing the employer's interests ahead of clients'." },
+      { id: "10-6", readingNumber: 6, title: "Guidance for Standard IV: Duties to Employers", losCode: "Module 6", losStatement: "Apply standards on loyalty, additional compensation and supervisors' responsibilities.", coreTrap: "Taking client lists when leaving an employer." },
+      { id: "10-7", readingNumber: 7, title: "Guidance for Standard V: Investment Analysis, Recommendations, and Actions", losCode: "Module 7", losStatement: "Apply standards on diligence and reasonable basis, communication and record retention.", coreTrap: "Presenting opinions as facts in client communications." },
+      { id: "10-8", readingNumber: 8, title: "Guidance for Standard VI: Conflicts of Interest", losCode: "Module 8", losStatement: "Apply standards on disclosure of conflicts, priority of transactions and referral fees.", coreTrap: "Trading personal accounts ahead of clients." },
+      { id: "10-9", readingNumber: 9, title: "Guidance for Standard VII: Responsibilities as a CFA Institute Member or CFA Candidate", losCode: "Module 9", losStatement: "Apply standards on conduct in the CFA Program and references to the designation.", coreTrap: "Using \"CFA\" as a noun or implying superior performance from the designation." },
+      { id: "10-10", readingNumber: 10, title: "Application of the Code and Standards: Level I", losCode: "Module 10", losStatement: "Evaluate practices and conduct against the Code and Standards.", coreTrap: "Missing that one action can violate more than one standard." }
     ],
     formulas: [
       {
@@ -511,3 +577,11 @@ export const CFA_CURRICULUM: CFATopic[] = [
     ]
   }
 ];
+
+/** Short official module label ("Module 4") for a 2027 learning module title. */
+export function moduleCodeFor(topicId: string, moduleTitle: string): string {
+  const modules = CFA_CURRICULUM.find((topic) => topic.id === topicId)?.subReadings || [];
+  const index = modules.findIndex((module) => module.title === moduleTitle);
+  if (index < 0) throw new Error(`Unknown 2027 learning module for topic ${topicId}: ${moduleTitle}`);
+  return `Module ${index + 1}`;
+}

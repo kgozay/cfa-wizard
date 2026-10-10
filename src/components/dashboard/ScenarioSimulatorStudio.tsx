@@ -54,10 +54,12 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
     (drillQuestionCount === 15 ? 10 : (drillQuestionCount as 2 | 5 | 10)) || 5
   );
   const [customPrompt, setCustomPrompt] = useState<string>("");
+  const [moduleTitle, setModuleTitle] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const topic = CFA_CURRICULUM.find((t) => t.id === selectedTopicId) || CFA_CURRICULUM[0];
+  const selectedModule = topic.subReadings.find((module) => module.title === moduleTitle);
 
   const handleSynthesize = async () => {
     if (soundEnabled) sound.playKeyClick();
@@ -73,6 +75,7 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
           mode: "case-study",
           difficulty: difficulty === "High Trap" ? "high-trap" : difficulty === "Institutional" ? "institutional" : "standard",
           focus: customPrompt || undefined,
+          moduleTitle: moduleTitle || undefined,
           questionCount,
         }),
       });
@@ -122,12 +125,34 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
             <select
               id="studio-topic"
               value={selectedTopicId}
-              onChange={(e) => setSelectedTopicId(e.target.value)}
+              onChange={(e) => {
+                setSelectedTopicId(e.target.value);
+                setModuleTitle("");
+              }}
               className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 text-xs sm:text-sm text-white focus:outline-none focus:border-accent"
             >
               {CFA_CURRICULUM.map((t) => (
                 <option key={t.id} value={t.id} className="bg-[#0b100d] text-white">
                   Topic {t.id}: {t.name} ({t.weight})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="studio-module" className="block text-xs font-semibold text-slate-300 mb-2">
+              Learning module (optional)
+            </label>
+            <select
+              id="studio-module"
+              value={moduleTitle}
+              onChange={(e) => setModuleTitle(e.target.value)}
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 text-xs sm:text-sm text-white focus:outline-none focus:border-accent"
+            >
+              <option value="" className="bg-[#0b100d] text-white">All {topic.subReadings.length} modules in this topic</option>
+              {topic.subReadings.map((module) => (
+                <option key={module.id} value={module.title} className="bg-[#0b100d] text-white">
+                  {module.losCode}: {module.title}
                 </option>
               ))}
             </select>
@@ -241,6 +266,10 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
                 <span className="text-slate-400">Selected topic:</span>
                 <span className="text-white font-medium truncate max-w-[200px]">[{topic.id}] {topic.name}</span>
               </div>
+              <div className="flex justify-between gap-3 py-1 border-b border-white/[0.04]">
+                <span className="text-slate-400 shrink-0">Module:</span>
+                <span className="text-white font-medium text-right">{selectedModule ? `${selectedModule.losCode}: ${selectedModule.title}` : "All modules"}</span>
+              </div>
               <div className="flex justify-between py-1 border-b border-white/[0.04]">
                 <span className="text-slate-400">Exam weight:</span>
                 <span className="font-mono text-white">{topic.weight}</span>
@@ -256,7 +285,7 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
                 Common difficulty:
               </span>
               <p className="text-slate-300 text-xs leading-relaxed">
-                {topic.highYieldTrapArea}
+                {selectedModule ? selectedModule.coreTrap : topic.highYieldTrapArea}
               </p>
             </div>
           </div>

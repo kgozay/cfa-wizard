@@ -1,5 +1,6 @@
 import { VignetteSet } from "@/types/cfa";
 import { ADDITIONAL_AUTHORED_QUESTIONS } from "./additionalQuestions";
+import { EXPANSION_QUESTIONS_2027 } from "./expansionQuestions2027";
 
 const BASE_VIGNETTES: VignetteSet[] = [
   // ==========================================
@@ -1892,7 +1893,7 @@ const BASE_VIGNETTES: VignetteSet[] = [
   {
     id: "vignette-07-deriv",
     topicId: "07",
-    topicName: "Derivatives",
+    topicName: "Derivatives and Risk Management",
     subReading: "Derivative Markets, Forward Pricing & Valuation, Option Valuation & Put-Call Parity",
     difficulty: "High Trap",
     vignetteStem: "A quantitative derivatives desk is executing arbitrage monitoring across European options and forwards on Titan Stock. Titan currently trades at $100.00. The 1-year European call with strike $100 trades at $8.50, and 1-year risk-free rate is 5.00% continuously compounded.",
@@ -2834,7 +2835,7 @@ const BASE_VIGNETTES: VignetteSet[] = [
   {
     id: "vignette-10-ethics",
     topicId: "10",
-    topicName: "Ethics",
+    topicName: "Ethical and Professional Standards",
     subReading: "Code of Ethics, Standards I–VII & GIPS Compliance",
     difficulty: "High Trap",
     vignetteStem: "Sarah Jenkins, CFA, manages discretionary equity portfolios at Apex Wealth. A regional broker provides Apex with in-depth proprietary equity research models and proposes using soft dollar client commissions to purchase Bloomberg terminals for Apex's research analysts and fund travel expenses for Jenkins to attend an annual issuer due diligence symposium in Geneva.",
@@ -3145,5 +3146,9 @@ const BASE_VIGNETTES: VignetteSet[] = [
 
 export const CFA_VIGNETTES: VignetteSet[] = BASE_VIGNETTES.map((vignette) => ({
   ...vignette,
-  questions: [...vignette.questions, ...(ADDITIONAL_AUTHORED_QUESTIONS[vignette.topicId] || [])],
+  questions: [
+    ...vignette.questions,
+    ...(ADDITIONAL_AUTHORED_QUESTIONS[vignette.topicId] || []),
+    ...(EXPANSION_QUESTIONS_2027[vignette.topicId] || []),
+  ],
 }));

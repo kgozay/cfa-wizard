@@ -5,17 +5,10 @@ import {
   ArrowLeft,
   Calculator,
   Edit3,
-  CheckCircle,
-  AlertCircle,
-  ShieldAlert,
   Sparkles,
   Send,
-  Timer,
   Clock,
-  Volume2,
-  Sliders,
-  Keyboard,
-} from "lucide-react";
+  Keyboard } from "lucide-react";
 import {
   OptionKey,
   TrapLogEntry,
@@ -28,7 +21,7 @@ import { CFA_CURRICULUM } from "@/data/curriculum";
 import { useCFAStore } from "@/store/useCFAStore";
 import { DiagnosticAutopsyView } from "@/components/diagnostic/DiagnosticAutopsyView";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
-import { createPracticeSession } from "@/lib/practice/createSession";
+import { appendItemsToSession, createPracticeSession } from "@/lib/practice/createSession";
 import { gradeAttempt } from "@/lib/practice/gradeAttempt";
 import { hasCurrentAnswerKey } from "@/lib/practice/eligibility";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
@@ -49,18 +42,15 @@ export const VignetteEngine: React.FC = () => {
     setCalculatorOpen,
     setCalculatorMode,
     calculatorMode,
-    setActiveBriefing,
     startVignetteDrill,
     selectTopic,
     customVignettes,
     addQuestionsToActiveVignette,
-    setAIGeneratorOpen,
     soundEnabled,
     drillQuestionCount,
     setDrillQuestionCount,
     isPacingTimerEnabled,
-    togglePacingTimer,
-  } = useCFAStore();
+    togglePacingTimer } = useCFAStore();
 
   const [practiceSession, setPracticeSession] = useState<PracticeSession | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, OptionKey>>({});
@@ -73,6 +63,9 @@ export const VignetteEngine: React.FC = () => {
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
   const [isInjectingAI, setIsInjectingAI] = useState<boolean>(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  // Question that keyboard answers (1/2/3, A/B/C) apply to
+  const [activeQuestionIndex, setActiveQuestionIndex] = useState<number>(0);
+  const questionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Per-question elapsed time tracking
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
@@ -87,15 +80,17 @@ export const VignetteEngine: React.FC = () => {
     [allVignettes, activeVignetteId, activeTopicId]
   );
 
-  const startNewSession = useCallback(() => {
-    const items = legacyVignetteToPracticeItems(vignette);
+  const startNewSession = useCallback((count: number = drillQuestionCount, avoidItemIds: string[] = []) => {
+    const allItems = legacyVignetteToPracticeItems(vignette);
+    // Prefer questions the candidate has not just seen, when the set is deep enough
+    const unseen = allItems.filter((item) => !avoidItemIds.includes(item.id));
+    const items = unseen.length >= Math.min(count, allItems.length) ? unseen : allItems;
     const session = createPracticeSession({
       mode: "practice",
       items,
-      requestedCount: drillQuestionCount,
+      requestedCount: count,
       timerMode: isPacingTimerEnabled ? "timed" : "untimed",
-      shuffleQuestions: true,
-    });
+      shuffleQuestions: true });
     savePracticeSession(session, true);
     setPracticeDraft(null);
     setPracticeSession(session);
@@ -107,20 +102,24 @@ export const VignetteEngine: React.FC = () => {
     setReviewResult(null);
     setElapsedSeconds(0);
     setScratchpadText("");
+    setActiveQuestionIndex(0);
   }, [drillQuestionCount, isPacingTimerEnabled, savePracticeSession, setPracticeDraft, vignette]);
 
+  // Resume the in-progress session for this set (e.g. after a reload or after
+  // questions were appended); otherwise start a fresh one. Count changes start
+  // a new session explicitly, so they are not a dependency here.
+  const startNewSessionRef = useRef(startNewSession);
+  startNewSessionRef.current = startNewSession;
   useEffect(() => {
     const state = useCFAStore.getState();
     const stored = state.activePracticeSessionId
       ? state.practiceSessions[state.activePracticeSessionId]
       : undefined;
-    const expectedCount = Math.min(drillQuestionCount, vignette.questions.length);
     if (
       stored &&
       !stored.completedAt &&
       hasCurrentAnswerKey(stored) &&
-      stored.sourceSetIds.includes(vignette.id) &&
-      stored.presentedItems.length === expectedCount
+      stored.sourceSetIds.includes(vignette.id)
     ) {
       const draft = state.practiceDraft?.sessionId === stored.id ? state.practiceDraft : null;
       setPracticeSession(stored);
@@ -132,13 +131,13 @@ export const VignetteEngine: React.FC = () => {
       setReviewResult(null);
       setElapsedSeconds(Math.max(
         draft?.elapsedSeconds || 0,
-        isPacingTimerEnabled ? Math.max(0, Math.floor((Date.now() - Date.parse(stored.startedAt)) / 1000)) : 0
+        state.isPacingTimerEnabled ? Math.max(0, Math.floor((Date.now() - Date.parse(stored.startedAt)) / 1000)) : 0
       ));
       setScratchpadText(draft?.scratchpadText || "");
       return;
     }
-    startNewSession();
-  }, [drillQuestionCount, isPacingTimerEnabled, startNewSession, vignette.id, vignette.questions.length]);
+    startNewSessionRef.current();
+  }, [vignette.id]);
 
   const activeQuestions = useMemo(
     () =>
@@ -154,8 +153,7 @@ export const VignetteEngine: React.FC = () => {
         trapCategory: item.trapCategory,
         errorModeDefault: item.errorModeDefault,
         losCode: item.losCode,
-        distractorAutopsy: item.distractorFeedback,
-      })),
+        distractorAutopsy: item.distractorFeedback })),
     [practiceSession]
   );
 
@@ -180,6 +178,11 @@ export const VignetteEngine: React.FC = () => {
     };
   }, [hasSubmitted, isPacingTimerEnabled]);
 
+  const focusQuestion = useCallback((index: number) => {
+    setActiveQuestionIndex(index);
+    questionRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, []);
+
   const handleSelectOption = useCallback((sessionItemId: string, option: OptionKey) => {
     if (hasSubmitted) return;
     if (soundEnabled) sound.playKeyClick();
@@ -200,8 +203,7 @@ export const VignetteEngine: React.FC = () => {
         elapsedSeconds,
         scratchpadText,
         lastAnswerAt: lastAnswerAtRef.current,
-        updatedAt: new Date().toISOString(),
-      });
+        updatedAt: new Date().toISOString() });
     }
   }, [elapsedSeconds, hasSubmitted, practiceSession, scratchpadText, selectedAnswers, setPracticeDraft, soundEnabled]);
 
@@ -221,8 +223,7 @@ export const VignetteEngine: React.FC = () => {
       answers: selectedAnswers,
       timing: itemTimesRef.current,
       trapCategories,
-      errorModes,
-    });
+      errorModes });
 
     const trapEntries: TrapLogEntry[] = attempt.itemAttempts
       .filter((itemAttempt) => !itemAttempt.isCorrect)
@@ -251,8 +252,7 @@ export const VignetteEngine: React.FC = () => {
           attemptId: attempt.id,
           itemAttemptId: itemAttempt.id,
           sessionItemId: item.sessionItemId,
-          sourceItemId: item.sourceItemId,
-        };
+          sourceItemId: item.sourceItemId };
       });
 
     recordPracticeAttempt(attempt, trapEntries);
@@ -273,12 +273,10 @@ export const VignetteEngine: React.FC = () => {
         isCorrect: itemAttempt.isCorrect,
         trapTriggered: itemAttempt.isCorrect ? undefined : itemAttempt.trapCategory,
         errorModeLogged: itemAttempt.isCorrect ? undefined : itemAttempt.errorMode,
-        timeSpentSeconds: itemAttempt.timeSpentSeconds,
-      })),
+        timeSpentSeconds: itemAttempt.timeSpentSeconds })),
       trapsTriggered: trapEntries.map((entry) => entry.trapName),
       totalTimeSeconds: attempt.totalTimeSeconds,
-      timerModeUsed: isPacingTimerEnabled ? "timed_90s" : "untimed",
-    };
+      timerModeUsed: isPacingTimerEnabled ? "timed_90s" : "untimed" };
     setReviewResult(result);
     setHasSubmitted(true);
   }, [
@@ -309,16 +307,21 @@ export const VignetteEngine: React.FC = () => {
       }
 
       if (!hasSubmitted && activeQuestions.length > 0) {
-        // Find the first unanswered question
-        const unanswered = activeQuestions.find((q) => !selectedAnswers[q.sessionItemId]);
-        const targetQ = unanswered || activeQuestions[activeQuestions.length - 1];
+        const currentIndex = Math.min(activeQuestionIndex, activeQuestions.length - 1);
+        const targetQ = activeQuestions[currentIndex];
+        const optionByKey: Record<string, OptionKey> = { "1": "A", A: "A", "2": "B", B: "B", "3": "C", C: "C" };
 
-        if (key === "1" || key === "A") {
-          handleSelectOption(targetQ.sessionItemId, "A");
-        } else if (key === "2" || key === "B") {
-          handleSelectOption(targetQ.sessionItemId, "B");
-        } else if (key === "3" || key === "C") {
-          handleSelectOption(targetQ.sessionItemId, "C");
+        if (optionByKey[key]) {
+          handleSelectOption(targetQ.sessionItemId, optionByKey[key]);
+          // Move on to the next unanswered question, so a set can be answered key by key
+          const answered = { ...selectedAnswers, [targetQ.sessionItemId]: optionByKey[key] };
+          const nextIndex = activeQuestions.findIndex((q, idx) => idx > currentIndex && !answered[q.sessionItemId]);
+          const fallbackIndex = activeQuestions.findIndex((q) => !answered[q.sessionItemId]);
+          focusQuestion(nextIndex >= 0 ? nextIndex : fallbackIndex >= 0 ? fallbackIndex : currentIndex);
+        } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          const delta = e.key === "ArrowDown" ? 1 : -1;
+          focusQuestion(Math.max(0, Math.min(activeQuestions.length - 1, currentIndex + delta)));
         } else if ((e.key === "Enter" || e.key === " ") && isFormComplete && !isActivatableTarget(e)) {
           e.preventDefault();
           handleSubmitDiagnostic();
@@ -329,6 +332,8 @@ export const VignetteEngine: React.FC = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
+    activeQuestionIndex,
+    focusQuestion,
     hasSubmitted,
     activeQuestions,
     selectedAnswers,
@@ -339,6 +344,10 @@ export const VignetteEngine: React.FC = () => {
   ]);
 
   if (!activeVignetteId) return null;
+
+  const answeredCount = Object.keys(selectedAnswers).length;
+  // Changing the count rebuilds the set, so it is only allowed before answering
+  const isCountLocked = hasSubmitted || answeredCount > 0;
 
   const handleResetForRetake = () => {
     startNewSession();
@@ -359,24 +368,44 @@ export const VignetteEngine: React.FC = () => {
           focus: `Additional high-yield practice questions for ${vignette.topicName}`,
           questionCount: 5,
           excludeItemIds: practiceSession?.itemIds || [],
-        }),
-      });
+          excludeStems: vignette.questions.map((question) => question.stem).slice(-100) }) });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Unable to generate additional practice questions.");
       }
       if (data.vignette && data.vignette.questions) {
         if (soundEnabled) sound.playSuccessChime();
-        const existingStems = new Set(activeQuestions.map((question) => question.stem.trim().toLowerCase()));
+        const existingStems = new Set(vignette.questions.map((question) => question.stem.trim().toLowerCase()));
         const newQs = data.vignette.questions
           .filter((question: VignetteQuestion) => !existingStems.has(question.stem.trim().toLowerCase()))
           .map((question: VignetteQuestion, idx: number) => ({
             ...question,
             id: Date.now() + idx,
-            provenance: data.provenance,
-          }));
+            provenance: data.provenance }));
         if (newQs.length === 0) throw new Error("No new questions were returned.");
         addQuestionsToActiveVignette(newQs);
+        // Append the new questions to the set in progress, keeping existing answers
+        const state = useCFAStore.getState();
+        const updatedVignette = state.customVignettes.find((v) => v.id === state.activeVignetteId);
+        if (updatedVignette && practiceSession) {
+          const newIds = new Set(newQs.map((question: VignetteQuestion) => question.id));
+          const newItems = legacyVignetteToPracticeItems(updatedVignette).filter((item) =>
+            newIds.has(Number(item.id.split(":").pop()))
+          );
+          const extended = appendItemsToSession(practiceSession, newItems, [updatedVignette.id]);
+          savePracticeSession(extended, true);
+          setPracticeSession(extended);
+          if (Object.keys(selectedAnswers).length > 0 || scratchpadText) {
+            setPracticeDraft({
+              sessionId: extended.id,
+              answers: selectedAnswers,
+              itemTimes: itemTimesRef.current,
+              elapsedSeconds,
+              scratchpadText,
+              lastAnswerAt: lastAnswerAtRef.current,
+              updatedAt: new Date().toISOString() });
+          }
+        }
       }
     } catch (err) {
       setGenerationError(err instanceof Error ? err.message : "Unable to generate questions.");
@@ -390,7 +419,6 @@ export const VignetteEngine: React.FC = () => {
   const isOvertime = elapsedSeconds > targetTimeSeconds;
   const isWarning = elapsedSeconds > targetTimeSeconds * 0.75;
 
-  const currentTopic = CFA_CURRICULUM.find((t) => t.id === vignette.topicId);
   const containsDraftItems = practiceSession?.presentedItems.some(
     (item) => item.contentStatus === "draft" || item.origin === "ai-draft"
   );
@@ -416,14 +444,19 @@ export const VignetteEngine: React.FC = () => {
               <button
                 key={cnt}
                 onClick={() => {
-                  if (hasSubmitted) return;
+                  if (isCountLocked) return;
                   if (soundEnabled) sound.playKeyClick();
                   setDrillQuestionCount(cnt);
+                  startNewSession(cnt);
                 }}
-                disabled={hasSubmitted}
-                className={`px-2 py-1 rounded text-xs font-semibold transition-all ${
-                  drillQuestionCount === cnt
+                disabled={isCountLocked || (cnt > vignette.questions.length && cnt !== 2)}
+                aria-pressed={activeQuestions.length === cnt}
+                title={isCountLocked ? "Submit or retake this set to change the question count" : undefined}
+                className={`min-h-[32px] px-2 py-1 rounded text-xs font-semibold transition-all disabled:cursor-not-allowed ${
+                  activeQuestions.length === cnt
                     ? "bg-accent text-accent-ink"
+                    : isCountLocked || (cnt > vignette.questions.length && cnt !== 2)
+                    ? "text-muted/50"
                     : "text-muted hover:text-foreground"
                 }`}
               >
@@ -437,10 +470,10 @@ export const VignetteEngine: React.FC = () => {
             onClick={handleInjectAIQuestions}
             disabled={isInjectingAI || hasSubmitted}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent text-xs font-semibold transition-all active:scale-[0.98] disabled:opacity-50 min-h-[36px]"
-            title="Generate & inject additional AI scenario questions into this drill"
+            title="Add five newly generated questions to this set (AI when configured, otherwise randomized templates)"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isInjectingAI ? "animate-spin" : ""}`} />
-            <span>{isInjectingAI ? "Generating..." : "+ AI questions"}</span>
+            <span>{isInjectingAI ? "Generating..." : "+ 5 questions"}</span>
           </button>
 
           {/* 90-Second Exam Pace Toggle */}
@@ -532,9 +565,9 @@ export const VignetteEngine: React.FC = () => {
             {(vignette.provenance || containsDraftItems) && (
               <p className="mb-4 text-xs text-warning" role="status">
                 {vignette.provenance
-                  ? `${vignette.provenance.origin === "ai-draft" ? "AI draft" : "Procedural fallback"} · ${vignette.provenance.status}`
-                  : "Mixed authored and generated draft questions"}
-                . This set is excluded from readiness analytics and mock exams.
+                  ? `${vignette.provenance.origin === "ai-draft" ? "AI-generated draft" : "Generated from randomized templates"}`
+                  : "Mixed authored and generated questions"}
+                . Generated questions are unreviewed, so this set does not count toward your readiness score or mock exams.
               </p>
             )}
 
@@ -551,7 +584,7 @@ export const VignetteEngine: React.FC = () => {
             <div className="mt-5 pt-3 border-t border-divider flex items-center justify-between gap-3 text-xs text-muted">
               <span className="hidden sm:flex items-center gap-1.5">
                 <Keyboard className="w-3.5 h-3.5 text-accent" />
-                <span className="font-mono">Keys: [1/2/3] select · [Space/Enter] submit · [K] BA II+</span>
+                <span className="font-mono">Keys: [1/2/3] answer · [↑/↓] question · [Enter] submit · [K] BA II+</span>
               </span>
               <span className="font-mono text-foreground font-semibold">{activeQuestions.length} questions</span>
             </div>
@@ -596,9 +629,14 @@ export const VignetteEngine: React.FC = () => {
             return (
               <div
                 key={q.sessionItemId}
-                className={`p-5 rounded-2xl surface-panel transition-all ${
+                ref={(el) => {
+                  questionRefs.current[idx] = el;
+                }}
+                onClickCapture={() => setActiveQuestionIndex(idx)}
+                aria-current={!hasSubmitted && idx === activeQuestionIndex ? "step" : undefined}
+                className={`p-5 rounded-2xl surface-panel transition-all scroll-mt-24 ${
                   chosen ? "bg-surface-raised" : ""
-                }`}
+                } ${!hasSubmitted && idx === activeQuestionIndex ? "ring-1 ring-accent/50" : ""}`}
               >
                 {/* Question Header */}
                 <div className="flex items-center justify-between mb-3 text-xs">
@@ -685,14 +723,13 @@ export const VignetteEngine: React.FC = () => {
 
       {/* Post-Submission Distractor Autopsy & Diagnostic Report */}
       {hasSubmitted && reviewResult && (
-        <div className="mt-12 pt-8 border-t border-[#1F1F23]">
+        <div className="mt-12 pt-8 border-t border-control">
           <DiagnosticAutopsyView
             vignette={{ ...vignette, questions: activeQuestions }}
             result={reviewResult}
             onDrillAnother={() => {
-              const other = allVignettes.find((v) => v.id !== vignette.id);
-              if (other) startVignetteDrill(other.id);
-              else handleResetForRetake();
+              startNewSession(drillQuestionCount, practiceSession?.itemIds || []);
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onReviewFormulas={() => useCFAStore.getState().setFormulaSheetOpen(true)}
             onReturnDashboard={closeVignetteDrill}

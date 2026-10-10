@@ -35,7 +35,7 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   {
     topicId: "01",
     topicName: "Quantitative Methods",
-    weight: "6–9%",
+    weight: "11–14%",
     highYieldTheme: "Time Value of Money, Compounding Frequencies, and Statistical Return Estimators",
     firstPrinciplesSummary:
       "All quantitative finance is built on discounting uncertain future cash flows to the present. The two fundamental dimensions are compounding periodicity (converting nominal rates to Effective Annual Rates) and sample dispersion versus population variance.",
@@ -191,7 +191,7 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   },
   {
     topicId: "03",
-    topicName: "Corporate Issuers",
+    topicName: "Corporate Finance",
     weight: "6–9%",
     highYieldTheme: "Capital Budgeting (NPV vs IRR), WACC After-Tax Debt Shield, and Total Leverage",
     firstPrinciplesSummary:
@@ -337,7 +337,7 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   },
   {
     topicId: "05",
-    topicName: "Equity Investments",
+    topicName: "Equities",
     weight: "11–14%",
     highYieldTheme: "Gordon Growth Dividend Discount Model (DDM), Margin Call Trigger Price, and Index Weighting Mechanics",
     firstPrinciplesSummary:
@@ -453,7 +453,7 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   {
     topicId: "07",
     topicName: "Derivatives",
-    weight: "5–8%",
+    weight: "6–9%",
     highYieldTheme: "Put-Call Parity Synthetic Equivalence, Forward Pricing vs Valuation, and Futures Mark-to-Market",
     firstPrinciplesSummary:
       "Derivatives derive value from an underlying commitment or claim. The cornerstone of pricing is the no-arbitrage principle: two portfolios with identical payoff profiles in all future states must have identical values today.",
@@ -527,7 +527,7 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   {
     topicId: "08",
     topicName: "Alternative Investments",
-    weight: "7–10%",
+    weight: "6–9%",
     highYieldTheme: "Hedge Fund Fee Mechanics with High-Water Marks, Real Estate Direct Capitalization (NOI), and PE Waterfalls",
     firstPrinciplesSummary:
       "Alternative investments provide diversification, unique factor exposures, and illiquidity premiums. Mastery requires understanding asymmetric fee structures (2 and 20 net vs independent, hurdle rates, high-water marks) and unlevered Net Operating Income (NOI).",
@@ -601,7 +601,7 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   },
   {
     topicId: "09",
-    topicName: "Portfolio Management",
+    topicName: "Portfolio Construction",
     weight: "8–12%",
     highYieldTheme: "Two-Asset Portfolio Variance, Capital Asset Pricing Model (CAPM) & SML, and Risk-Adjusted Ratios",
     firstPrinciplesSummary:
@@ -678,10 +678,10 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   {
     topicId: "10",
     topicName: "Ethical & Professional Standards",
-    weight: "15–20%",
+    weight: "10–15%",
     highYieldTheme: "Code of Ethics, Standards of Professional Conduct I-VII, and GIPS Compliance",
     firstPrinciplesSummary:
-      "Ethics carries the highest single weight on Level 1. The fundamental mandate is fiduciary duty to clients above employers and self. If applicable local law conflicts with the Code and Standards, members must adhere to the stricter regulation.",
+      "Ethics is weighted 10–15% on Level I (from the February 2027 exam) and is tested across every other topic. The fundamental mandate is fiduciary duty to clients above employers and self. If applicable local law conflicts with the Code and Standards, members must adhere to the stricter regulation.",
     losGuides: [
       {
         losCode: "LOS 43.a",

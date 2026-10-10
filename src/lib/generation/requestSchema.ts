@@ -13,6 +13,7 @@ export const GenerationRequestSchema = z.object({
   ]).default(5),
   focus: z.string().trim().max(500, "Focus prompt must be 500 characters or fewer").optional(),
   excludeItemIds: z.array(z.string().max(200)).max(100).optional(),
+  excludeStems: z.array(z.string().max(2000)).max(100).optional(),
 }).strict();
 
 export type GenerationRequest = z.infer<typeof GenerationRequestSchema>;

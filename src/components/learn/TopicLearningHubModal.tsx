@@ -6,17 +6,13 @@ import {
   X,
   Sparkles,
   Cpu,
-  CheckCircle2,
   AlertTriangle,
-  ChevronRight,
   Calculator,
   ArrowRight,
-  HelpCircle,
   Eye,
-  EyeOff,
-} from "lucide-react";
+  EyeOff } from "lucide-react";
 import { CFA_TOPIC_GUIDES, TopicGuide, LOSGuide } from "@/data/topicGuides";
-import { FormattedMathText, KaTeXRenderer } from "@/components/common/KaTeXRenderer";
+import { KaTeXRenderer } from "@/components/common/KaTeXRenderer";
 import { KeystrokeSequence } from "@/components/calculator/KeystrokeBadge";
 import { useCFAStore } from "@/store/useCFAStore";
 import { CFA_CURRICULUM } from "@/data/curriculum";
@@ -31,13 +27,11 @@ interface TopicLearningHubModalProps {
 export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
   isOpen,
   onClose,
-  initialTopicId = "01",
-}) => {
+  initialTopicId = "01" }) => {
   const {
     soundEnabled,
     startVignetteDrill,
-    setCalculatorMode,
-  } = useCFAStore();
+    setCalculatorMode } = useCFAStore();
 
   const [activeTopicId, setActiveTopicId] = useState<string>(initialTopicId);
   const [activeLOSIndex, setActiveLOSIndex] = useState<number>(0);
@@ -74,22 +68,17 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
             `Analyze the core framework: ${sr.losStatement || sr.title}`,
             `Identify and eliminate common distractor trap: ${sr.coreTrap || "Unverified assumption"}`,
           ],
-          finalAnswer: `Apply the explicit requirements specified under ${sr.losCode || "core LOS"}.`,
-        },
+          finalAnswer: `Apply the explicit requirements specified under ${sr.losCode || "core LOS"}.` },
         trapMatrix: [
           {
-            trapName: "Core Curriculum Pitfall",
+            trapName: "Common trap",
             examinerDistractor: sr.coreTrap || "Common misinterpretation of rule or calculation",
-            remediationRule: `Review ${sr.title} principles and verify against LOS requirements.`,
-          },
-        ],
-      })),
-    };
+            remediationRule: `Review ${sr.title} principles and verify against LOS requirements.` },
+        ] })) };
   }, [activeTopicId]);
 
   if (!isOpen) return null;
 
-  const currentCurriculumTopic = CFA_CURRICULUM.find((t) => t.id === activeTopicId);
   const currentLOS: LOSGuide = currentGuide.losGuides[activeLOSIndex] || currentGuide.losGuides[0];
 
   const isSolutionRevealed = !!revealedSolutions[`${currentGuide.topicId}-${currentLOS.losCode}`];
@@ -126,15 +115,15 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span id="learn-hub-title" className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                  CFA® INSTITUTIONAL LEARNING HUB
+                <span id="learn-hub-title" className="text-xs font-bold text-white">
+                  Learning hub
                 </span>
-                <span className="px-1.5 py-0.2 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime font-mono text-[10px] font-bold">
-                  FIRST-PRINCIPLES
+                <span className="px-1.5 py-0.2 rounded bg-accent/10 border border-accent/30 text-accent tabular-nums text-[10px] font-bold">
+                  Concepts and worked examples
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-400 font-mono">
-                Concept Derivations • Keystroke Mechanics • Pitfall Avoidance Matrix
+              <p className="text-[11px] text-muted tabular-nums">
+                Concepts, calculator keystrokes and common traps for each topic
               </p>
             </div>
           </div>
@@ -145,16 +134,16 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
                 if (soundEnabled) sound.playKeyClick();
                 setCalculatorMode("floating");
               }}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#141418] hover:bg-[#1C1C22] text-amber-300 border border-[#27272A] font-mono text-xs font-bold transition-all"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-interactive hover:bg-surface-raised text-warning border border-control tabular-nums text-xs font-bold transition-all"
             >
               <Calculator className="w-3.5 h-3.5" />
-              <span>BA II+ EMULATOR</span>
+              <span>Calculator</span>
             </button>
 
             <button
               onClick={onClose}
               aria-label="Close learning hub"
-              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-[#1A1A20] transition-colors"
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted hover:text-white hover:bg-surface-raised transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -165,8 +154,8 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           
           {/* Left Sidebar: Topic Selector */}
-          <aside className="w-full md:w-64 bg-[#08080A] border-r border-[#1F1F23] p-3 space-y-1.5 overflow-y-auto shrink-0 select-none">
-            <span className="text-[11px] font-mono text-zinc-400 uppercase font-bold px-2 py-1 block">
+          <aside className="w-full md:w-64 bg-background border-r border-control p-3 space-y-1.5 overflow-y-auto shrink-0 select-none">
+            <span className="text-[11px] text-muted font-bold px-2 py-1 block">
               Curriculum Tracks:
             </span>
 
@@ -180,16 +169,16 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
                     setActiveTopicId(topic.id);
                     setActiveLOSIndex(0);
                   }}
-                  className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between gap-2 font-mono text-xs ${
+                  className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between gap-2 tabular-nums text-xs ${
                     isSelected
-                      ? "bg-brand-lime/15 border-brand-lime text-white shadow-lime-sm"
-                      : "bg-[#0E0E12] border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-[#141418]"
+                      ? "bg-accent/15 border-accent text-white "
+                      : "bg-background-elevated border-transparent text-muted hover:text-foreground hover:bg-surface-interactive"
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate">
                     <span
                       className={`font-bold ${
-                        isSelected ? "text-brand-lime" : "text-zinc-400"
+                        isSelected ? "text-accent" : "text-muted"
                       }`}
                     >
                       [{topic.id}]
@@ -198,7 +187,7 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
                       {topic.name}
                     </span>
                   </div>
-                  <span className="text-[10px] text-zinc-400 shrink-0 font-mono">
+                  <span className="text-[10px] text-muted shrink-0 tabular-nums">
                     {topic.weight}
                   </span>
                 </button>
@@ -207,29 +196,29 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
           </aside>
 
           {/* Right Main Learning Area */}
-          <main className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8 bg-[#0B0B0E]">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8 bg-background-elevated">
             
             {/* Topic Header Hero Banner */}
-            <div className="p-6 bg-gradient-to-r from-[#121218] via-[#0E0E14] to-[#0A0A0E] border border-[#222228] rounded-2xl space-y-3">
+            <div className="p-6 bg-gradient-to-r from-surface-interactive via-surface-interactive to-surface border border-control rounded-2xl space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded bg-brand-lime text-black font-mono text-xs font-extrabold uppercase">
+                  <span className="px-2.5 py-0.5 rounded bg-accent text-accent-ink text-xs font-semibold">
                     TRACK {currentGuide.topicId}
                   </span>
-                  <span className="text-xs font-mono text-zinc-400">
-                    EXAM WEIGHT: {currentGuide.weight}
+                  <span className="text-xs tabular-nums text-muted">
+                    Exam weight {currentGuide.weight}
                   </span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded bg-[#18181F] text-brand-lime font-mono text-[11px] border border-brand-lime/30">
+                <span className="px-2.5 py-0.5 rounded bg-surface-raised text-accent tabular-nums text-[11px] border border-accent/30">
                   {currentGuide.highYieldTheme}
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
                 {currentGuide.topicName}
               </h1>
 
-              <p className="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed">
+              <p className="text-xs sm:text-sm text-muted-strong font-sans leading-relaxed">
                 {currentGuide.firstPrinciplesSummary}
               </p>
             </div>
@@ -237,13 +226,13 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
             {/* LOS Selection Tabs */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
-                  <span>Learning Outcome Statements (LOS Focus)</span>
+                <h2 className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                  <span>Learning outcomes</span>
                 </h2>
               </div>
 
-              <div className="flex gap-2 overflow-x-auto pb-1 font-mono text-xs">
+              <div className="flex gap-2 overflow-x-auto pb-1 tabular-nums text-xs">
                 {currentGuide.losGuides.map((los, idx) => (
                   <button
                     key={los.losCode}
@@ -253,8 +242,8 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
                     }}
                     className={`px-3.5 py-2 rounded-xl border transition-all whitespace-nowrap flex items-center gap-2 ${
                       activeLOSIndex === idx
-                        ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
-                        : "bg-[#121216] text-zinc-400 border-[#222226] hover:text-white"
+                        ? "bg-accent text-accent-ink font-bold border-accent "
+                        : "bg-surface-interactive text-muted border-control hover:text-white"
                     }`}
                   >
                     <span>{los.losCode}</span>
@@ -267,31 +256,31 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
             </div>
 
             {/* Detailed Concept Module */}
-            <div className="space-y-6 bg-[#0E0E12] border border-[#1F1F23] rounded-2xl p-6">
+            <div className="space-y-6 bg-background-elevated border border-control rounded-2xl p-6">
               
               {/* Concept Title & Core Theory */}
               <div className="space-y-2">
-                <div className="flex items-center gap-2 font-mono text-xs text-brand-lime font-bold">
+                <div className="flex items-center gap-2 tabular-nums text-xs text-accent font-bold">
                   <span>{currentLOS.losCode}</span>
                   <span>{"//"}</span>
                   <span>{currentLOS.title}</span>
                 </div>
-                <p className="text-sm text-zinc-200 font-sans leading-relaxed">
+                <p className="text-sm text-foreground font-sans leading-relaxed">
                   {currentLOS.coreConcept}
                 </p>
               </div>
 
               {/* Mathematical Formulation (LaTeX) */}
               {currentLOS.formulaLatex && (
-                <div className="p-4 bg-[#121218] border border-brand-lime/30 rounded-xl space-y-2">
-                  <span className="text-[11px] font-mono font-bold text-brand-lime uppercase block">
-                    Canonical Mathematical Formulation:
+                <div className="p-4 bg-surface-interactive border border-accent/30 rounded-xl space-y-2">
+                  <span className="text-[11px] font-bold text-accent block">
+                    Formula:
                   </span>
                   <div className="py-2 overflow-x-auto text-white">
                     <KaTeXRenderer math={currentLOS.formulaLatex} block />
                   </div>
                   {currentLOS.formulaExplanation && (
-                    <p className="text-xs text-zinc-400 font-sans leading-relaxed pt-1 border-t border-white/5">
+                    <p className="text-xs text-muted font-sans leading-relaxed pt-1 border-t border-white/5">
                       {currentLOS.formulaExplanation}
                     </p>
                   )}
@@ -300,22 +289,22 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
 
               {/* Texas Instruments BA II Plus Keystroke Masterclass */}
               {currentLOS.calculatorGuide && (
-                <div className="p-4 bg-[#101016] border border-amber-400/30 rounded-xl space-y-3">
+                <div className="p-4 bg-surface-interactive border border-warning/30 rounded-xl space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-amber-300 uppercase flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-warning flex items-center gap-1.5">
                       <Cpu className="w-3.5 h-3.5" />
-                      <span>TI BA II Plus Exam Workflow</span>
+                      <span>BA II Plus keystrokes</span>
                     </span>
-                    <span className="text-[10px] font-mono text-zinc-400">
-                      Standardized Keystroke Path
+                    <span className="text-[10px] tabular-nums text-muted">
+                      Step by step
                     </span>
                   </div>
 
-                  <p className="text-xs text-zinc-300 font-sans">
+                  <p className="text-xs text-muted-strong font-sans">
                     {currentLOS.calculatorGuide.summary}
                   </p>
 
-                  <div className="p-2.5 bg-[#09090C] rounded-lg border border-[#27272A]">
+                  <div className="p-2.5 bg-background rounded-lg border border-control">
                     <KeystrokeSequence sequence={currentLOS.calculatorGuide.keystrokes} />
                   </div>
 
@@ -323,7 +312,7 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
                     {currentLOS.calculatorGuide.keyRegisters.map((reg, rIdx) => (
                       <span
                         key={rIdx}
-                        className="px-2 py-0.5 rounded bg-[#18181F] text-zinc-300 font-mono text-[10px] border border-[#27272A]"
+                        className="px-2 py-0.5 rounded bg-surface-raised text-muted-strong tabular-nums text-[10px] border border-control"
                       >
                         {reg}
                       </span>
@@ -333,51 +322,51 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
               )}
 
               {/* Concrete Worked Exam Scenario */}
-              <div className="p-5 bg-[#121217] border border-[#222228] rounded-xl space-y-4">
+              <div className="p-5 bg-surface-interactive border border-control rounded-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-white uppercase flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-brand-lime" />
-                    <span>Worked CFA-Grade Practice Scenario</span>
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-accent" />
+                    <span>Worked example</span>
                   </span>
                   <button
                     onClick={toggleSolutionReveal}
-                    className="flex items-center gap-1 text-xs font-mono font-bold text-brand-lime hover:underline"
+                    className="flex items-center gap-1 text-xs tabular-nums font-bold text-accent hover:underline"
                   >
                     {isSolutionRevealed ? (
                       <>
                         <EyeOff className="w-3.5 h-3.5" />
-                        <span>HIDE DERIVATION</span>
+                        <span>Hide worked solution</span>
                       </>
                     ) : (
                       <>
                         <Eye className="w-3.5 h-3.5" />
-                        <span>REVEAL SOLUTION PROOF</span>
+                        <span>Show worked solution</span>
                       </>
                     )}
                   </button>
                 </div>
 
-                <div className="space-y-2 text-xs sm:text-sm text-zinc-200 font-sans leading-relaxed">
-                  <p className="font-medium text-zinc-300">{currentLOS.workedExample.scenario}</p>
-                  <p className="text-brand-lime font-semibold">{currentLOS.workedExample.question}</p>
+                <div className="space-y-2 text-xs sm:text-sm text-foreground font-sans leading-relaxed">
+                  <p className="font-medium text-muted-strong">{currentLOS.workedExample.scenario}</p>
+                  <p className="text-accent font-semibold">{currentLOS.workedExample.question}</p>
                 </div>
 
                 {/* Revealable Solution Proof */}
                 {isSolutionRevealed && (
-                  <div className="p-4 bg-[#09090C] border border-brand-lime/40 rounded-xl space-y-3 animate-in fade-in duration-150">
-                    <span className="text-[11px] font-mono font-bold text-brand-lime uppercase block">
-                      Step-by-Step Algebraic Derivation:
+                  <div className="p-4 bg-background border border-accent/40 rounded-xl space-y-3 animate-in fade-in duration-150">
+                    <span className="text-[11px] font-bold text-accent block">
+                      Worked solution:
                     </span>
-                    <ol className="space-y-1.5 list-decimal list-inside text-xs text-zinc-300 font-sans">
+                    <ol className="space-y-1.5 list-decimal list-inside text-xs text-muted-strong font-sans">
                       {currentLOS.workedExample.solutionSteps.map((step, sIdx) => (
                         <li key={sIdx} className="leading-relaxed">
                           {step}
                         </li>
                       ))}
                     </ol>
-                    <div className="pt-2 border-t border-[#1F1F24] flex items-center justify-between font-mono text-xs font-bold text-white">
-                      <span>FINAL CANONICAL RESULT:</span>
-                      <span className="text-brand-lime text-sm">
+                    <div className="pt-2 border-t border-control flex items-center justify-between tabular-nums text-xs font-bold text-white">
+                      <span>Result:</span>
+                      <span className="text-accent text-sm">
                         {currentLOS.workedExample.finalAnswer}
                       </span>
                     </div>
@@ -388,24 +377,24 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
               {/* Pitfall Avoidance Matrix */}
               {currentLOS.trapMatrix && currentLOS.trapMatrix.length > 0 && (
                 <div className="space-y-3">
-                  <span className="text-xs font-mono font-bold text-red-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-danger flex items-center gap-1.5">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Pitfall Avoidance Matrix (Examiner Distractor Traps)</span>
+                    <span>Common traps</span>
                   </span>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {currentLOS.trapMatrix.map((t, tIdx) => (
                       <div
                         key={tIdx}
-                        className="p-4 bg-[#140F0F] border border-red-500/30 rounded-xl space-y-2 font-mono text-xs"
+                        className="p-4 bg-surface-interactive border border-danger/30 rounded-xl space-y-2 tabular-nums text-xs"
                       >
-                        <div className="font-bold text-red-300 text-[11px] uppercase">
+                        <div className="font-bold text-danger text-[11px]">
                           {t.trapName}
                         </div>
-                        <p className="text-zinc-300 font-sans text-xs leading-relaxed">
-                          <span className="text-zinc-400">Examiner Setup:</span> {t.examinerDistractor}
+                        <p className="text-muted-strong font-sans text-xs leading-relaxed">
+                          <span className="text-muted">Examiner Setup:</span> {t.examinerDistractor}
                         </p>
-                        <div className="pt-1.5 border-t border-red-500/20 text-brand-lime font-sans text-xs font-medium">
+                        <div className="pt-1.5 border-t border-danger/20 text-accent font-sans text-xs font-medium">
                           Rule: {t.remediationRule}
                         </div>
                       </div>
@@ -416,21 +405,21 @@ export const TopicLearningHubModal: React.FC<TopicLearningHubModalProps> = ({
             </div>
 
             {/* Bottom Call to Action: Launch Focused Drill */}
-            <div className="p-6 bg-gradient-to-r from-brand-lime/10 via-[#121216] to-[#0A0A0D] border border-brand-lime/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="p-6 bg-gradient-to-r from-accent/10 via-surface-interactive to-surface border border-accent/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
                 <h3 className="text-sm font-bold text-white font-sans">
                   Ready to test your comprehension under exam conditions?
                 </h3>
-                <p className="text-xs text-zinc-400 font-sans mt-0.5">
+                <p className="text-xs text-muted font-sans mt-0.5">
                   Launch a surgical diagnostic drill targeting Topic {currentGuide.topicId} with full autopsies.
                 </p>
               </div>
 
               <button
                 onClick={handleLaunchDrill}
-                className="px-6 py-3 rounded-xl bg-brand-lime hover:bg-brand-neon text-black font-mono text-xs font-extrabold shadow-lime-glow transition-all active:scale-[0.99] flex items-center gap-2 shrink-0"
+                className="px-6 py-3 rounded-xl bg-accent hover:bg-accent-strong text-accent-ink tabular-nums text-xs font-semibold transition-all active:scale-[0.99] flex items-center gap-2 shrink-0"
               >
-                <span>DRILL TOPIC {currentGuide.topicId} NOW</span>
+                <span>Practise {currentGuide.topicName}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

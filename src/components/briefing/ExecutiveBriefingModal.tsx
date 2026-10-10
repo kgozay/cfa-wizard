@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Play, BookOpen, Calculator, Sparkles, CheckCircle2, ChevronRight } from "lucide-react";
+import { X, Play, Calculator, Sparkles, ChevronRight } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { useCFAStore } from "@/store/useCFAStore";
@@ -49,15 +49,15 @@ export const ExecutiveBriefingModal: React.FC = () => {
         {/* Top Header */}
         <div className="p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs font-bold text-accent px-2.5 py-0.5 rounded-full bg-accent/15">
+            <span className="tabular-nums text-xs font-bold text-accent px-2.5 py-0.5 rounded-full bg-accent/15">
               TRACK {topic.id}
             </span>
             <div>
               <h2 id="executive-briefing-title" className="text-lg sm:text-xl font-bold text-white tracking-tight">
                 {topic.name}
               </h2>
-              <span className="text-xs font-mono text-slate-400">
-                EXECUTIVE BRIEFING // WEIGHT: {topic.weight}
+              <span className="text-xs tabular-nums text-slate-400">
+                Topic overview · exam weight {topic.weight}
               </span>
             </div>
           </div>
@@ -75,9 +75,9 @@ export const ExecutiveBriefingModal: React.FC = () => {
           
           {/* Section 1: Executive Summary Bullet Points */}
           <div>
-            <div className="flex items-center gap-2 font-mono text-xs text-accent tracking-wider uppercase mb-3">
+            <div className="flex items-center gap-2 text-xs text-accent mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>HIGH-YIELD EXECUTIVE SUMMARY & TRAP MATRIX</span>
+              <span>Key points and common traps</span>
             </div>
             
             <div className="grid gap-3">
@@ -86,7 +86,7 @@ export const ExecutiveBriefingModal: React.FC = () => {
                   key={idx}
                   className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.04] flex items-start gap-3"
                 >
-                  <div className="w-5 h-5 rounded-lg bg-white/[0.04] flex items-center justify-center text-slate-400 font-mono text-xs shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-lg bg-white/[0.04] flex items-center justify-center text-slate-400 tabular-nums text-xs shrink-0 mt-0.5">
                     {idx + 1}
                   </div>
                   <div className="text-xs sm:text-sm text-slate-200 leading-relaxed">
@@ -100,18 +100,18 @@ export const ExecutiveBriefingModal: React.FC = () => {
           {/* Section 2: Formulas & Texas Instruments BA II Plus Keystroke Badges */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 font-mono text-xs text-editorial-muted tracking-wider uppercase">
-                <Calculator className="w-3.5 h-3.5 text-brand-lime" />
-                <span>FORMULA & TI BA II PLUS KEYSTROKE MATRIX</span>
+              <div className="flex items-center gap-2 text-xs text-muted">
+                <Calculator className="w-3.5 h-3.5 text-accent" />
+                <span>Formulas and BA II Plus keystrokes</span>
               </div>
               <button
                 onClick={() => {
                   if (soundEnabled) sound.playKeyClick();
                   setCalculatorOpen(true);
                 }}
-                className="text-xs font-mono text-brand-lime hover:underline flex items-center gap-1"
+                className="text-xs tabular-nums text-accent hover:underline flex items-center gap-1"
               >
-                <span>Launch BA II+ Emulator</span>
+                <span>Open calculator</span>
                 <ChevronRight className="w-3 h-3" />
               </button>
             </div>
@@ -120,13 +120,13 @@ export const ExecutiveBriefingModal: React.FC = () => {
               {topic.formulas.map((f) => (
                 <div
                   key={f.id}
-                  className="p-4 rounded-xl bg-[#09090B] border border-[#1F1F23] space-y-3"
+                  className="p-4 rounded-xl bg-background border border-control space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold text-white">
                       {f.title}
                     </h4>
-                    <span className="font-mono text-[10px] text-editorial-dim">
+                    <span className="tabular-nums text-[10px] text-muted">
                       {f.id}
                     </span>
                   </div>
@@ -135,15 +135,15 @@ export const ExecutiveBriefingModal: React.FC = () => {
                   <KaTeXRenderer math={f.latex} block />
 
                   {/* Description */}
-                  <div className="text-xs text-editorial-steely">
+                  <div className="text-xs text-muted-strong">
                     <FormattedMathText text={f.description} />
                   </div>
 
                   {/* Calculator Keystroke Sequence */}
                   {f.calculatorKeystrokes && (
-                    <div className="pt-2 border-t border-[#18181B] space-y-1.5">
-                      <div className="font-mono text-[10px] text-editorial-dim uppercase">
-                        TI BA II PLUS KEYSTROKE WORKFLOW:
+                    <div className="pt-2 border-t border-divider space-y-1.5">
+                      <div className="text-[10px] text-muted">
+                        BA II Plus keystrokes:
                       </div>
                       <KeystrokeSequence sequence={f.calculatorKeystrokes} />
                     </div>
@@ -151,17 +151,17 @@ export const ExecutiveBriefingModal: React.FC = () => {
 
                   {/* Interactive Sandbox for Formulas with Variables */}
                   {f.variables && f.compute && (
-                    <div className="mt-3 pt-3 border-t border-[#18181B] bg-[#121215]/80 p-3 rounded-lg font-mono text-xs">
-                      <div className="text-[11px] font-bold text-brand-lime mb-2 flex items-center gap-1.5">
+                    <div className="mt-3 pt-3 border-t border-divider bg-surface-interactive p-3 rounded-lg tabular-nums text-xs">
+                      <div className="text-[11px] font-bold text-accent mb-2 flex items-center gap-1.5">
                         <Sparkles className="w-3 h-3" />
-                        <span>LIVE FORMULA SANDBOX:</span>
+                        <span>Try it:</span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                         {f.variables.map((v) => {
                           const val = sandboxInputs[v.symbol] !== undefined ? sandboxInputs[v.symbol] : v.defaultVal;
                           return (
-                            <div key={v.symbol} className="bg-[#09090B] p-2 rounded border border-[#27272A]">
-                              <span className="text-[10px] text-editorial-dim block">{v.name}</span>
+                            <div key={v.symbol} className="bg-background p-2 rounded border border-control">
+                              <span className="text-[10px] text-muted block">{v.name}</span>
                               <div className="flex items-center gap-2 mt-1">
                                 <input
                                   type="number"
@@ -173,7 +173,7 @@ export const ExecutiveBriefingModal: React.FC = () => {
                                       [v.symbol]: parseFloat(e.target.value) || 0,
                                     })
                                   }
-                                  className="w-full bg-[#18181B] border border-[#3F3F46] rounded px-2 py-0.5 text-xs text-white font-mono"
+                                  className="w-full bg-surface-raised border border-control rounded px-2 py-0.5 text-xs text-white tabular-nums"
                                 />
                               </div>
                             </div>
@@ -189,9 +189,9 @@ export const ExecutiveBriefingModal: React.FC = () => {
                         });
                         const out = f.compute(currentVars);
                         return (
-                          <div className="flex items-center justify-between p-2 rounded bg-brand-lime/10 border border-brand-lime/30 text-xs">
-                            <span className="text-white font-medium">COMPUTED OUTPUT:</span>
-                            <span className="text-brand-lime font-bold text-sm">{out.display}</span>
+                          <div className="flex items-center justify-between p-2 rounded bg-accent/10 border border-accent/30 text-xs">
+                            <span className="text-white font-medium">Result:</span>
+                            <span className="text-accent font-bold text-sm">{out.display}</span>
                           </div>
                         );
                       })()}
@@ -209,17 +209,17 @@ export const ExecutiveBriefingModal: React.FC = () => {
         <div className="p-4 border-t border-white/[0.04] bg-white/[0.02] flex items-center justify-between gap-3">
           <button
             onClick={handleClose}
-            className="px-4 py-2.5 rounded-xl font-mono text-xs text-slate-400 hover:text-white glass-pill-btn transition-all"
+            className="px-4 py-2.5 rounded-xl tabular-nums text-xs text-slate-400 hover:text-white glass-pill-btn transition-all"
           >
-            RETURN TO DASHBOARD
+            Back to dashboard
           </button>
           
           <button
             onClick={handleLaunchDrill}
-            className="lime-btn-primary px-5 py-2.5 rounded-xl font-mono text-xs font-bold flex items-center gap-2 transition-all"
+            className="lime-btn-primary px-5 py-2.5 rounded-xl tabular-nums text-xs font-bold flex items-center gap-2 transition-all"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>LAUNCH {drillQuestionCount}-QUESTION VIGNETTE DRILL</span>
+            <span>Start {drillQuestionCount}-question practice</span>
           </button>
         </div>
 

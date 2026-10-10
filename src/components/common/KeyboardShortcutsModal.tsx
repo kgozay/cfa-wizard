@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { X, Keyboard, Zap, Calculator, BookOpen, Layers, Sparkles, AlertTriangle, Volume2, CornerDownLeft } from "lucide-react";
+import { X, Keyboard, Zap, Calculator } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
 
@@ -27,34 +27,36 @@ export const KeyboardShortcutsModal: React.FC = () => {
 
   const sections = [
     {
-      title: "Active Drill & Exam Flow",
-      icon: <Zap className="w-4 h-4 text-brand-lime" />,
+      title: "Practice sets and exams",
+      icon: <Zap className="w-4 h-4 text-accent" />,
       shortcuts: [
-        { keys: ["1", "2", "3"], altKeys: ["A", "B", "C"], description: "Select answer choice (A, B, or C)" },
-        { keys: ["Space"], altKeys: ["Enter"], description: "Submit diagnostic autopsy or advance" },
-        { keys: ["Esc"], description: "Dismiss open tool modal or return to matrix" },
+        { keys: ["1", "2", "3"], altKeys: ["A", "B", "C"], description: "Answer the highlighted question" },
+        { keys: ["↑", "↓"], description: "Move between questions in a practice set" },
+        { keys: ["←", "→"], description: "Previous or next question in a mock exam" },
+        { keys: ["F"], description: "Flag the current mock exam question" },
+        { keys: ["Enter"], description: "Submit a completed practice set" },
+        { keys: ["K"], description: "Show or hide the calculator" },
+        { keys: ["Esc"], description: "Close the open dialog (asks first during a mock exam)" },
       ],
     },
     {
-      title: "Institutional Workspace Tools",
-      icon: <Calculator className="w-4 h-4 text-cyan-300" />,
+      title: "Dashboard",
+      icon: <Calculator className="w-4 h-4 text-info" />,
       shortcuts: [
-        { keys: ["K"], altKeys: ["C"], description: "Toggle TI BA II Plus Calculator Emulator" },
-        { keys: ["F"], description: "Open LaTeX Formula Reference & Sandboxes" },
-        { keys: ["R"], description: "Open Spaced Repetition Trap Vault (Leitner)" },
-        { keys: ["S"], description: "Launch 10-Track Interleaved Sprint Drill" },
-        { keys: ["G"], description: "Launch Dynamic AI Vignette Generator" },
-        { keys: ["T"], description: "Inspect Diagnostic Trap Radar & Error Autopsies" },
+        { keys: ["K"], altKeys: ["C"], description: "Open the BA II Plus calculator" },
+        { keys: ["F"], description: "Open the formula sheet" },
+        { keys: ["R"], description: "Open the review deck" },
+        { keys: ["S"], description: "Start a mixed-topic sprint" },
+        { keys: ["G"], description: "Go to the Practice tab" },
       ],
     },
     {
-      title: "System & Calculator Ergonomics",
-      icon: <Keyboard className="w-4 h-4 text-amber-300" />,
+      title: "General",
+      icon: <Keyboard className="w-4 h-4 text-warning" />,
       shortcuts: [
-        { keys: ["?"], altKeys: ["Shift", "/"], description: "Toggle this Keyboard Shortcuts HUD" },
-        { keys: ["M"], description: "Toggle audio chime & click sound effects" },
-        { keys: ["^"], description: "Power of function (y^x) in BA II+ Calculator" },
-        { keys: ["S"], description: "Square root (√x) in BA II+ Calculator" },
+        { keys: ["?"], description: "Show or hide this list" },
+        { keys: ["M"], description: "Turn sound effects on or off" },
+        { keys: ["0-9", "+", "−", "×", "÷"], description: "Type into the calculator while it is open" },
       ],
     },
   ];
@@ -75,13 +77,13 @@ export const KeyboardShortcutsModal: React.FC = () => {
               <Keyboard className="w-4 h-4" />
             </div>
             <div>
-              <h2 id="shortcuts-hud-title" className="text-sm font-mono font-bold text-white tracking-wide uppercase flex items-center gap-2">
-                <span>KEYBOARD ERGONOMICS HUD</span>
+              <h2 id="shortcuts-hud-title" className="text-sm font-bold text-white flex items-center gap-2">
+                <span>Keyboard shortcuts</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent">
-                  SPEED KEYS
+                  Shortcuts
                 </span>
               </h2>
-              <p className="text-[11px] font-mono text-slate-400">
+              <p className="text-[11px] tabular-nums text-slate-400">
                 High-velocity hotkeys for zero-latency CFA study workflows
               </p>
             </div>
@@ -97,10 +99,10 @@ export const KeyboardShortcutsModal: React.FC = () => {
         </div>
 
         {/* Shortcuts Content */}
-        <div className="p-4 sm:p-5 space-y-6 overflow-y-auto flex-1 font-mono text-xs">
+        <div className="p-4 sm:p-5 space-y-6 overflow-y-auto flex-1 tabular-nums text-xs">
           {sections.map((section, sIdx) => (
             <div key={sIdx} className="space-y-3">
-              <div className="flex items-center gap-2 text-editorial-muted font-bold text-[11px] uppercase tracking-wider border-b border-[#1A1A1E] pb-1.5">
+              <div className="flex items-center gap-2 text-muted font-bold text-[11px] border-b border-divider pb-1.5">
                 {section.icon}
                 <span>{section.title}</span>
               </div>
@@ -109,27 +111,27 @@ export const KeyboardShortcutsModal: React.FC = () => {
                 {section.shortcuts.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 p-2 rounded-lg bg-[#121215] border border-[#1E1E22] hover:border-[#2C2C32] transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 p-2 rounded-lg bg-surface-interactive border border-divider hover:border-control-boundary-hover transition-colors"
                   >
-                    <div className="text-zinc-300 font-sans text-xs">
+                    <div className="text-muted-strong font-sans text-xs">
                       {item.description}
                     </div>
                     <div className="flex items-center gap-1 shrink-0 self-start sm:self-auto">
                       {item.keys.map((k, kIdx) => (
                         <kbd
                           key={kIdx}
-                          className="px-2 py-1 rounded bg-[#1C1C22] border border-[#33333A] text-brand-lime font-mono text-[11px] font-bold shadow-sm"
+                          className="px-2 py-1 rounded bg-surface-raised border border-control text-accent tabular-nums text-[11px] font-bold shadow-sm"
                         >
                           {k}
                         </kbd>
                       ))}
                       {item.altKeys && (
                         <>
-                          <span className="text-editorial-dim text-[10px] select-none">or</span>
+                          <span className="text-muted text-[10px] select-none">or</span>
                           {item.altKeys.map((ak, akIdx) => (
                             <kbd
                               key={akIdx}
-                              className="px-2 py-1 rounded bg-[#18181D] border border-[#2B2B32] text-zinc-300 font-mono text-[11px] font-bold shadow-sm"
+                              className="px-2 py-1 rounded bg-surface-raised border border-control text-muted-strong tabular-nums text-[11px] font-bold shadow-sm"
                             >
                               {ak}
                             </kbd>
@@ -145,16 +147,16 @@ export const KeyboardShortcutsModal: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-3 sm:p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between text-[11px] font-mono text-editorial-dim">
+        <div className="p-3 sm:p-4 border-t border-control bg-background-elevated flex items-center justify-between text-[11px] tabular-nums text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-lime" />
-            <span>GLOBAL HOTKEYS ACTIVE THROUGHOUT STUDY COCKPIT</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+            <span>Single-key shortcuts are paused while you type or while an exam or dialog is open</span>
           </span>
           <button
             onClick={handleClose}
-            className="px-3 py-1 rounded-lg bg-brand-lime text-black font-bold hover:bg-brand-lime/90 transition-all"
+            className="px-3 py-1 rounded-lg bg-accent text-accent-ink font-bold hover:bg-accent/90 transition-all"
           >
-            GOT IT [ESC]
+            Got it (Esc)
           </button>
         </div>
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   Calculator,
   Volume2,
@@ -21,26 +22,28 @@ import { DarkSmokyBackground } from "@/components/common/DarkSmokyBackground";
 import { TopicContextBar } from "@/components/common/TopicContextBar";
 import { CurrentAssignmentCard } from "@/components/dashboard/CurrentAssignmentCard";
 import { CurriculumTracksGrid } from "@/components/dashboard/CurriculumTracksGrid";
-import { ScenarioSimulatorStudio } from "@/components/dashboard/ScenarioSimulatorStudio";
-import { SpacedRecallSprintsView } from "@/components/dashboard/SpacedRecallSprintsView";
-import { AnalyticsDashboardView } from "@/components/analytics/AnalyticsDashboardView";
-import { VignetteEngine } from "@/components/vignette/VignetteEngine";
-import { ExecutiveBriefingModal } from "@/components/briefing/ExecutiveBriefingModal";
-import { VirtualTIBAIIPLUS } from "@/components/calculator/VirtualTIBAIIPLUS";
-import { TrapLogModal } from "@/components/tools/TrapLogModal";
-import { FormulaSheetModal } from "@/components/tools/FormulaSheetModal";
-import { AIVignetteGeneratorModal } from "@/components/tools/AIVignetteGeneratorModal";
-import { InterleavedSprintModal } from "@/components/sprint/InterleavedSprintModal";
-import { LeitnerTrapDeckModal } from "@/components/spaced/LeitnerTrapDeckModal";
-import { KeyboardShortcutsModal } from "@/components/common/KeyboardShortcutsModal";
-import { MockExamModal } from "@/components/mock/MockExamModal";
-import { TopicLearningHubModal } from "@/components/learn/TopicLearningHubModal";
-import { AuthSyncModal } from "@/components/auth/AuthSyncModal";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
 import { shouldIgnoreShortcut } from "@/lib/keyboard";
 
-export default function DiagnosticCockpitPage() {
+// Views and dialogs that are not needed for the first paint load on demand
+const ExecutiveBriefingModal = dynamic(() => import("@/components/briefing/ExecutiveBriefingModal").then((m) => m.ExecutiveBriefingModal), { ssr: false });
+const VirtualTIBAIIPLUS = dynamic(() => import("@/components/calculator/VirtualTIBAIIPLUS").then((m) => m.VirtualTIBAIIPLUS), { ssr: false });
+const TrapLogModal = dynamic(() => import("@/components/tools/TrapLogModal").then((m) => m.TrapLogModal), { ssr: false });
+const FormulaSheetModal = dynamic(() => import("@/components/tools/FormulaSheetModal").then((m) => m.FormulaSheetModal), { ssr: false });
+const AIVignetteGeneratorModal = dynamic(() => import("@/components/tools/AIVignetteGeneratorModal").then((m) => m.AIVignetteGeneratorModal), { ssr: false });
+const InterleavedSprintModal = dynamic(() => import("@/components/sprint/InterleavedSprintModal").then((m) => m.InterleavedSprintModal), { ssr: false });
+const LeitnerTrapDeckModal = dynamic(() => import("@/components/spaced/LeitnerTrapDeckModal").then((m) => m.LeitnerTrapDeckModal), { ssr: false });
+const KeyboardShortcutsModal = dynamic(() => import("@/components/common/KeyboardShortcutsModal").then((m) => m.KeyboardShortcutsModal), { ssr: false });
+const MockExamModal = dynamic(() => import("@/components/mock/MockExamModal").then((m) => m.MockExamModal), { ssr: false });
+const TopicLearningHubModal = dynamic(() => import("@/components/learn/TopicLearningHubModal").then((m) => m.TopicLearningHubModal), { ssr: false });
+const AuthSyncModal = dynamic(() => import("@/components/auth/AuthSyncModal").then((m) => m.AuthSyncModal), { ssr: false });
+const AnalyticsDashboardView = dynamic(() => import("@/components/analytics/AnalyticsDashboardView").then((m) => m.AnalyticsDashboardView), { ssr: false });
+const VignetteEngine = dynamic(() => import("@/components/vignette/VignetteEngine").then((m) => m.VignetteEngine), { ssr: false });
+const ScenarioSimulatorStudio = dynamic(() => import("@/components/dashboard/ScenarioSimulatorStudio").then((m) => m.ScenarioSimulatorStudio), { ssr: false });
+const SpacedRecallSprintsView = dynamic(() => import("@/components/dashboard/SpacedRecallSprintsView").then((m) => m.SpacedRecallSprintsView), { ssr: false });
+
+export default function StudyDashboardPage() {
   const {
     activeVignetteId,
     trapLogs,
@@ -203,6 +206,8 @@ export default function DiagnosticCockpitPage() {
     setFormulaSheetOpen,
     setLeitnerDeckOpen,
     setSprintModalOpen,
+    setAIGeneratorOpen,
+    setTrapLogOpen,
   ]);
 
   const handleOpenBriefing = (topicId: string) => {
@@ -251,7 +256,7 @@ export default function DiagnosticCockpitPage() {
       <DarkSmokyBackground />
 
       <header className="sticky top-0 z-40 w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5">
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 liquid-glass-pill rounded-2xl">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 liquid-glass-pill rounded-2xl bg-background/85">
           <Link
             href="/"
             className="flex min-h-11 items-center gap-3 rounded-lg pr-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"

@@ -11,6 +11,12 @@ interface ScenarioSimulatorStudioProps {
   initialTopicId?: string;
 }
 
+const DIFFICULTY_LABELS = {
+  Standard: "Standard",
+  "High Trap": "Common traps",
+  Institutional: "Advanced",
+} as const;
+
 const PRESET_CHIPS = [
   "Callable bond yield shock & negative convexity",
   "LIFO liquidation in inflationary environment",
@@ -29,7 +35,6 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
     inProgressTopicId,
     weakAreaTargetTopic,
     drillQuestionCount,
-    setDrillQuestionCount,
     addCustomVignette,
     soundEnabled,
   } = useCFAStore();
@@ -75,7 +80,6 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
       const data = await res.json();
       if (res.ok && data.vignette) {
         if (soundEnabled) sound.playNodeSwitch();
-        setDrillQuestionCount(questionCount === 10 ? 10 : (questionCount as 2 | 5));
         addCustomVignette(data.vignette as VignetteSet);
       } else {
         setErrorMessage(data.error || "Failed to generate scenario. Please retry.");
@@ -94,13 +98,15 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-white/[0.04]">
         <div>
           <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <span>Custom practice studio</span>
-            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-accent/15 text-accent font-mono font-semibold">
-              Dynamic generator
-            </span>
+            <span>Generate a practice set</span>
           </h3>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Create custom CFA Level I vignettes with targeted exam traps and difficulty settings.
+            Build new questions for any topic. An AI model writes them when one is configured; otherwise
+            they come from randomized numeric templates, so every set is different.
+          </p>
+          <p className="mt-2 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning">
+            Generated questions are not reviewed, so they don&apos;t count toward your readiness score or mock
+            exams. Use <span className="font-semibold">Study → Practice</span> for reviewed question sets.
           </p>
         </div>
       </div>
@@ -110,10 +116,11 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
         <div className="lg:col-span-7 space-y-5">
           {/* Step 1: Curriculum Track */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-2">
-              Select curriculum topic
+            <label htmlFor="studio-topic" className="block text-xs font-semibold text-slate-300 mb-2">
+              Topic
             </label>
             <select
+              id="studio-topic"
               value={selectedTopicId}
               onChange={(e) => setSelectedTopicId(e.target.value)}
               className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 text-xs sm:text-sm text-white focus:outline-none focus:border-accent"
@@ -130,15 +137,16 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Question Count */}
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">
+              <span id="studio-count-label" className="block text-xs font-semibold text-foreground mb-1.5">
                 Question count
-              </label>
-              <div className="grid grid-cols-3 gap-2">
+              </span>
+              <div role="group" aria-labelledby="studio-count-label" className="grid grid-cols-3 gap-2">
                 {([2, 5, 10] as const).map((cnt) => (
                   <button
                     key={cnt}
                     type="button"
                     onClick={() => setQuestionCount(cnt)}
+                    aria-pressed={questionCount === cnt}
                     className={`min-h-[44px] px-2 rounded-lg text-center text-xs font-semibold transition-all ${
                       questionCount === cnt
                         ? "bg-accent text-accent-ink"
@@ -153,22 +161,23 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
 
             {/* Trap Rigor */}
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">
+              <span id="studio-difficulty-label" className="block text-xs font-semibold text-foreground mb-1.5">
                 Difficulty
-              </label>
-              <div className="grid grid-cols-3 gap-2">
+              </span>
+              <div role="group" aria-labelledby="studio-difficulty-label" className="grid grid-cols-3 gap-2">
                 {(["Standard", "High Trap", "Institutional"] as const).map((diff) => (
                   <button
                     key={diff}
                     type="button"
                     onClick={() => setDifficulty(diff)}
+                    aria-pressed={difficulty === diff}
                     className={`min-h-[44px] px-1.5 rounded-lg text-center text-xs font-semibold transition-all truncate ${
                       difficulty === diff
                         ? "bg-accent text-accent-ink"
                         : "bg-surface-interactive text-muted hover:text-foreground hover:bg-surface-raised"
                     }`}
                   >
-                    {diff}
+                    {DIFFICULTY_LABELS[diff]}
                   </button>
                 ))}
               </div>
@@ -177,11 +186,13 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
 
           {/* Step 4: Custom Scenario Prompt */}
           <div>
-            <label className="block text-xs font-semibold text-foreground mb-1.5">
-              Scenario focus (optional)
+            <label htmlFor="studio-focus" className="block text-xs font-semibold text-foreground mb-1.5">
+              Focus (optional)
             </label>
             <input
+              id="studio-focus"
               type="text"
+              maxLength={500}
               placeholder="e.g. Callable bond yield shock, LIFO liquidation, cross-rate triangular arbitrage..."
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
@@ -191,7 +202,7 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
             {/* Suggestion Chips */}
             <div className="mt-2.5 space-y-1.5">
               <span className="text-xs text-slate-400 block">
-                Suggested scenario topics:
+                Suggestions:
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {PRESET_CHIPS.map((chip, idx) => (
@@ -210,7 +221,7 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
 
           {/* Error message banner */}
           {errorMessage && (
-            <div className="p-3 rounded-xl bg-danger/10 border border-danger/20 text-danger text-xs flex items-center gap-2">
+            <div role="alert" className="p-3 rounded-xl bg-danger/10 border border-danger/20 text-danger text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -221,7 +232,7 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
         <div className="lg:col-span-5 flex flex-col justify-between space-y-4 rounded-2xl bg-white/[0.03] p-5 sm:p-6">
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-white/[0.04]">
-              <span className="font-semibold text-white">Configuration summary</span>
+              <span className="font-semibold text-white">Summary</span>
               <span className="font-mono text-accent font-semibold">{questionCount} questions</span>
             </div>
 
@@ -242,7 +253,7 @@ export const ScenarioSimulatorStudio: React.FC<ScenarioSimulatorStudioProps> = (
 
             <div className="p-3 rounded-xl bg-white/[0.02] text-xs">
               <span className="font-semibold text-warning block mb-1">
-                Primary target trap:
+                Common difficulty:
               </span>
               <p className="text-slate-300 text-xs leading-relaxed">
                 {topic.highYieldTrapArea}

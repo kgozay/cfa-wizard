@@ -1,8 +1,9 @@
 import { VignetteSet } from "@/types/cfa";
+import { ADDITIONAL_AUTHORED_QUESTIONS } from "./additionalQuestions";
 
-export const CFA_VIGNETTES: VignetteSet[] = [
+const BASE_VIGNETTES: VignetteSet[] = [
   // ==========================================
-  // TOPIC 01: Quantitative Methods (15 Questions)
+  // TOPIC 01: Quantitative Methods (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-01-quant",
@@ -316,7 +317,7 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   },
 
   // ==========================================
-  // TOPIC 02: Economics (15 Questions)
+  // TOPIC 02: Economics (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-02-econ",
@@ -630,12 +631,12 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   },
 
   // ==========================================
-  // TOPIC 03: Corporate Finance (15 Questions)
+  // TOPIC 03: Corporate Finance (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-03-corpfin",
     topicId: "03",
-    topicName: "Corporate Issuers",
+    topicName: "Corporate Finance",
     subReading: "Governance, Capital Budgeting (NPV/IRR), Working Capital & Leverage",
     difficulty: "High Trap",
     vignetteStem: "An industrial manufacturer with a 25% corporate tax rate is evaluating capital allocations, liquidity cash conversion cycles, target WACC components, and operational/financial leverage structures.",
@@ -944,7 +945,7 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   },
 
   // ==========================================
-  // TOPIC 04: Financial Statement Analysis (15 Questions)
+  // TOPIC 04: Financial Statement Analysis (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-04-fsa",
@@ -1258,7 +1259,7 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   },
 
   // ==========================================
-  // TOPIC 05: Equities (15 Questions)
+  // TOPIC 05: Equities (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-05-equity",
@@ -1572,7 +1573,7 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   },
 
   // ==========================================
-  // TOPIC 06: Fixed Income (15 Questions)
+  // TOPIC 06: Fixed Income (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-06-fixedinc",
@@ -1886,7 +1887,7 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   },
 
   // ==========================================
-  // TOPIC 07: Derivatives (15 Questions)
+  // TOPIC 07: Derivatives (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-07-deriv",
@@ -2200,7 +2201,7 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   },
 
   // ==========================================
-  // TOPIC 08: Alternative Investments (15 Questions)
+  // TOPIC 08: Alternative Investments (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-08-alts",
@@ -2514,12 +2515,12 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   },
 
   // ==========================================
-  // TOPIC 09: Portfolio Construction (15 Questions)
+  // TOPIC 09: Portfolio Construction (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-09-port",
     topicId: "09",
-    topicName: "Portfolio Management",
+    topicName: "Portfolio Construction",
     subReading: "Portfolio Risk & Return, CAPM, SML vs CML, IPS Governance & Performance Ratios",
     difficulty: "High Trap",
     vignetteStem: "An institutional endowment has a risk-free rate R_f = 4.00% and expected market return E(R_m) = 10.00%. An equity fund manager analyzes Stock Delta, which has an expected return of 13.50% and standard deviation of 24.0%. Market volatility is 15.0%, and correlation is 0.75.",
@@ -2828,7 +2829,7 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   },
 
   // ==========================================
-  // TOPIC 10: Ethics (15 Questions)
+  // TOPIC 10: Ethics (15 base questions; see additionalQuestions.ts)
   // ==========================================
   {
     id: "vignette-10-ethics",
@@ -3141,3 +3142,8 @@ export const CFA_VIGNETTES: VignetteSet[] = [
     ]
   }
 ];
+
+export const CFA_VIGNETTES: VignetteSet[] = BASE_VIGNETTES.map((vignette) => ({
+  ...vignette,
+  questions: [...vignette.questions, ...(ADDITIONAL_AUTHORED_QUESTIONS[vignette.topicId] || [])],
+}));

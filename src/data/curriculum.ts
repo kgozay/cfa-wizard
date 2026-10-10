@@ -5,8 +5,8 @@ export const CFA_CURRICULUM: CFATopic[] = [
     id: "01",
     name: "Quantitative Methods",
     shortName: "Quant",
-    weight: "6–9%",
-    weightCategory: "MEDIUM",
+    weight: "11–14%",
+    weightCategory: "HIGH",
     highYieldTrapArea: "EAR compounding periodicity, Annuity Due BGN mode, Hypothesis testing p-values vs critical values",
     executiveSummary: [
       "Effective Annual Rate (EAR): With continuous or periodic compounding, $EAR = (1 + r/m)^m - 1$ and $EAR_{cont} = e^r - 1$. Always verify compounding frequency before inputting into TVM.",
@@ -130,7 +130,7 @@ export const CFA_CURRICULUM: CFATopic[] = [
   },
   {
     id: "03",
-    name: "Corporate Issuers",
+    name: "Corporate Finance",
     shortName: "Corp Fin",
     weight: "6–9%",
     weightCategory: "MEDIUM",
@@ -338,8 +338,8 @@ export const CFA_CURRICULUM: CFATopic[] = [
     id: "07",
     name: "Derivatives",
     shortName: "Derivatives",
-    weight: "5–8%",
-    weightCategory: "STANDARD",
+    weight: "6–9%",
+    weightCategory: "MEDIUM",
     highYieldTrapArea: "Put-call parity synthetic positions, Forward commitment pricing vs valuation, Moneyness option intrinsic value",
     executiveSummary: [
       "Put-Call Parity: $S_0 + p_0 = c_0 + PV(X) = c_0 + \\frac{X}{(1+r)^T}$. Fiduciary Call $= c_0 + PV(X)$; Protective Put $= S_0 + p_0$.",
@@ -375,8 +375,8 @@ export const CFA_CURRICULUM: CFATopic[] = [
     id: "08",
     name: "Alternative Investments",
     shortName: "Alts",
-    weight: "7–10%",
-    weightCategory: "STANDARD",
+    weight: "6–9%",
+    weightCategory: "MEDIUM",
     highYieldTrapArea: "Hedge fund fee 2/20 hurdle rate calculations, Real estate NAV vs cap rate capitalization, Private equity waterfalls",
     executiveSummary: [
       "Hedge Fund Fee Structures: '2 and 20' consists of $2\\%$ management fee (calculated on beginning or ending assets) plus $20\\%$ incentive fee (often subject to High-Water Mark and Hurdle Rate). Critical Trap: Verify if incentive fee is computed net or gross of management fees.",
@@ -423,7 +423,7 @@ export const CFA_CURRICULUM: CFATopic[] = [
   },
   {
     id: "09",
-    name: "Portfolio Management",
+    name: "Portfolio Construction",
     shortName: "Portfolio",
     weight: "8–12%",
     weightCategory: "HIGH",
@@ -476,7 +476,7 @@ export const CFA_CURRICULUM: CFATopic[] = [
     id: "10",
     name: "Ethics",
     shortName: "Ethics",
-    weight: "15–20%",
+    weight: "10–15%",
     weightCategory: "HIGH",
     highYieldTrapArea: "Soft dollars allocation rules, Independence & objectivity with corporate gifts, GIPS composite rules",
     executiveSummary: [

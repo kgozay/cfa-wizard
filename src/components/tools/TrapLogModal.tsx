@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, AlertTriangle, ShieldCheck, Trash2, ArrowRight, Search, Filter, Cpu, Sparkles } from "lucide-react";
+import { X, AlertTriangle, ShieldCheck, Trash2, Search, Filter, Cpu, Sparkles } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
+import { CFA_CURRICULUM } from "@/data/curriculum";
 import { TRAP_TAXONOMY } from "@/data/trapTaxonomy";
 import { sound } from "@/components/common/SoundEffects";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
@@ -55,15 +56,15 @@ export const TrapLogModal: React.FC = () => {
         {/* Header */}
         <div className="p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
+            <div className="w-8 h-8 rounded-xl bg-warning/10 flex items-center justify-center text-warning">
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div>
               <h3 id="trap-log-title" className="text-base sm:text-lg font-bold text-white tracking-tight">
-                CANDIDATE TRAP RADAR &amp; WEAK-AREA LOG
+                Mistake log
               </h3>
-              <span className="font-mono text-xs text-zinc-400">
-                REAL-TIME DIAGNOSTIC REVISION OF CANDIDATE DISTRACTOR CHOICES
+              <span className="tabular-nums text-xs text-muted">
+                Every question you missed, with why the answer you chose was wrong
               </span>
             </div>
           </div>
@@ -76,11 +77,11 @@ export const TrapLogModal: React.FC = () => {
                     clearAllTrapLogs();
                   }
                 }}
-                className="px-2.5 py-1.5 rounded-lg bg-red-950/30 text-red-400 border border-red-900/40 hover:bg-red-900/40 text-xs font-mono flex items-center gap-1"
+                className="px-2.5 py-1.5 rounded-lg bg-danger/30 text-danger border border-danger/40 hover:bg-danger/40 text-xs tabular-nums flex items-center gap-1"
                 title="Clear All Traps"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">CLEAR ALL</span>
+                <span className="hidden sm:inline">Clear all</span>
               </button>
             )}
             <button
@@ -89,7 +90,7 @@ export const TrapLogModal: React.FC = () => {
                 setTrapLogOpen(false);
               }}
               aria-label="Close trap log"
-              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted hover:text-white hover:bg-surface-raised transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -97,36 +98,32 @@ export const TrapLogModal: React.FC = () => {
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="px-6 py-3 border-b border-[#1F1F23] bg-[#0E0E12] flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-          <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-[#121215] border border-[#27272A] px-3 py-1.5 rounded-lg">
-            <Search className="w-3.5 h-3.5 text-zinc-400" />
+        <div className="px-6 py-3 border-b border-control bg-background-elevated flex flex-wrap items-center justify-between gap-3 tabular-nums text-xs">
+          <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-surface-interactive border border-control px-3 py-1.5 rounded-lg">
+            <Search className="w-3.5 h-3.5 text-muted" />
             <input
               type="text"
               placeholder="Search traps, stems, or topics..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent border-none outline-none text-white text-xs w-full placeholder:text-zinc-500"
+              className="bg-transparent border-none outline-none text-white text-xs w-full placeholder:text-muted"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-zinc-400" />
+            <Filter className="w-3.5 h-3.5 text-muted" />
             <select
+              aria-label="Filter mistakes by topic"
               value={selectedTopicFilter}
               onChange={(e) => setSelectedTopicFilter(e.target.value)}
-              className="bg-[#121215] text-white border border-[#27272A] rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-brand-lime"
+              className="bg-surface-interactive text-white border border-control rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-accent"
             >
-              <option value="ALL">All Tracks (01-10)</option>
-              <option value="01">Topic 01: Ethics</option>
-              <option value="02">Topic 02: Quantitative Methods</option>
-              <option value="03">Topic 03: Economics</option>
-              <option value="04">Topic 04: FSA</option>
-              <option value="05">Topic 05: Corporate Issuers</option>
-              <option value="06">Topic 06: Fixed Income</option>
-              <option value="07">Topic 07: Derivatives</option>
-              <option value="08">Topic 08: Alternative Investments</option>
-              <option value="09">Topic 09: Equity Investments</option>
-              <option value="10">Topic 10: Portfolio Management</option>
+              <option value="ALL">All topics</option>
+              {CFA_CURRICULUM.map((topic) => (
+                <option key={topic.id} value={topic.id}>
+                  {topic.id} · {topic.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -135,12 +132,12 @@ export const TrapLogModal: React.FC = () => {
         <div className="p-6 space-y-4 overflow-y-auto flex-1">
           
           {filteredLogs.length === 0 ? (
-            <div className="p-12 text-center space-y-3 bg-[#09090B] border border-[#1F1F23] rounded-xl">
-              <ShieldCheck className="w-10 h-10 text-brand-lime mx-auto" />
+            <div className="p-12 text-center space-y-3 bg-background border border-control rounded-xl">
+              <ShieldCheck className="w-10 h-10 text-accent mx-auto" />
               <h4 className="text-base font-semibold text-white">
                 {trapLogs.length === 0 ? "Zero High-Yield Traps Logged" : "No Matching Traps Found"}
               </h4>
-              <p className="text-xs text-zinc-400 max-w-md mx-auto">
+              <p className="text-xs text-muted max-w-md mx-auto">
                 {trapLogs.length === 0
                   ? "You have not fallen for any distractor traps in your completed diagnostic sets yet. Keep drilling vignettes to uncover weak spots."
                   : "Try clearing your search query or switching to All Tracks."}
@@ -155,24 +152,24 @@ export const TrapLogModal: React.FC = () => {
                 return (
                   <div
                     key={entry.id}
-                    className="p-4 rounded-xl bg-[#09090B] border border-[#1F1F23] space-y-3 font-sans text-xs hover:border-[#2E2E35] transition-all"
+                    className="p-4 rounded-xl bg-background border border-control space-y-3 font-sans text-xs hover:border-control-boundary-hover transition-all"
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#18181B] font-mono text-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-divider tabular-nums text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 font-bold border border-amber-500/30">
+                        <span className="px-2 py-0.5 rounded bg-warning/10 text-warning font-bold border border-warning/30">
                           {entry.trapName}
                         </span>
-                        <span className="text-zinc-400">
+                        <span className="text-muted">
                           Track {entry.topicId} &bull; {entry.topicName}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-zinc-500 text-[11px]">
+                        <span className="text-muted text-[11px]">
                           {new Date(entry.timestamp).toLocaleTimeString()}
                         </span>
                         <button
                           onClick={() => deleteTrapLogEntry(entry.id)}
-                          className="p-1 rounded text-zinc-500 hover:text-red-400 hover:bg-red-950/30 transition-colors"
+                          className="p-1 rounded text-muted hover:text-danger hover:bg-danger/30 transition-colors"
                           title="Delete from Trap Log"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -184,34 +181,34 @@ export const TrapLogModal: React.FC = () => {
                       <div className="text-white font-medium block mb-1">
                         &quot;<FormattedMathText text={entry.questionStem} />&quot;
                       </div>
-                      <div className="flex items-center gap-3 font-mono text-xs mt-1">
-                        <span className="text-red-400 font-bold">
+                      <div className="flex items-center gap-3 tabular-nums text-xs mt-1">
+                        <span className="text-danger font-bold">
                           Selected: Option {userSelection}
                         </span>
-                        <span className="text-zinc-600">|</span>
-                        <span className="text-brand-lime font-bold">
+                        <span className="text-muted">|</span>
+                        <span className="text-accent font-bold">
                           Key: Option {entry.correctOption}
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded bg-[#121215] border border-[#27272A] text-zinc-200 leading-relaxed">
-                      <span className="font-mono text-[11px] text-amber-400 font-bold block mb-0.5">
-                        DISTRACTOR AUTOPSY:
+                    <div className="p-3 rounded bg-surface-interactive border border-control text-foreground leading-relaxed">
+                      <span className="tabular-nums text-[11px] text-warning font-bold block mb-0.5">
+                        Why it&apos;s wrong:
                       </span>
                       <FormattedMathText text={entry.autopsyExplanation} />
                     </div>
 
                     {entry.calculatorKeystrokes && (
-                      <div className="p-2.5 rounded bg-[#141418] border border-[#27272A] flex items-center gap-2 font-mono text-xs text-amber-300">
-                        <Cpu className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <div className="p-2.5 rounded bg-surface-interactive border border-control flex items-center gap-2 tabular-nums text-xs text-warning">
+                        <Cpu className="w-3.5 h-3.5 text-warning shrink-0" />
                         <span>TI BA II+: {entry.calculatorKeystrokes}</span>
                       </div>
                     )}
 
                     {taxonomy && (
-                      <div className="text-xs text-zinc-300 font-mono flex items-start gap-1.5">
-                        <span className="text-brand-lime font-bold shrink-0">REMEDIATION:</span>
+                      <div className="text-xs text-muted-strong tabular-nums flex items-start gap-1.5">
+                        <span className="text-accent font-bold shrink-0">REMEDIATION:</span>
                         <FormattedMathText text={taxonomy.recommendedRemediation} />
                       </div>
                     )}
@@ -224,8 +221,8 @@ export const TrapLogModal: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between font-mono text-xs">
-          <span className="text-zinc-400">
+        <div className="p-4 border-t border-control bg-background-elevated flex items-center justify-between tabular-nums text-xs">
+          <span className="text-muted">
             Showing {filteredLogs.length} of {trapLogs.length} Traps
           </span>
           
@@ -233,10 +230,10 @@ export const TrapLogModal: React.FC = () => {
             {trapLogs.length > 0 && (
               <button
                 onClick={handleLaunchTargetedAI}
-                className="px-4 py-2 rounded-lg bg-brand-lime text-black font-bold flex items-center gap-1.5 hover:bg-brand-neon shadow-lime-sm transition-all active:scale-95"
+                className="px-4 py-2 rounded-lg bg-accent text-accent-ink font-bold flex items-center gap-1.5 hover:bg-accent-strong transition-all active:scale-95"
               >
                 <Sparkles className="w-3.5 h-3.5 fill-current" />
-                <span>REMEDIATE WEAK AREAS WITH AI</span>
+                <span>Generate practice for weak areas</span>
               </button>
             )}
 
@@ -245,9 +242,9 @@ export const TrapLogModal: React.FC = () => {
                 if (soundEnabled) sound.playKeyClick();
                 setTrapLogOpen(false);
               }}
-              className="px-4 py-2 rounded-lg bg-[#18181B] text-white hover:text-brand-lime border border-[#3F3F46]"
+              className="px-4 py-2 rounded-lg bg-surface-raised text-white hover:text-accent border border-control"
             >
-              CLOSE
+              Close
             </button>
           </div>
         </div>

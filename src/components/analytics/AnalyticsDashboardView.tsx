@@ -73,10 +73,6 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
   const overallAccuracy =
     totalQuestionsSolved > 0 ? Math.round((totalCorrect / totalQuestionsSolved) * 100) : 0;
 
-  const avoidedMistakePct =
-    totalQuestionsSolved > 0
-      ? Math.max(0, 100 - Math.round((eligibleItemAttempts.filter((item) => !item.isCorrect).length / totalQuestionsSolved) * 100))
-      : 100;
 
   // Due flashcards count
   const dueFlashcardsCount = useMemo(() => {
@@ -226,7 +222,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
           {/* Estimated CFA Readiness Score */}
           <div className="p-5 rounded-2xl surface-panel shadow-sm flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-muted">
-              <span className="font-semibold uppercase tracking-wider">CFA readiness index</span>
+              <span className="font-semibold">Readiness index</span>
               <Target className="w-4 h-4 text-accent" />
             </div>
             <div className="my-3 flex items-baseline gap-2">
@@ -253,12 +249,16 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
                 style={{ width: `${weightedReadinessScore}%` }}
               />
             </div>
+            <p className="mt-2 text-xs text-muted">
+              70% weighted accuracy (tested topics, weighted by exam weight) + 30% topic coverage.
+              A study guide, not a pass prediction.
+            </p>
           </div>
 
           {/* Global Accuracy */}
           <div className="p-5 rounded-2xl surface-panel shadow-sm flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-muted">
-              <span className="font-semibold uppercase tracking-wider">Overall accuracy</span>
+              <span className="font-semibold">Overall accuracy</span>
               <TrendingUp className="w-4 h-4 text-info" />
             </div>
             <div className="my-3 flex items-baseline gap-2">
@@ -274,29 +274,27 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
             </span>
           </div>
 
-          {/* Candidate Trap Immunity */}
+          {/* Topic coverage */}
           <div className="p-5 rounded-2xl surface-panel shadow-sm flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-muted">
-              <span className="font-semibold uppercase tracking-wider">Avoided-mistake rate</span>
+              <span className="font-semibold">Topics tested</span>
               <Shield className="w-4 h-4 text-accent" />
             </div>
             <div className="my-3 flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-black font-mono text-accent">
-                {avoidedMistakePct}%
+              <span className="text-3xl sm:text-4xl font-black font-mono text-foreground">
+                {testedTopicCount}
               </span>
-              <span className="text-xs text-muted font-mono">
-                {eligibleTrapLogs.length} mistakes
-              </span>
+              <span className="text-xs text-muted font-mono">/ 10 topics</span>
             </div>
             <span className="text-xs text-muted">
-              Answers completed without a trap error
+              A topic counts once you have answered at least 5 of its questions
             </span>
           </div>
 
           {/* Spaced Repetition Due */}
           <div className="p-5 rounded-2xl surface-panel shadow-sm flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-muted">
-              <span className="font-semibold uppercase tracking-wider">Review cards due</span>
+              <span className="font-semibold">Review cards due</span>
               <Flame className="w-4 h-4 text-warning" />
             </div>
             <div className="my-3 flex items-baseline gap-2">
@@ -312,7 +310,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
               </span>
             </div>
             <span className="text-xs text-muted">
-              Active Leitner spaced review
+              Missed questions waiting in your review deck
             </span>
           </div>
         </div>

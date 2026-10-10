@@ -9,9 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
+        background: "rgb(var(--background-rgb) / <alpha-value>)",
         "background-elevated": "var(--background-elevated)",
-        foreground: "var(--foreground)",
+        foreground: "rgb(var(--foreground-rgb) / <alpha-value>)",
         surface: {
           DEFAULT: "var(--surface)",
           solid: "var(--surface-solid)",
@@ -38,18 +38,18 @@ const config: Config = {
           "boundary-hover": "var(--control-boundary-hover)",
         },
         muted: {
-          DEFAULT: "var(--muted)",
-          strong: "var(--muted-strong)",
+          DEFAULT: "rgb(var(--muted-rgb) / <alpha-value>)",
+          strong: "rgb(var(--muted-strong-rgb) / <alpha-value>)",
         },
         accent: {
-          DEFAULT: "var(--accent)",
-          strong: "var(--accent-strong)",
-          ink: "var(--accent-ink)",
+          DEFAULT: "rgb(var(--accent-rgb) / <alpha-value>)",
+          strong: "rgb(var(--accent-strong-rgb) / <alpha-value>)",
+          ink: "rgb(var(--accent-ink-rgb) / <alpha-value>)",
         },
-        info: "var(--info)",
-        warning: "var(--warning)",
-        generated: "var(--generated)",
-        danger: "var(--danger)",
+        info: "rgb(var(--info-rgb) / <alpha-value>)",
+        warning: "rgb(var(--warning-rgb) / <alpha-value>)",
+        generated: "rgb(var(--generated-rgb) / <alpha-value>)",
+        danger: "rgb(var(--danger-rgb) / <alpha-value>)",
         brand: {
           lime: "#B8D878",
           neon: "#CAE98A",

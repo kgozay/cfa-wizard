@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Play, BookOpen, Wand2, CheckCircle2 } from "lucide-react";
+import { Play, CheckCircle2 } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";

@@ -1,4 +1,4 @@
-import { VignetteQuestion, VignetteSet } from "@/types/cfa";
+import { VignetteSet } from "@/types/cfa";
 
 export interface BankAuditReport {
   totalVignettes: number;

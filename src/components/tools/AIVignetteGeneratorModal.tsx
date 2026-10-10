@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Sparkles, Wand2, Play, AlertCircle, Loader2, Layers, Check } from "lucide-react";
+import { X, Sparkles, Wand2, AlertCircle, Loader2 } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
@@ -96,10 +96,10 @@ export const AIVignetteGeneratorModal: React.FC = () => {
             </div>
             <div>
               <h3 id="ai-lab-title" className="text-base sm:text-lg font-bold text-white tracking-tight">
-                ON-DEMAND AI SCENARIO LAB
+                Generate a practice set
               </h3>
-              <span className="font-mono text-xs text-slate-400">
-                SYNTHESIZE INSTITUTIONAL CFA CASE VIGNETTES WITH TARGETED TRAPS
+              <span className="tabular-nums text-xs text-slate-400">
+                New questions for any topic. Generated questions don&apos;t count toward readiness.
               </span>
             </div>
           </div>
@@ -110,7 +110,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
               setAIGeneratorOpen(false);
             }}
             aria-label="Close scenario lab"
-            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted hover:text-white hover:bg-surface-raised transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -121,13 +121,13 @@ export const AIVignetteGeneratorModal: React.FC = () => {
           
           {/* Target Track Selector */}
           <div>
-            <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
+            <label className="block text-xs font-bold text-white mb-2">
               1. Select Curriculum Track:
             </label>
             <select
               value={selectedTopicId}
               onChange={(e) => setSelectedTopicId(e.target.value)}
-              className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-brand-lime"
+              className="w-full bg-background border border-control rounded-lg p-2.5 text-xs text-white tabular-nums focus:outline-none focus:border-accent"
             >
               {CFA_CURRICULUM.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -142,10 +142,10 @@ export const AIVignetteGeneratorModal: React.FC = () => {
             
             {/* Question Count */}
             <div>
-              <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
+              <label className="block text-xs font-bold text-white mb-2">
                 2. Question Count:
               </label>
-              <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+              <div className="grid grid-cols-3 gap-2 tabular-nums text-xs">
                 {([2, 5, 10] as const).map((cnt) => (
                   <button
                     key={cnt}
@@ -153,8 +153,8 @@ export const AIVignetteGeneratorModal: React.FC = () => {
                     onClick={() => setQuestionCount(cnt)}
                     className={`py-2 px-3 rounded-lg border text-center font-semibold transition-all ${
                       questionCount === cnt
-                        ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
-                        : "bg-[#121215] text-zinc-400 border-[#27272A] hover:text-white"
+                        ? "bg-accent text-accent-ink font-bold border-accent "
+                        : "bg-surface-interactive text-muted border-control hover:text-white"
                     }`}
                   >
                     {cnt}Q SET
@@ -165,10 +165,10 @@ export const AIVignetteGeneratorModal: React.FC = () => {
 
             {/* Difficulty Setting */}
             <div>
-              <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
+              <label className="block text-xs font-bold text-white mb-2">
                 3. Trap Rigor:
               </label>
-              <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+              <div className="grid grid-cols-3 gap-2 tabular-nums text-xs">
                 {(["Standard", "High Trap", "Institutional"] as const).map((diff) => (
                   <button
                     key={diff}
@@ -176,8 +176,8 @@ export const AIVignetteGeneratorModal: React.FC = () => {
                     onClick={() => setDifficulty(diff)}
                     className={`py-2 px-2 rounded-lg border text-center font-semibold transition-all text-[11px] truncate ${
                       difficulty === diff
-                        ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
-                        : "bg-[#121215] text-zinc-400 border-[#27272A] hover:text-white"
+                        ? "bg-accent text-accent-ink font-bold border-accent "
+                        : "bg-surface-interactive text-muted border-control hover:text-white"
                     }`}
                   >
                     {diff}
@@ -189,13 +189,13 @@ export const AIVignetteGeneratorModal: React.FC = () => {
           </div>
 
           {/* Trap Area Context Banner */}
-          <div className="p-3.5 rounded-lg bg-[#121215] border border-amber-400/30 flex items-start gap-2.5 text-xs">
-            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-lg bg-surface-interactive border border-warning/30 flex items-start gap-2.5 text-xs">
+            <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
             <div>
-              <span className="font-mono text-xs font-bold text-amber-400 block">
+              <span className="tabular-nums text-xs font-bold text-warning block">
                 PRIMARY TARGET TRAP IN FOCUS ({topic.shortName.toUpperCase()}):
               </span>
-              <p className="text-zinc-200 text-xs mt-0.5 leading-relaxed">
+              <p className="text-foreground text-xs mt-0.5 leading-relaxed">
                 {topic.highYieldTrapArea}
               </p>
             </div>
@@ -203,7 +203,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
 
           {/* Optional Prompt Refinement */}
           <div>
-            <label className="block font-mono text-xs font-bold text-white mb-2 uppercase tracking-wide">
+            <label className="block text-xs font-bold text-white mb-2">
               4. Custom Scenario Focus (Tailor the scenario &amp; questions):
             </label>
             <input
@@ -211,17 +211,17 @@ export const AIVignetteGeneratorModal: React.FC = () => {
               placeholder="e.g. Callable bond yield shock, LIFO liquidation, put-call parity arbitrage..."
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
-              className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-lime font-mono"
+              className="w-full bg-background border border-control rounded-lg p-2.5 text-xs text-white placeholder:text-muted focus:outline-none focus:border-accent tabular-nums"
             />
-            <span className="text-[11px] text-zinc-500 font-mono mt-1 block">
+            <span className="text-[11px] text-muted tabular-nums mt-1 block">
               Leave blank for a comprehensive high-yield track drill, or specify custom asset classes / market conditions.
             </span>
           </div>
 
           {/* Error message banner */}
           {errorMessage && (
-            <div className="p-3 rounded-lg bg-red-950/40 border border-red-900/50 text-red-300 text-xs font-mono flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <div className="p-3 rounded-lg bg-danger/40 border border-danger/50 text-danger text-xs tabular-nums flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-danger shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -229,18 +229,18 @@ export const AIVignetteGeneratorModal: React.FC = () => {
         </div>
 
         {/* Footer CTA */}
-        <div className="p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between font-mono text-xs">
+        <div className="p-4 border-t border-control bg-background-elevated flex items-center justify-between tabular-nums text-xs">
           <button
             onClick={() => setAIGeneratorOpen(false)}
-            className="px-4 py-2 rounded-lg text-zinc-400 hover:text-white"
+            className="px-4 py-2 rounded-lg text-muted hover:text-white"
           >
-            CANCEL
+            Cancel
           </button>
 
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="px-5 py-2.5 rounded-lg bg-brand-lime text-black font-bold flex items-center gap-2 hover:bg-brand-neon active:scale-95 transition-all shadow-lime-sm disabled:opacity-50"
+            className="px-5 py-2.5 rounded-lg bg-accent text-accent-ink font-bold flex items-center gap-2 hover:bg-accent-strong active:scale-95 transition-all disabled:opacity-50"
           >
             {isGenerating ? (
               <>
@@ -250,7 +250,7 @@ export const AIVignetteGeneratorModal: React.FC = () => {
             ) : (
               <>
                 <Wand2 className="w-4 h-4" />
-                <span>SYNTHESIZE &amp; LAUNCH DRILL</span>
+                <span>Generate and start</span>
               </>
             )}
           </button>

@@ -56,3 +56,33 @@ export function createPracticeSession(options: CreateSessionOptions): PracticeSe
     targetSecondsPerItem: options.targetSecondsPerItem ?? (options.timerMode === "timed" ? 90 : undefined),
   };
 }
+
+/**
+ * Appends items to an in-progress session without disturbing the questions,
+ * option order or answers already presented.
+ */
+export function appendItemsToSession(
+  session: PracticeSession,
+  items: PracticeItem[],
+  extraSourceSetIds: string[] = []
+): PracticeSession {
+  const prng = createPRNG(`${session.seed}:append:${session.presentedItems.length}`);
+  const known = new Set(session.itemIds);
+  const fresh = items.filter((item) => !known.has(item.id));
+  const appended = fresh.map((item, index) =>
+    presentPracticeItem(item, session.id, session.presentedItems.length + index + 1, prng)
+  );
+  return {
+    ...session,
+    itemIds: [...session.itemIds, ...fresh.map((item) => item.id)],
+    presentedItems: [...session.presentedItems, ...appended],
+    topicIds: Array.from(new Set([...session.topicIds, ...fresh.map((item) => item.topicId)])),
+    sourceSetIds: Array.from(
+      new Set([
+        ...session.sourceSetIds,
+        ...extraSourceSetIds,
+        ...(fresh.map((item) => item.caseId || item.id).filter(Boolean) as string[]),
+      ])
+    ),
+  };
+}

@@ -5,10 +5,7 @@ import {
   Play,
   BookOpen,
   ChevronDown,
-  CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
-} from "lucide-react";
+  ArrowRight } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { useCFAStore } from "@/store/useCFAStore";
@@ -22,18 +19,15 @@ interface CurriculumTracksGridProps {
 
 export const CurriculumTracksGrid: React.FC<CurriculumTracksGridProps> = ({
   onOpenBriefing,
-  onOpenScenarioSimulator,
-}) => {
+  onOpenScenarioSimulator }) => {
   const {
     completedTopicIds,
     activeTopicId,
     inProgressTopicId,
     selectTopic,
     startVignetteDrill,
-    drillQuestionCount,
     practiceAttempts,
-    soundEnabled,
-  } = useCFAStore();
+    soundEnabled } = useCFAStore();
 
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
 

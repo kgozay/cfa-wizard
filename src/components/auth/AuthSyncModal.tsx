@@ -9,14 +9,11 @@ import {
   CheckCircle,
   AlertTriangle,
   X,
-  Lock,
   Mail,
   Key,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+  RefreshCw } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
-import { supabaseRest, isSupabaseConfigured } from "@/lib/supabase/client";
+import { supabaseRest } from "@/lib/supabase/client";
 import { sound } from "@/components/common/SoundEffects";
 import { BackupPayload, validateBackupPayload } from "@/lib/backup/schema";
 import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
@@ -37,8 +34,7 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
     trapLogs,
     customVignettes,
     leitnerCards,
-    soundEnabled,
-  } = useCFAStore();
+    soundEnabled } = useCFAStore();
 
   const [activeTab, setActiveTab] = useState<"backup" | "cloud">("backup");
   const [email, setEmail] = useState("");
@@ -70,13 +66,10 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
         activePracticeSessionId,
         trapLogs,
         customVignettes,
-        leitnerCards,
-      },
-    };
+        leitnerCards } };
 
     const blob = new Blob([JSON.stringify(backupData, null, 2)], {
-      type: "application/json",
-    });
+      type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -88,8 +81,7 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
 
     setStatusMessage({
       type: "success",
-      text: "Progress backup JSON successfully downloaded to your device.",
-    });
+      text: "Progress backup JSON successfully downloaded to your device." });
   };
 
   // 1-Click JSON Import
@@ -107,8 +99,7 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
         } catch {
           setStatusMessage({
             type: "error",
-            text: "Invalid JSON syntax. Please check the backup file.",
-          });
+            text: "Invalid JSON syntax. Please check the backup file." });
           return;
         }
 
@@ -116,21 +107,18 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
         if (!validation.success || !validation.data) {
           setStatusMessage({
             type: "error",
-            text: validation.error || "Invalid backup envelope structure.",
-          });
+            text: validation.error || "Invalid backup envelope structure." });
           return;
         }
 
         setPendingBackup(validation.data);
         setStatusMessage({
           type: "info",
-          text: `Backup validated. Review the replacement summary before applying.${validation.warnings?.length ? ` ${validation.warnings.join(" ")}` : ""}`,
-        });
-      } catch (err) {
+          text: `Backup validated. Review the replacement summary before applying.${validation.warnings?.length ? ` ${validation.warnings.join(" ")}` : ""}` });
+      } catch {
         setStatusMessage({
           type: "error",
-          text: "Unexpected error restoring backup. Please verify the file.",
-        });
+          text: "Unexpected error restoring backup. Please verify the file." });
       }
     };
     reader.readAsText(file);
@@ -205,14 +193,14 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/[0.04]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent font-bold font-mono">
+            <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent font-bold tabular-nums">
               <Cloud className="w-4 h-4" />
             </div>
             <div>
               <h2 id="auth-sync-title" className="text-base font-bold text-white tracking-wide">
                 Progress Persistence & Cloud Sync
               </h2>
-              <p className="text-xs text-zinc-400 font-mono">
+              <p className="text-xs text-muted tabular-nums">
                 Local-First Architecture • Zero-Risk JSON Backup • Optional Supabase Sync
               </p>
             </div>
@@ -220,14 +208,14 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
           <button
             onClick={onClose}
             aria-label="Close dialog"
-            className="text-zinc-400 hover:text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg"
+            className="text-muted hover:text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-2 gap-2 bg-[#121216] p-1 rounded-xl border border-[#222226] font-mono text-xs">
+        <div className="grid grid-cols-2 gap-2 bg-surface-interactive p-1 rounded-xl border border-control tabular-nums text-xs">
           <button
             onClick={() => {
               setActiveTab("backup");
@@ -235,12 +223,12 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
             }}
             className={`py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
               activeTab === "backup"
-                ? "bg-brand-lime text-black shadow-lime-sm"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-accent text-accent-ink "
+                : "text-muted hover:text-white"
             }`}
           >
             <Download className="w-3.5 h-3.5" />
-            <span>1-CLICK JSON BACKUP</span>
+            <span>Backup file</span>
           </button>
           <button
             onClick={() => {
@@ -249,22 +237,22 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
             }}
             className={`py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
               activeTab === "cloud"
-                ? "bg-brand-lime text-black shadow-lime-sm"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-accent text-accent-ink "
+                : "text-muted hover:text-white"
             }`}
           >
             <Cloud className="w-3.5 h-3.5" />
-            <span>SUPABASE CLOUD SYNC</span>
+            <span>Cloud sync</span>
           </button>
         </div>
 
         {/* Status Alerts */}
         {statusMessage && (
           <div
-            className={`p-3 rounded-xl border font-mono text-xs flex items-center gap-2 ${
+            className={`p-3 rounded-xl border tabular-nums text-xs flex items-center gap-2 ${
               statusMessage.type === "success"
-                ? "bg-brand-lime/10 border-brand-lime/40 text-brand-lime"
-                : "bg-red-500/10 border-red-500/40 text-red-300"
+                ? "bg-accent/10 border-accent/40 text-accent"
+                : "bg-danger/10 border-danger/40 text-danger"
             }`}
           >
             {statusMessage.type === "success" ? (
@@ -278,35 +266,35 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
 
         {/* Tab 1: 1-Click JSON Backup & Restore (Zero Risk) */}
         {activeTab === "backup" && (
-          <div className="space-y-4 font-mono text-xs">
-            <div className="p-4 bg-[#121216] border border-[#222228] rounded-xl space-y-3">
+          <div className="space-y-4 tabular-nums text-xs">
+            <div className="p-4 bg-surface-interactive border border-control rounded-xl space-y-3">
               <div className="flex items-center justify-between font-bold text-white">
                 <span className="flex items-center gap-1.5">
-                  <Download className="w-4 h-4 text-brand-lime" />
+                  <Download className="w-4 h-4 text-accent" />
                   <span>Export Study Progress JSON</span>
                 </span>
-                <span className="text-[10px] text-zinc-400">Pure Local File</span>
+                <span className="text-[10px] text-muted">Pure Local File</span>
               </div>
-              <p className="text-[11px] font-sans text-zinc-300 leading-relaxed">
+              <p className="text-[11px] font-sans text-muted-strong leading-relaxed">
                 Download a clean JSON archive containing your complete drill history, topic mastery, logged error autopsies, and Leitner flashcard intervals.
               </p>
               <button
                 onClick={handleExportJSON}
-                className="w-full py-2.5 rounded-lg bg-brand-lime text-black font-extrabold shadow-lime-sm hover:bg-brand-neon transition-all"
+                className="w-full py-2.5 rounded-lg bg-accent text-accent-ink font-semibold hover:bg-accent-strong transition-all"
               >
-                DOWNLOAD BACKUP JSON ARCHIVE
+                Download backup
               </button>
             </div>
 
-            <div className="p-4 bg-[#121216] border border-[#222228] rounded-xl space-y-3">
+            <div className="p-4 bg-surface-interactive border border-control rounded-xl space-y-3">
               <div className="flex items-center justify-between font-bold text-white">
                 <span className="flex items-center gap-1.5">
-                  <Upload className="w-4 h-4 text-cyan-300" />
+                  <Upload className="w-4 h-4 text-info" />
                   <span>Restore from JSON File</span>
                 </span>
-                <span className="text-[10px] text-zinc-400">Validated Replace</span>
+                <span className="text-[10px] text-muted">Validated Replace</span>
               </div>
-              <p className="text-[11px] font-sans text-zinc-300 leading-relaxed">
+              <p className="text-[11px] font-sans text-muted-strong leading-relaxed">
                 Validate a backup, review its summary, then explicitly replace the study data stored in this browser.
               </p>
               <input
@@ -318,18 +306,18 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-2.5 rounded-lg bg-[#18181F] text-zinc-200 border border-[#27272A] hover:bg-[#202028] font-bold transition-all"
+                className="w-full py-2.5 rounded-lg bg-surface-raised text-foreground border border-control hover:bg-surface-raised font-bold transition-all"
               >
-                SELECT BACKUP FILE TO RESTORE
+                Restore from a backup file
               </button>
               {pendingBackup && (
-                <div className="space-y-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-amber-50">
+                <div className="space-y-3 rounded-lg border border-warning/40 bg-warning/10 p-3 text-warning">
                   <p className="font-sans leading-relaxed">
                     This will replace local data with {pendingBackup.data.practiceAttempts.length} attempts, {pendingBackup.data.completedTopicIds.length} completed topics, {pendingBackup.data.leitnerCards.length} review cards, and {pendingBackup.data.customVignettes.length} generated drafts.
                   </p>
                   <div className="flex gap-2">
-                    <button onClick={applyPendingBackup} className="min-h-11 flex-1 rounded-lg bg-amber-300 px-3 text-black font-bold">REPLACE LOCAL DATA</button>
-                    <button onClick={() => setPendingBackup(null)} className="min-h-11 rounded-lg border border-amber-200/40 px-3">CANCEL</button>
+                    <button onClick={applyPendingBackup} className="min-h-11 flex-1 rounded-lg bg-warning px-3 text-black font-bold">Replace local data</button>
+                    <button onClick={() => setPendingBackup(null)} className="min-h-11 rounded-lg border border-warning/40 px-3">Cancel</button>
                   </div>
                 </div>
               )}
@@ -340,43 +328,43 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
         {/* Tab 2: Supabase Cloud Sync */}
         {activeTab === "cloud" && (
           <div className="space-y-4">
-            <div className="p-3 bg-[#121216] border border-[#222228] rounded-xl space-y-1 font-mono text-[11px] text-zinc-300">
+            <div className="p-3 bg-surface-interactive border border-control rounded-xl space-y-1 tabular-nums text-[11px] text-muted-strong">
               <div className="flex items-center gap-2 font-bold text-white">
-                <ShieldCheck className="w-4 h-4 text-brand-lime shrink-0" />
+                <ShieldCheck className="w-4 h-4 text-accent shrink-0" />
                 <span>Cloud Sync Scope & Local-First Storage</span>
               </div>
-              <p className="text-[11px] font-sans text-zinc-400 leading-relaxed">
+              <p className="text-[11px] font-sans text-muted leading-relaxed">
                 Supabase cloud sync secures topic completions across devices with PostgreSQL RLS. Detailed attempt records, distractor autopsies, and Leitner flashcards remain securely stored on your device and can be backed up via the JSON Export tab.
               </p>
             </div>
 
-            <form onSubmit={handleCloudAuth} className="space-y-3 font-mono text-xs">
+            <form onSubmit={handleCloudAuth} className="space-y-3 tabular-nums text-xs">
               <div className="space-y-1">
-                <label className="text-zinc-400 block">Candidate Email:</label>
-                <div className="flex items-center bg-[#121216] border border-[#27272A] rounded-lg px-3 py-2">
-                  <Mail className="w-4 h-4 text-zinc-500 mr-2" />
+                <label className="text-muted block">Candidate Email:</label>
+                <div className="flex items-center bg-surface-interactive border border-control rounded-lg px-3 py-2">
+                  <Mail className="w-4 h-4 text-muted mr-2" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="candidate@apexcapital.com"
                     required
-                    className="w-full bg-transparent text-white placeholder:text-zinc-600 focus:outline-none"
+                    className="w-full bg-transparent text-white placeholder:text-muted focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-zinc-400 block">Password:</label>
-                <div className="flex items-center bg-[#121216] border border-[#27272A] rounded-lg px-3 py-2">
-                  <Key className="w-4 h-4 text-zinc-500 mr-2" />
+                <label className="text-muted block">Password:</label>
+                <div className="flex items-center bg-surface-interactive border border-control rounded-lg px-3 py-2">
+                  <Key className="w-4 h-4 text-muted mr-2" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
                     required
-                    className="w-full bg-transparent text-white placeholder:text-zinc-600 focus:outline-none"
+                    className="w-full bg-transparent text-white placeholder:text-muted focus:outline-none"
                   />
                 </div>
               </div>
@@ -385,7 +373,7 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
                 <button
                   type="button"
                   onClick={() => setAuthMode(authMode === "signin" ? "signup" : "signin")}
-                  className="text-brand-lime text-[11px] hover:underline"
+                  className="text-accent text-[11px] hover:underline"
                 >
                   {authMode === "signin"
                     ? "Need an account? Register"
@@ -396,12 +384,12 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 rounded-xl bg-brand-lime text-black font-extrabold uppercase shadow-lime-sm hover:bg-brand-neon transition-all flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3 rounded-xl bg-accent text-accent-ink font-semibold hover:bg-accent-strong transition-all flex items-center justify-center gap-2 mt-2"
               >
                 {isLoading ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
                 ) : (
-                  <span>{authMode === "signin" ? "SIGN IN & SYNC" : "CREATE SYNC ACCOUNT"}</span>
+                  <span>{authMode === "signin" ? "Sign in and sync" : "Create account"}</span>
                 )}
               </button>
             </form>
@@ -409,9 +397,9 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({ isOpen, onClose })
         )}
 
         {/* Footer Security Transparency Banner */}
-        <div className="p-3 bg-[#0A0A0D] border border-white/5 rounded-xl flex items-center justify-between font-mono text-[10px] text-zinc-500">
-          <span>TRANSPORT: TLS 1.3 / HTTPS ENCRYPTION</span>
-          <span>CLIENT-SIDE FIRST LOCAL STORAGE</span>
+        <div className="p-3 bg-background-elevated border border-white/5 rounded-xl flex items-center justify-between tabular-nums text-[10px] text-muted">
+          <span>Encrypted in transit (HTTPS)</span>
+          <span>Your data stays on this device unless you sync</span>
         </div>
       </div>
     </div>

@@ -49,6 +49,19 @@
   --danger: #e07c7c;
   --generated: #aaa5e8;
 
+  /* RGB channels so Tailwind opacity modifiers (bg-accent/15, text-danger/80) work */
+  --background-rgb: 8 8 9;
+  --foreground-rgb: 241 245 249;
+  --muted-strong-rgb: 203 213 225;
+  --muted-rgb: 148 163 184;
+  --accent-rgb: 190 242 100;
+  --accent-strong-rgb: 202 233 138;
+  --accent-ink-rgb: 9 14 11;
+  --info-rgb: 119 205 177;
+  --warning-rgb: 230 189 104;
+  --danger-rgb: 224 124 124;
+  --generated-rgb: 170 165 232;
+
   --text-caption: 0.75rem;
   --text-secondary: 0.875rem;
   --text-body: 1rem;

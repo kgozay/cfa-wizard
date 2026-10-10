@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { VignetteSet, VignetteQuestion, OptionKey, ErrorMode } from "@/types/cfa";
+import { VignetteSet, VignetteQuestion } from "@/types/cfa";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { GenerationRequestSchema } from "@/lib/generation/requestSchema";
 import { GenerationResponseSchema } from "@/lib/generation/responseSchema";
 import { createAIDraftProvenance, createFallbackProvenance } from "@/lib/generation/provenance";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
+import { createPRNG, shuffleArray } from "@/lib/practice/random";
+import { buildTemplateQuestion, templatesForTopic } from "@/lib/generation/templates";
 
 /**
  * Procedural Question Bank & Dynamic Generator
@@ -16,7 +18,8 @@ function generateProceduralVignette(
   topicId: string,
   difficulty: "Standard" | "High Trap" | "Institutional",
   customPrompt: string,
-  targetCount: number = 5
+  targetCount: number = 5,
+  excludeStems: string[] = []
 ): VignetteSet {
   const topic = CFA_CURRICULUM.find((t) => t.id === topicId) || CFA_CURRICULUM[0];
   const timestamp = Date.now();
@@ -268,7 +271,7 @@ function generateProceduralVignette(
     }
 
     case "03": {
-      // Track 03: Corporate Issuers
+      // Track 03: Corporate Finance
       const costD = 6.0;
       const costE = 12.0;
       const taxRate = 0.25;
@@ -500,7 +503,7 @@ function generateProceduralVignette(
     }
 
     case "05": {
-      // Track 05: Equity Investments
+      // Track 05: Equities
       const d0 = 2.4;
       const g = 0.05;
       const rReq = 0.09;
@@ -962,7 +965,7 @@ function generateProceduralVignette(
     }
 
     case "09": {
-      // Track 09: Portfolio Management
+      // Track 09: Portfolio Construction
       const rf = 4.0;
       const rm = 10.0;
       const beta = 1.25;
@@ -1198,12 +1201,28 @@ function generateProceduralVignette(
     }
   }
 
-  // Slice or adjust questions based on requested count (default 5)
-  const finalCount = Math.min(Math.max(2, targetCount), questions.length);
-  const slicedQuestions = questions.slice(0, finalCount).map((q, idx) => ({
-    ...q,
-    id: idx + 1,
-  }));
+  // Assemble the requested count: shuffled fixed items first, then freshly
+  // parameterized template items, then (topics without templates) authored items.
+  const rand = createPRNG(`${vignetteId}-${Math.random()}`);
+  const excluded = new Set(excludeStems.map((value) => value.trim().toLowerCase()));
+  const seen = new Set<string>(excluded);
+  const selected: VignetteQuestion[] = [];
+  const take = (question: Omit<VignetteQuestion, "id">) => {
+    const key = question.stem.trim().toLowerCase();
+    if (seen.has(key) || selected.length >= targetCount) return;
+    seen.add(key);
+    selected.push({ ...question, id: selected.length + 1 } as VignetteQuestion);
+  };
+  const templates = templatesForTopic(topic.id);
+  const fixedPool = shuffleArray(questions, rand);
+  // Mix fixed and template items so every set differs, not just its tail
+  fixedPool.slice(0, Math.ceil(targetCount / 2)).forEach(take);
+  for (let attempt = 0; templates.length > 0 && selected.length < targetCount && attempt < targetCount * 10; attempt++) {
+    take(buildTemplateQuestion(templates[attempt % templates.length], rand));
+  }
+  fixedPool.forEach(take);
+  shuffleArray(baseVignette?.questions || [], rand).forEach(take);
+  const slicedQuestions = shuffleArray(selected, rand).map((q, idx) => ({ ...q, id: idx + 1 }));
 
   return {
     id: vignetteId,
@@ -1224,7 +1243,8 @@ async function generateWithGemini(
   topic: typeof CFA_CURRICULUM[0],
   difficulty: string,
   customPrompt: string,
-  questionCount: number
+  questionCount: number,
+  excludeStems: string[] = []
 ): Promise<VignetteSet | null> {
   try {
     const prompt = `You are a CFA Charterholder and senior CFA Exam item writer.
@@ -1235,6 +1255,7 @@ Weight: ${topic.weight}
 Difficulty: ${difficulty}
 High Yield Trap Focus: ${topic.highYieldTrapArea}
 ${customPrompt ? `Candidate Custom Focus / Scenario: "${customPrompt}"` : ""}
+${excludeStems.length > 0 ? `Do not repeat or closely paraphrase these existing questions:\n${excludeStems.slice(-20).map((stem) => `- ${stem}`).join("\n")}` : ""}
 
 Generate a JSON object matching this exact schema:
 {
@@ -1343,7 +1364,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { topicId, difficulty, questionCount, focus, excludeItemIds = [] } = requestParsed.data;
+    const { topicId, difficulty, questionCount, focus, excludeItemIds = [], excludeStems = [] } = requestParsed.data;
     const topic = CFA_CURRICULUM.find((t) => t.id === topicId);
     if (!topic) {
       return NextResponse.json({ error: `Topic ${topicId} not found` }, { status: 404 });
@@ -1354,7 +1375,7 @@ export async function POST(req: NextRequest) {
     let isAiGenerated = false;
 
     if (apiKey) {
-      vignette = await generateWithGemini(apiKey, topic, difficulty, focus || "", questionCount);
+      vignette = await generateWithGemini(apiKey, topic, difficulty, focus || "", questionCount, excludeStems);
       if (vignette) {
         isAiGenerated = true;
       }
@@ -1362,7 +1383,7 @@ export async function POST(req: NextRequest) {
 
     if (!vignette) {
       const diffLabel = difficulty === "high-trap" ? "High Trap" : difficulty === "institutional" ? "Institutional" : "Standard";
-      vignette = generateProceduralVignette(topic.id, diffLabel, focus || "", questionCount);
+      vignette = generateProceduralVignette(topic.id, diffLabel, focus || "", questionCount, excludeStems);
     }
 
     if (vignette.questions.length !== questionCount) {
@@ -1396,7 +1417,7 @@ export async function POST(req: NextRequest) {
       vignette,
       items,
       provenance,
-      warnings: isAiGenerated ? [] : ["Procedural fallback used. AI API key not configured or generation failed."],
+      warnings: isAiGenerated ? [] : ["Generated from randomized question templates because no AI model is configured or AI generation failed."],
     });
     if (!response.success) {
       console.error("Generated response failed contract validation", response.error.flatten());

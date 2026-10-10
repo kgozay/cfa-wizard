@@ -1,18 +1,19 @@
 import { CFA_VIGNETTES } from "./vignettes";
 import { CFA_CURRICULUM } from "./curriculum";
 import { MockExamSession, MockExamType, MockQuestionItem, MockTopicScore } from "@/types/mockExam";
-import { OptionKey, TrapLogEntry } from "@/types/cfa";
+import { TrapLogEntry } from "@/types/cfa";
 import { PracticeItem } from "@/types/practice";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPracticeSession } from "@/lib/practice/createSession";
 
+// Quotas follow the February 2027 Level I topic weights: Quant, FSA, Equities, Fixed Income
+// 11–14%; Ethics 10–15%; Portfolio Construction 8–12%; Economics, Corporate Finance,
+// Derivatives and Alternative Investments 6–9%. The two half mocks together make one full mock.
 export const MOCK_TOPIC_QUOTAS: Record<MockExamType, Record<string, number>> = {
-  // Quotas track the current Level I topic-weight ranges (Ethics 15–20%, FSA/Equity/FI 11–14%,
-  // PM 8–12%, Alts 7–10%, Quant/Econ/Corporate Issuers 6–9%, Derivatives 5–8%).
-  quick_diagnostic_45: { "10": 7, "01": 3, "02": 3, "04": 6, "03": 3, "05": 6, "06": 6, "07": 3, "08": 4, "09": 4 },
-  half_session_1: { "10": 26, "01": 20, "02": 16, "04": 28 },
-  half_session_2: { "03": 14, "05": 20, "06": 22, "07": 10, "08": 10, "09": 14 },
-  full_180: { "10": 30, "01": 14, "02": 13, "04": 23, "03": 13, "05": 22, "06": 22, "07": 11, "08": 15, "09": 17 },
+  quick_diagnostic_45: { "01": 6, "02": 3, "03": 3, "04": 6, "05": 6, "06": 6, "07": 3, "08": 3, "09": 4, "10": 5 },
+  half_session_1: { "01": 11, "02": 6, "03": 7, "04": 11, "05": 11, "06": 11, "07": 7, "08": 6, "09": 9, "10": 11 },
+  half_session_2: { "01": 11, "02": 7, "03": 6, "04": 11, "05": 11, "06": 11, "07": 6, "08": 7, "09": 9, "10": 11 },
+  full_180: { "01": 22, "02": 13, "03": 13, "04": 22, "05": 22, "06": 22, "07": 13, "08": 13, "09": 18, "10": 22 },
 };
 
 export function getMockExamShortages(examType: MockExamType): Array<{ topicId: string; requested: number; available: number }> {
@@ -64,20 +65,20 @@ export function generateMockExamSession(
   if (examType === "quick_diagnostic_45") {
     totalTarget = 45;
     allocatedMinutes = 68;
-    title = "Level 1 Diagnostic Practice Mock (45 Questions)";
+    title = "Level I Quick Diagnostic Mock (45 Questions)";
   } else if (examType === "half_session_1") {
     totalTarget = 90;
     allocatedMinutes = 135;
-    title = "Level 1 Mock Exam: Session 1 (Ethics, Quant, Econ, FSA)";
+    title = "Level I Half Mock A (90 Questions)";
   } else if (examType === "half_session_2") {
     totalTarget = 90;
     allocatedMinutes = 135;
-    title = "Level 1 Mock Exam: Session 2 (Corp Issuers, Equity, FI, Derivs, Alts, PM)";
+    title = "Level I Half Mock B (90 Questions)";
   } else {
     // full_180
     totalTarget = 180;
     allocatedMinutes = 270;
-    title = "Level 1 Full Simulation Mock (180 Questions)";
+    title = "Level I Full Mock (180 Questions)";
   }
 
   // Sample questions according to target counts without repeating questions

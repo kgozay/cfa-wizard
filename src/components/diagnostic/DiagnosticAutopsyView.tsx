@@ -3,21 +3,16 @@
 import React, { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import {
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Play,
   BookOpen,
   RotateCcw,
   ArrowRight,
   Calculator,
   Tag,
   ShieldCheck,
-  Zap,
-} from "lucide-react";
+  Zap } from "lucide-react";
 import { OptionKey, VignetteSessionResult, VignetteSet, ErrorMode } from "@/types/cfa";
-import { TRAP_TAXONOMY, ERROR_MODE_LABELS } from "@/data/trapTaxonomy";
-import { KaTeXRenderer, FormattedMathText } from "@/components/common/KaTeXRenderer";
+import { ERROR_MODE_LABELS } from "@/data/trapTaxonomy";
+import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { KeystrokeSequence } from "@/components/calculator/KeystrokeBadge";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
@@ -38,8 +33,7 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
   onDrillAnother,
   onReviewFormulas,
   onReturnDashboard,
-  onNextTrack,
-}) => {
+  onNextTrack }) => {
   const { setCalculatorOpen, soundEnabled, logErrorMode, trapLogs } = useCFAStore();
   const [taggedErrors, setTaggedErrors] = useState<Record<number, ErrorMode>>({});
 
@@ -51,8 +45,7 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
           particleCount: 80,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ["#D8FF3E", "#CCFF00", "#FFFFFF", "#3F3F46"],
-        });
+          colors: ["#D8FF3E", "#CCFF00", "#FFFFFF", "#3F3F46"] });
       } catch {
         // ignore
       }
@@ -88,129 +81,128 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
       <div
         className={`p-6 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
           result.score === result.total
-            ? "bg-brand-lime/10 border-brand-lime/50 shadow-lime-glow"
+            ? "bg-accent/10 border-accent/50 "
             : result.score > 0
-            ? "bg-amber-500/10 border-amber-500/40"
-            : "bg-red-500/10 border-red-500/40"
+            ? "bg-warning/10 border-warning/40"
+            : "bg-danger/10 border-danger/40"
         }`}
       >
         <div className="flex items-center gap-4">
           <div
-            className={`w-14 h-14 rounded-xl flex items-center justify-center font-mono font-extrabold text-xl ${
+            className={`w-14 h-14 rounded-xl flex items-center justify-center tabular-nums font-semibold text-xl ${
               result.score === result.total
-                ? "bg-brand-lime text-black shadow-lime-sm"
+                ? "bg-accent text-accent-ink "
                 : result.score > 0
-                ? "bg-amber-400 text-black"
-                : "bg-red-500 text-white"
+                ? "bg-warning text-black"
+                : "bg-danger text-white"
             }`}
           >
             {result.score}/{result.total}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
-                SURGICAL DIAGNOSTIC EVALUATION COMPLETE ({accuracyPct}%)
+              <span className="text-xs font-bold text-white">
+                Set complete: {accuracyPct}%
               </span>
               {result.score === result.total ? (
-                <span className="px-2 py-0.5 rounded bg-brand-lime text-black font-mono text-[10px] font-bold">
-                  PERFECT SCORE
+                <span className="px-2 py-0.5 rounded bg-accent text-accent-ink tabular-nums text-[10px] font-bold">
+                  Perfect score
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-400/40">
-                  TRAP MECHANISMS TRIGGERED
+                <span className="px-2 py-0.5 rounded bg-warning/20 text-warning tabular-nums text-[10px] font-bold border border-warning/40">
+                  Traps to review
                 </span>
               )}
             </div>
-            <p className="text-xs text-editorial-steely mt-1">
+            <p className="text-xs text-muted-strong mt-1">
               {result.score === result.total
-                ? "Flawless execution. All distractor traps successfully recognized, calculated, and avoided."
-                : "Diagnostic analysis has isolated the mathematical, convention, and accounting traps triggered below. Tag your error modes to update your Trap Immunity Index."}
+                ? "Every answer was correct. Review the solutions below to confirm your method."
+                : "Review each missed question below. Tagging why you missed it helps focus your review deck and mistake log."}
             </p>
           </div>
         </div>
 
         {/* Quick Action Buttons */}
-        <div className="flex items-center gap-2 font-mono text-xs w-full sm:w-auto">
+        <div className="flex items-center gap-2 tabular-nums text-xs w-full sm:w-auto">
           <button
             onClick={onReviewFormulas}
-            className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-[#141418] hover:bg-[#1C1C22] border border-[#27272A] text-brand-lime flex items-center justify-center gap-1.5 transition-all"
+            className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-surface-interactive hover:bg-surface-raised border border-control text-accent flex items-center justify-center gap-1.5 transition-all"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>FORMULAS</span>
+            <span>Formulas</span>
           </button>
           <button
             onClick={() => setCalculatorOpen(true)}
-            className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-[#141418] hover:bg-[#1C1C22] border border-[#27272A] text-brand-lime flex items-center justify-center gap-1.5 transition-all"
+            className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-surface-interactive hover:bg-surface-raised border border-control text-accent flex items-center justify-center gap-1.5 transition-all"
           >
             <Calculator className="w-3.5 h-3.5" />
-            <span>BA II+ EMULATOR</span>
+            <span>Calculator</span>
           </button>
         </div>
       </div>
 
       {/* Per-Question Surgical Autopsies */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between font-mono text-xs text-editorial-dim border-b border-[#1F1F23] pb-2">
-          <span className="uppercase tracking-wider">
-            STEP-BY-STEP MISTAKE DIAGNOSIS & DISTRACTOR REVIEW // {vignette.questions.length} QUESTIONS
+        <div className="flex items-center justify-between tabular-nums text-xs text-muted border-b border-control pb-2">
+          <span className="">
+            Answer review · {vignette.questions.length} questions
           </span>
-          <span className="text-[11px] text-editorial-muted">
-            TAG YOUR ERROR MODE TO CALIBRATE SPACED REPETITION
+          <span className="text-[11px] text-muted">
+            Tag why you missed a question to focus your review
           </span>
         </div>
 
         {vignette.questions.map((q, idx) => {
           const userAnswer = result.userAnswers[q.id];
           const isCorrect = userAnswer === q.correctOption;
-          const trapInfo = TRAP_TAXONOMY[q.trapCategory];
           const activeErrorMode =
             taggedErrors[q.id] || q.errorModeDefault || "UNSPECIFIED";
 
           return (
             <div
               key={q.id}
-              className={`p-6 rounded-xl border bg-[#0B0B0E] space-y-6 ${
-                isCorrect ? "border-brand-lime/30" : "border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.05)]"
+              className={`p-6 rounded-xl border bg-background-elevated space-y-6 ${
+                isCorrect ? "border-accent/30" : "border-danger/40 shadow-[0_0_15px_rgba(239,68,68,0.05)]"
               }`}
             >
               {/* Question Autopsy Header */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#1A1A1E]">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-divider">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-xs ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center tabular-nums font-bold text-xs ${
                       isCorrect
-                        ? "bg-brand-lime/20 text-brand-lime border border-brand-lime/40"
-                        : "bg-red-500/20 text-red-400 border border-red-500/40"
+                        ? "bg-accent/20 text-accent border border-accent/40"
+                        : "bg-danger/20 text-danger border border-danger/40"
                     }`}
                   >
                     Q{idx + 1}
                   </div>
                   <div>
-                    <span className="font-mono text-xs font-bold text-white block">
-                      {isCorrect ? "CORRECT EXECUTION" : "TRAP TRIGGERED"}
+                    <span className="tabular-nums text-xs font-bold text-white block">
+                      {isCorrect ? "Correct" : "Missed"}
                     </span>
-                    <span className="text-[11px] font-mono text-editorial-dim">
+                    <span className="text-[11px] tabular-nums text-muted">
                       Your Answer: <strong className="text-white">[{userAnswer}]</strong> &bull; Correct:{" "}
-                      <strong className="text-brand-lime">[{q.correctOption}]</strong>
+                      <strong className="text-accent">[{q.correctOption}]</strong>
                     </span>
                   </div>
                 </div>
 
                 {q.losCode && (
-                  <span className="px-2 py-1 rounded bg-[#121215] border border-[#27272A] font-mono text-[11px] text-brand-lime">
+                  <span className="px-2 py-1 rounded bg-surface-interactive border border-control tabular-nums text-[11px] text-accent">
                     {q.losCode}
                   </span>
                 )}
               </div>
 
               {/* Question Stem Excerpt */}
-              <div className="text-xs text-zinc-300 font-medium leading-relaxed bg-[#0E0E12] p-3.5 rounded-lg border border-[#1A1A1E]">
+              <div className="text-xs text-muted-strong font-medium leading-relaxed bg-background-elevated p-3.5 rounded-lg border border-divider">
                 <FormattedMathText text={q.stem} />
               </div>
 
               {/* Interactive Distractor Matrix (A, B, C) */}
               <div className="space-y-2.5">
-                <div className="text-[11px] font-mono text-editorial-dim uppercase tracking-wider">
+                <div className="text-[11px] text-muted">
                   Distractor Breakdown:
                 </div>
                 {(["A", "B", "C"] as OptionKey[]).map((opt) => {
@@ -223,26 +215,26 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
                       key={opt}
                       className={`p-3.5 rounded-lg border text-xs font-sans transition-all ${
                         isAnswerKey
-                          ? "bg-brand-lime/10 border-brand-lime/50 text-white"
+                          ? "bg-accent/10 border-accent/50 text-white"
                           : isUserPick
-                          ? "bg-red-500/10 border-red-500/40 text-red-200"
-                          : "bg-[#121215] border-[#1E1E22] text-zinc-400"
+                          ? "bg-danger/10 border-danger/40 text-danger"
+                          : "bg-surface-interactive border-divider text-muted"
                       }`}
                     >
-                      <div className="flex items-center gap-2 mb-1.5 font-mono text-[11px] font-bold">
+                      <div className="flex items-center gap-2 mb-1.5 tabular-nums text-[11px] font-bold">
                         <span
                           className={`w-5 h-5 rounded flex items-center justify-center text-[10px] ${
                             isAnswerKey
-                              ? "bg-brand-lime text-black"
+                              ? "bg-accent text-accent-ink"
                               : isUserPick
-                              ? "bg-red-500 text-white"
-                              : "bg-[#222226] text-zinc-400"
+                              ? "bg-danger text-white"
+                              : "bg-surface-raised text-muted"
                           }`}
                         >
                           {opt}
                         </span>
-                        <span>{isAnswerKey ? "CORRECT ANSWER" : isUserPick ? "YOUR SELECTION (TRAP)" : "DISTRACTOR"}</span>
-                        <span className="text-zinc-500 font-normal">&bull; {q.options[opt]}</span>
+                        <span>{isAnswerKey ? "Correct answer" : isUserPick ? "Your answer" : "Incorrect option"}</span>
+                        <span className="text-muted font-normal">&bull; {q.options[opt]}</span>
                       </div>
                       <p className="text-xs leading-relaxed pl-7">
                         <FormattedMathText text={autopsyText} />
@@ -254,15 +246,15 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
 
               {/* Texas Instruments BA II Plus Keystroke Sequence */}
               {q.calculatorKeystrokes && (
-                <div className="p-4 rounded-lg bg-[#0E0E12] border border-[#222228] space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono text-brand-lime">
+                <div className="p-4 rounded-lg bg-background-elevated border border-control space-y-2">
+                  <div className="flex items-center justify-between text-xs tabular-nums text-accent">
                     <span className="flex items-center gap-1.5 font-bold">
                       <Calculator className="w-3.5 h-3.5" />
-                      <span>TEXAS INSTRUMENTS BA II PLUS KEYSTROKE PATH:</span>
+                      <span>BA II Plus keystrokes:</span>
                     </span>
                     <button
                       onClick={() => setCalculatorOpen(true)}
-                      className="text-[10px] text-editorial-dim hover:text-white underline"
+                      className="text-[10px] text-muted hover:text-white underline"
                     >
                       Open in Emulator &rarr;
                     </button>
@@ -272,26 +264,26 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
               )}
 
               {/* Algebraic Canonical Solution */}
-              <div className="p-4 rounded-lg bg-[#0E0E12] border border-[#222228] space-y-1.5">
-                <span className="text-xs font-mono font-bold text-editorial-muted uppercase tracking-wider block">
+              <div className="p-4 rounded-lg bg-background-elevated border border-control space-y-1.5">
+                <span className="text-xs font-bold text-muted block">
                   Algebraic & Theoretical Proof:
                 </span>
-                <div className="text-xs text-zinc-200 leading-relaxed">
+                <div className="text-xs text-foreground leading-relaxed">
                   <FormattedMathText text={q.algebraicSolution} />
                 </div>
               </div>
 
               {/* Post-Mortem Error Taxonomy (Only rendered on missed questions) or Mastered Badge */}
               {!isCorrect ? (
-                <div className="p-4 rounded-lg bg-[#141418] border border-red-500/30 space-y-3 font-mono">
+                <div className="p-4 rounded-lg bg-surface-interactive border border-danger/30 space-y-3 tabular-nums">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-amber-400 font-bold flex items-center gap-1.5">
+                    <span className="text-warning font-bold flex items-center gap-1.5">
                       <Tag className="w-3.5 h-3.5" />
-                      <span>TAG DISTRACTOR ERROR TAXONOMY (REMEDIATION):</span>
+                      <span>Why did you miss it?</span>
                     </span>
-                    <span className="text-[11px] text-zinc-400">
+                    <span className="text-[11px] text-muted">
                       Currently Logged:{" "}
-                      <strong className="text-brand-lime">
+                      <strong className="text-accent">
                         {ERROR_MODE_LABELS[activeErrorMode]?.label || activeErrorMode}
                       </strong>
                     </span>
@@ -317,8 +309,8 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
                           onClick={() => handleSelectErrorMode(q.id, mode)}
                           className={`px-2.5 py-1 rounded text-xs border transition-all ${
                             isSelected
-                              ? "bg-brand-lime text-black font-bold border-brand-lime shadow-lime-sm"
-                              : "bg-[#18181C] text-zinc-300 border-[#2A2A30] hover:text-white hover:border-[#3F3F46]"
+                              ? "bg-accent text-accent-ink font-bold border-accent "
+                              : "bg-surface-raised text-muted-strong border-control hover:text-white hover:border-control-boundary-hover"
                           }`}
                         >
                           {ERROR_MODE_LABELS[mode].label}
@@ -328,12 +320,12 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="p-3.5 rounded-lg bg-brand-lime/5 border border-brand-lime/30 flex items-center justify-between font-mono text-xs">
-                  <div className="flex items-center gap-2 text-brand-lime font-bold">
+                <div className="p-3.5 rounded-lg bg-accent/5 border border-accent/30 flex items-center justify-between tabular-nums text-xs">
+                  <div className="flex items-center gap-2 text-accent font-bold">
                     <ShieldCheck className="w-4 h-4" />
-                    <span>CONCEPT MASTERED // DISTRACTOR TRAP AVOIDED</span>
+                    <span>Answered correctly</span>
                   </div>
-                  <span className="text-zinc-400 text-xs">Trap: {q.trapCategory}</span>
+                  <span className="text-muted text-xs">Trap: {q.trapCategory}</span>
                 </div>
               )}
 
@@ -343,12 +335,12 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
       </div>
 
       {/* Bottom Master Navigation Actions */}
-      <div className="p-6 bg-[#0E0E12] border border-[#1F1F23] rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs shadow-lg">
+      <div className="p-6 bg-background-elevated border border-control rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 tabular-nums text-xs shadow-lg">
         <button
           onClick={onReturnDashboard}
-          className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-[#141418] hover:bg-[#1A1A20] border border-[#27272A] text-zinc-300 font-bold transition-all"
+          className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-surface-interactive hover:bg-surface-raised border border-control text-muted-strong font-bold transition-all"
         >
-          &larr; RETURN TO STUDY COCKPIT
+          &larr; Back to dashboard
         </button>
 
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
@@ -357,27 +349,27 @@ export const DiagnosticAutopsyView: React.FC<DiagnosticAutopsyViewProps> = ({
               if (soundEnabled) sound.playNodeSwitch();
               useCFAStore.getState().setAIGeneratorOpen(true);
             }}
-            className="px-4 py-2.5 rounded-lg bg-[#18181C] hover:bg-[#222228] border border-brand-lime/40 text-brand-lime font-bold transition-all flex items-center justify-center gap-1.5"
+            className="px-4 py-2.5 rounded-lg bg-surface-raised hover:bg-surface-raised border border-accent/40 text-accent font-bold transition-all flex items-center justify-center gap-1.5"
             title="Generate AI practice questions targeted at this topic"
           >
-            <Zap className="w-3.5 h-3.5 text-brand-lime" />
-            <span>PRACTICE SIMILAR AI SCENARIO</span>
+            <Zap className="w-3.5 h-3.5 text-accent" />
+            <span>Generate similar questions</span>
           </button>
 
           <button
             onClick={onDrillAnother}
-            className="px-4 py-2.5 rounded-lg bg-[#18181C] hover:bg-[#222228] border border-[#2E2E36] text-white font-bold transition-all flex items-center justify-center gap-1.5"
+            className="px-4 py-2.5 rounded-lg bg-surface-raised hover:bg-surface-raised border border-control text-white font-bold transition-all flex items-center justify-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>DRILL NEXT VIGNETTE</span>
+            <span>New questions on this topic</span>
           </button>
 
           {hasNextTrack && (
             <button
               onClick={onNextTrack}
-              className="px-5 py-2.5 rounded-lg bg-brand-lime text-black font-extrabold hover:bg-brand-lime/90 shadow-lime-glow transition-all flex items-center justify-center gap-1.5"
+              className="px-5 py-2.5 rounded-lg bg-accent text-accent-ink font-semibold hover:bg-accent/90 transition-all flex items-center justify-center gap-1.5"
             >
-              <span>ADVANCE TO TOPIC {nextTopicId}</span>
+              <span>Next topic</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           )}

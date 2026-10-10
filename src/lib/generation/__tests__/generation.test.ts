@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { GenerationRequestSchema } from "../requestSchema";
 import { GenerationResponseSchema } from "../responseSchema";
-import { createAIDraftProvenance, createFallbackProvenance } from "../provenance";
+import { createAIDraftProvenance } from "../provenance";
 import { generateMockExamSession } from "@/data/mockExamGenerator";
-import { SAMPLE_VALID_GENERATED_SET, SAMPLE_MALFORMED_GENERATED_SET } from "@/test/fixtures/generated-items";
+import { SAMPLE_VALID_GENERATED_SET } from "@/test/fixtures/generated-items";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { VignetteSet } from "@/types/cfa";
 

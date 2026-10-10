@@ -8,10 +8,7 @@ import {
   Play,
   ChevronRight,
   BookOpen,
-  Calculator,
-  RotateCcw,
-  Check,
-} from "lucide-react";
+  Check } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { KeystrokeSequence } from "@/components/calculator/KeystrokeBadge";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";

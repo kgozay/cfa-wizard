@@ -63,8 +63,10 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
                   Spaced review
                 </h3>
               </div>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-accent/15 text-accent font-mono font-semibold">
-                Leitner system
+              <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold tabular-nums ${
+                dueCards.length > 0 ? "bg-warning/20 text-warning" : "bg-white/[0.04] text-slate-400"
+              }`}>
+                {dueCards.length} due now
               </span>
             </div>
 
@@ -79,10 +81,8 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
                   <span className="text-white font-semibold block">Box 1: Daily review</span>
                   <span className="text-xs text-slate-400 font-mono">Interval: 1 day</span>
                 </div>
-                <span className={`px-2.5 py-1 rounded-lg font-mono text-xs font-semibold ${
-                  dueCards.length > 0 ? "bg-warning/20 text-warning" : "bg-white/[0.04] text-slate-400"
-                }`}>
-                  {box1Cards.length} cards ({dueCards.length} due)
+                <span className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-slate-400 font-mono font-semibold text-xs">
+                  {box1Cards.length} cards
                 </span>
               </div>
 
@@ -113,7 +113,11 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
             className="glass-pill-btn w-full py-3 px-4 rounded-xl text-white font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
           >
             <Layers className="w-4 h-4 text-accent" />
-            <span>Open review deck ({leitnerCards.length} cards)</span>
+            <span>
+              {dueCards.length > 0
+                ? `Review ${dueCards.length} due card${dueCards.length === 1 ? "" : "s"}`
+                : `Open review deck (${leitnerCards.length} card${leitnerCards.length === 1 ? "" : "s"})`}
+            </span>
           </button>
         </div>
 

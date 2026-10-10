@@ -21,23 +21,23 @@ export const KeystrokeBadge: React.FC<KeystrokeBadgeProps> = ({
   const getStyle = () => {
     switch (variant) {
       case "secondary": // [2nd], [SET], [QUIT]
-        return "bg-[#EAB308]/20 border-[#EAB308]/60 text-[#FACC15] hover:bg-[#EAB308]/30 shadow-[0_0_8px_rgba(234,179,8,0.2)] font-bold";
+        return "bg-warning/20 border-warning/60 text-warning hover:bg-warning/30 shadow-[0_0_8px_rgba(234,179,8,0.2)] font-bold";
       case "compute": // [CPT], [ENTER]
-        return "bg-brand-lime/20 border-brand-lime/60 text-brand-lime hover:bg-brand-lime/30 shadow-[0_0_10px_rgba(216,255,62,0.2)] font-bold";
+        return "bg-accent/20 border-accent/60 text-accent hover:bg-accent/30 shadow-[0_0_10px_rgba(216,255,62,0.2)] font-bold";
       case "tvm": // [N], [I/Y], [PV], [PMT], [FV], [CLR TVM]
-        return "bg-[#18181D] border-[#3F3F46] text-white hover:border-brand-lime/50 font-bold";
+        return "bg-surface-raised border-control text-white hover:border-accent/50 font-bold";
       case "worksheet": // [ICONV], [CF], [NPV], [IRR], [DATA], [STAT], [BGN]
-        return "bg-amber-500/10 border-amber-500/40 text-amber-300 hover:bg-amber-500/20 font-bold";
+        return "bg-warning/10 border-warning/40 text-warning hover:bg-warning/20 font-bold";
       case "scientific": // [y^x], [√x], [x²], [1/x], [LN], [e^x], [STO], [RCL]
-        return "bg-cyan-950/50 border-cyan-500/50 text-cyan-300 hover:bg-cyan-900/50 font-bold";
+        return "bg-info/50 border-info/50 text-info hover:bg-info/50 font-bold";
       case "operator": // [×], [÷], [+], [-], [=], [+/-]
-        return "bg-[#1C1C22] border-[#2E2E36] text-cyan-200 hover:border-cyan-400/40 font-bold";
+        return "bg-surface-raised border-control text-info hover:border-info/40 font-bold";
       case "result":
-        return "bg-brand-lime text-black font-extrabold border-brand-lime shadow-lime-sm";
+        return "bg-accent text-black font-semibold border-accent ";
       case "value":
-        return "bg-[#0E0E12] border-[#27272A] text-zinc-200 font-mono";
+        return "bg-background-elevated border-control text-foreground font-mono";
       default:
-        return "bg-[#121215] border-[#27272A] text-[#D4D4D8] hover:border-[#3F3F46]";
+        return "bg-surface-interactive border-control text-muted-strong hover:border-control-boundary-hover";
     }
   };
 
@@ -158,7 +158,7 @@ export const KeystrokeSequence: React.FC<{ sequence: string; className?: string 
             <React.Fragment key={idx}>
               <KeystrokeBadge label={token} variant={variant} />
               {idx < tokens.length - 1 && (
-                <span className="text-editorial-dim text-[11px] px-0.5 select-none font-bold">→</span>
+                <span className="text-muted text-[11px] px-0.5 select-none font-bold">→</span>
               )}
             </React.Fragment>
           );
@@ -166,23 +166,23 @@ export const KeystrokeSequence: React.FC<{ sequence: string; className?: string 
       </div>
 
       {/* Quick Action Dock */}
-      <div className="flex items-center gap-3 pt-1 font-mono text-[10px] text-editorial-dim">
+      <div className="flex items-center gap-3 pt-1 font-mono text-[10px] text-muted">
         <button
           type="button"
           onClick={handleCopy}
           className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
           title="Copy exact step-by-step keystroke path"
         >
-          {copied ? <Check className="w-3 h-3 text-brand-lime" /> : <Copy className="w-3 h-3" />}
+          {copied ? <Check className="w-3 h-3 text-accent" /> : <Copy className="w-3 h-3" />}
           <span>{copied ? "COPIED" : "COPY PATH"}</span>
         </button>
 
-        <span className="text-[#27272A]">|</span>
+        <span className="text-muted">|</span>
 
         <button
           type="button"
           onClick={handleOpenCalculator}
-          className="flex items-center gap-1 text-amber-300 hover:text-white transition-colors cursor-pointer font-bold"
+          className="flex items-center gap-1 text-warning hover:text-white transition-colors cursor-pointer font-bold"
           title="Open Texas Instruments BA II Plus Emulator (Layered z-70)"
         >
           <Calculator className="w-3 h-3" />

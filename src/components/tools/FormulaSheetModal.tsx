@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Search, BookOpen, Calculator, Copy, Check } from "lucide-react";
+import { X, Search, BookOpen, Calculator } from "lucide-react";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { KaTeXRenderer, FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { KeystrokeSequence } from "@/components/calculator/KeystrokeBadge";
@@ -50,10 +50,10 @@ export const FormulaSheetModal: React.FC = () => {
             </div>
             <div>
               <h3 id="formula-sheet-title" className="text-base sm:text-lg font-bold text-white tracking-tight">
-                HIGH-YIELD FORMULA & KEYSTROKE MATRIX
+                Formula sheet
               </h3>
-              <span className="font-mono text-xs text-slate-400">
-                ALL 10 CFA LEVEL 1 TOPICS // KATEX EQUATIONS & TI BA II PLUS SEQUENCES
+              <span className="tabular-nums text-xs text-slate-400">
+                Key formulas and BA II Plus keystrokes for all ten Level I topics
               </span>
             </div>
           </div>
@@ -64,26 +64,26 @@ export const FormulaSheetModal: React.FC = () => {
               setFormulaSheetOpen(false);
             }}
             aria-label="Close formula matrix"
-            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-editorial-muted hover:text-white hover:bg-[#1F1F23] transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted hover:text-white hover:bg-surface-raised transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Filter Bar */}
-        <div className="p-4 border-b border-[#1F1F23] bg-[#09090B] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="p-4 border-b border-control bg-background flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-editorial-dim" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="text"
               placeholder="Search equations, keystrokes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#121215] border border-[#27272A] rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder:text-editorial-dim focus:outline-none focus:border-brand-lime/50 font-mono"
+              className="w-full bg-surface-interactive border border-control rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder:text-muted focus:outline-none focus:border-accent/50 tabular-nums"
             />
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto font-mono text-xs pb-1 sm:pb-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto tabular-nums text-xs pb-1 sm:pb-0">
             <button
               onClick={() => {
                 if (soundEnabled) sound.playKeyClick();
@@ -91,8 +91,8 @@ export const FormulaSheetModal: React.FC = () => {
               }}
               className={`px-2.5 py-1 rounded text-[11px] ${
                 selectedTopicId === "ALL"
-                  ? "bg-brand-lime text-black font-bold"
-                  : "bg-[#18181B] text-editorial-muted hover:text-white border border-[#27272A]"
+                  ? "bg-accent text-accent-ink font-bold"
+                  : "bg-surface-raised text-muted hover:text-white border border-control"
               }`}
             >
               ALL
@@ -106,8 +106,8 @@ export const FormulaSheetModal: React.FC = () => {
                 }}
                 className={`px-2 py-1 rounded text-[11px] whitespace-nowrap ${
                   selectedTopicId === t.id
-                    ? "bg-brand-lime text-black font-bold"
-                    : "bg-[#18181B] text-editorial-muted hover:text-white border border-[#27272A]"
+                    ? "bg-accent text-accent-ink font-bold"
+                    : "bg-surface-raised text-muted hover:text-white border border-control"
                 }`}
               >
                 {t.shortName}
@@ -121,32 +121,32 @@ export const FormulaSheetModal: React.FC = () => {
           {filtered.map((f) => (
             <div
               key={f.id}
-              className="p-4 rounded-xl bg-[#09090B] border border-[#1F1F23] space-y-3"
+              className="p-4 rounded-xl bg-background border border-control space-y-3"
             >
-              <div className="flex items-center justify-between pb-2 border-b border-[#18181B]">
+              <div className="flex items-center justify-between pb-2 border-b border-divider">
                 <div>
-                  <span className="font-mono text-[10px] text-brand-lime block uppercase">
+                  <span className="text-[10px] text-accent block">
                     Track {f.topicId} • {f.topicName}
                   </span>
                   <h4 className="text-sm font-semibold text-white mt-0.5">
                     {f.title}
                   </h4>
                 </div>
-                <span className="font-mono text-xs text-editorial-dim">
+                <span className="tabular-nums text-xs text-muted">
                   {f.id}
                 </span>
               </div>
 
               <KaTeXRenderer math={f.latex} block />
 
-              <div className="text-xs text-editorial-steely">
+              <div className="text-xs text-muted-strong">
                 <FormattedMathText text={f.description} />
               </div>
 
               {f.calculatorKeystrokes && (
-                <div className="pt-2 border-t border-[#18181B]">
-                  <div className="font-mono text-[10px] text-editorial-dim uppercase mb-1.5">
-                    TI BA II PLUS KEYSTROKES:
+                <div className="pt-2 border-t border-divider">
+                  <div className="text-[10px] text-muted mb-1.5">
+                    BA II Plus keystrokes:
                   </div>
                   <KeystrokeSequence sequence={f.calculatorKeystrokes} />
                 </div>
@@ -156,8 +156,8 @@ export const FormulaSheetModal: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between font-mono text-xs">
-          <span className="text-editorial-dim">
+        <div className="p-4 border-t border-control bg-background-elevated flex items-center justify-between tabular-nums text-xs">
+          <span className="text-muted">
             Showing {filtered.length} high-yield formulas
           </span>
           <button
@@ -165,10 +165,10 @@ export const FormulaSheetModal: React.FC = () => {
               if (soundEnabled) sound.playKeyClick();
               setCalculatorOpen(true);
             }}
-            className="px-3.5 py-1.5 rounded bg-[#18181B] text-white hover:text-brand-lime border border-[#3F3F46] flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded bg-surface-raised text-white hover:text-accent border border-control flex items-center gap-1.5"
           >
-            <Calculator className="w-3.5 h-3.5 text-brand-lime" />
-            <span>Open BA II+</span>
+            <Calculator className="w-3.5 h-3.5 text-accent" />
+            <span>Open calculator</span>
           </button>
         </div>
 

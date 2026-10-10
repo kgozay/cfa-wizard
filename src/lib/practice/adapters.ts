@@ -1,8 +1,6 @@
 import {
   VignetteSet,
-  VignetteQuestion,
-  VignetteSessionResult,
-} from "@/types/cfa";
+  VignetteQuestion } from "@/types/cfa";
 import {
   PracticeItem,
   PracticeAttempt,

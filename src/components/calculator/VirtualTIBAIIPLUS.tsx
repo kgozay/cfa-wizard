@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { X, Cpu, RotateCcw, Sparkles, BookOpen, Minimize2, Maximize2, PanelRight, Move, ChevronUp } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { X, Cpu, Minimize2, Maximize2, PanelRight } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
 
@@ -29,14 +29,14 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
   const [parenStack, setParenStack] = useState<{ operand: number | null; operator: string | null }[]>([]);
 
   // TVM Registers
-  const [tvmN, setTvmN] = useState<number>(5);
-  const [tvmIY, setTvmIY] = useState<number>(6.0);
-  const [tvmPV, setTvmPV] = useState<number>(-980);
-  const [tvmPMT, setTvmPMT] = useState<number>(60);
-  const [tvmFV, setTvmFV] = useState<number>(1000);
+  const [tvmN, setTvmN] = useState<number>(0);
+  const [tvmIY, setTvmIY] = useState<number>(0);
+  const [tvmPV, setTvmPV] = useState<number>(0);
+  const [tvmPMT, setTvmPMT] = useState<number>(0);
+  const [tvmFV, setTvmFV] = useState<number>(0);
 
   // Status message in LCD subline
-  const [statusLine, setStatusLine] = useState<string>("READY // TVM & SCIENTIFIC ACTIVE");
+  const [statusLine, setStatusLine] = useState<string>("Ready");
 
   const playClick = useCallback(() => {
     if (soundEnabled) sound.playKeyClick();
@@ -461,16 +461,16 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
             playClick();
             setCalculatorMode("floating");
           }}
-          className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#0E0E12] border border-brand-lime/40 hover:border-brand-lime text-white font-mono text-xs shadow-2xl transition-all active:scale-95 group hover:shadow-lime-sm"
+          className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-background-elevated border border-accent/40 hover:border-accent text-white font-mono text-xs shadow-2xl transition-all active:scale-95 group hover:"
         >
-          <div className="w-5 h-5 rounded bg-brand-lime/20 border border-brand-lime/40 flex items-center justify-center text-brand-lime">
+          <div className="w-5 h-5 rounded bg-accent/20 border border-accent/40 flex items-center justify-center text-accent">
             <Cpu className="w-3 h-3" />
           </div>
           <div className="text-left">
-            <span className="text-[10px] text-zinc-400 block font-bold">TI BA II+ [K]</span>
-            <span className="text-brand-lime font-extrabold text-sm">{displayValue}</span>
+            <span className="text-[10px] text-muted block font-bold">TI BA II+ [K]</span>
+            <span className="text-accent font-semibold text-sm">{displayValue}</span>
           </div>
-          <Maximize2 className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white ml-1" />
+          <Maximize2 className="w-3.5 h-3.5 text-muted group-hover:text-white ml-1" />
         </button>
       </div>
     );
@@ -526,20 +526,20 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
     <div
       className={
         isDocked
-          ? "fixed top-14 right-0 bottom-0 w-[420px] max-w-[100vw] bg-[#0C0C0F] border-l border-[#27272A] shadow-2xl z-50 flex flex-col font-sans overflow-hidden animate-in slide-in-from-right duration-200"
-          : "fixed bottom-4 right-4 z-50 w-[440px] max-w-[calc(100vw-32px)] max-h-[90vh] bg-[#0C0C0F] border border-[#27272A] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] p-4 sm:p-5 flex flex-col font-sans overflow-y-auto animate-in fade-in slide-in-from-bottom-3 duration-200"
+          ? "fixed top-14 right-0 bottom-0 w-[420px] max-w-[100vw] bg-background-elevated border-l border-control shadow-2xl z-50 flex flex-col font-sans overflow-hidden animate-in slide-in-from-right duration-200"
+          : "fixed bottom-4 right-4 z-50 w-[440px] max-w-[calc(100vw-32px)] max-h-[90vh] bg-background-elevated border border-control rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] p-4 sm:p-5 flex flex-col font-sans overflow-y-auto animate-in fade-in slide-in-from-bottom-3 duration-200"
       }
     >
       {/* Top Header Bar */}
-      <div className={`flex items-center justify-between pb-3 border-b border-[#1F1F23] select-none ${isDocked ? "p-4" : ""}`}>
+      <div className={`flex items-center justify-between pb-3 border-b border-control select-none ${isDocked ? "p-4" : ""}`}>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-brand-lime/20 border border-brand-lime/40 flex items-center justify-center text-brand-lime">
+          <div className="w-6 h-6 rounded bg-accent/20 border border-accent/40 flex items-center justify-center text-accent">
             <Cpu className="w-3.5 h-3.5" />
           </div>
           <div>
             <span className="font-mono text-xs font-bold tracking-wider text-white flex items-center gap-1.5">
               <span>TI BA II PLUS</span>
-              <span className="text-[10px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+              <span className="text-[10px] px-1 py-0.2 rounded bg-warning/20 text-warning border border-warning/30">
                 PRO
               </span>
             </span>
@@ -554,10 +554,10 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               playClick();
               setCalculatorMode(isDocked ? "floating" : "docked");
             }}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
+            className="p-1.5 rounded-lg text-muted hover:text-white hover:bg-surface-raised transition-colors"
             title={isDocked ? "Switch to Floating Window" : "Dock to Right Panel"}
           >
-            <PanelRight className={`w-3.5 h-3.5 ${isDocked ? "text-brand-lime" : ""}`} />
+            <PanelRight className={`w-3.5 h-3.5 ${isDocked ? "text-accent" : ""}`} />
           </button>
 
           {/* Minimize */}
@@ -566,7 +566,7 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               playClick();
               setCalculatorMode("minimized");
             }}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
+            className="p-1.5 rounded-lg text-muted hover:text-white hover:bg-surface-raised transition-colors"
             title="Minimize to Pill"
           >
             <Minimize2 className="w-3.5 h-3.5" />
@@ -578,7 +578,7 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               playClick();
               setCalculatorOpen(false);
             }}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1F1F23] transition-colors"
+            className="p-1.5 rounded-lg text-muted hover:text-white hover:bg-surface-raised transition-colors"
             title="Close Emulator (Esc)"
           >
             <X className="w-4 h-4" />
@@ -588,18 +588,18 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
 
       <div className={isDocked ? "p-4 overflow-y-auto flex-1 flex flex-col justify-between" : ""}>
         {/* LCD Screen Display */}
-        <div className="my-3 p-3 sm:p-4 rounded-xl bg-[#070709] border border-[#27272A] relative flex flex-col justify-between shadow-inner">
+        <div className="my-3 p-3 sm:p-4 rounded-xl bg-background border border-control relative flex flex-col justify-between shadow-inner">
           {/* LCD Top Annunciator Indicators */}
-          <div className="flex items-center justify-between text-[10px] font-mono tracking-widest text-zinc-400 select-none pb-1 border-b border-[#18181D]">
-            <span className={activeSecondary ? "text-[#FACC15] font-bold" : "opacity-25"}>2nd</span>
-            <span className={computeMode ? "text-brand-lime font-bold" : "opacity-25"}>CPT</span>
-            <span className={pendingMemoryAction ? "text-cyan-400 font-bold" : "opacity-25"}>
+          <div className="flex items-center justify-between text-[10px] font-mono tracking-widest text-muted select-none pb-1 border-b border-divider">
+            <span className={activeSecondary ? "text-warning font-bold" : "opacity-25"}>2nd</span>
+            <span className={computeMode ? "text-accent font-bold" : "opacity-25"}>CPT</span>
+            <span className={pendingMemoryAction ? "text-info font-bold" : "opacity-25"}>
               {pendingMemoryAction ? pendingMemoryAction : "MEM"}
             </span>
             <span className={parenStack.length > 0 ? "text-purple-400 font-bold" : "opacity-25"}>
               PAREN ({parenStack.length})
             </span>
-            <span className={isBgnMode ? "text-amber-400 font-bold px-1 rounded bg-amber-400/10 border border-amber-400/30" : "opacity-40"}>
+            <span className={isBgnMode ? "text-warning font-bold px-1 rounded bg-warning/10 border border-warning/30" : "opacity-40"}>
               {isBgnMode ? "BGN" : "END"}
             </span>
           </div>
@@ -610,31 +610,31 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
           </div>
 
           {/* LCD Status line */}
-          <div className="text-right text-[11px] font-mono text-brand-lime/90 truncate font-semibold">
+          <div className="text-right text-[11px] font-mono text-accent/90 truncate font-semibold">
             {statusLine}
           </div>
         </div>
 
         {/* TVM Registers Snapshot Bar */}
-        <div className="grid grid-cols-5 gap-1 mb-3 p-2 bg-[#121216] rounded-lg border border-[#1F1F23] text-center font-mono text-[10px]">
+        <div className="grid grid-cols-5 gap-1 mb-3 p-2 bg-surface-interactive rounded-lg border border-control text-center font-mono text-[10px]">
           <div>
-            <span className="text-zinc-400 block">N</span>
+            <span className="text-muted block">N</span>
             <span className="text-white font-bold">{tvmN}</span>
           </div>
           <div>
-            <span className="text-zinc-400 block">I/Y</span>
-            <span className="text-brand-lime font-bold">{tvmIY.toFixed(2)}%</span>
+            <span className="text-muted block">I/Y</span>
+            <span className="text-accent font-bold">{tvmIY.toFixed(2)}%</span>
           </div>
           <div>
-            <span className="text-zinc-400 block">PV</span>
+            <span className="text-muted block">PV</span>
             <span className="text-white font-bold">{tvmPV.toFixed(1)}</span>
           </div>
           <div>
-            <span className="text-zinc-400 block">PMT</span>
+            <span className="text-muted block">PMT</span>
             <span className="text-white font-bold">{tvmPMT.toFixed(1)}</span>
           </div>
           <div>
-            <span className="text-zinc-400 block">FV</span>
+            <span className="text-muted block">FV</span>
             <span className="text-white font-bold">{tvmFV.toFixed(1)}</span>
           </div>
         </div>
@@ -648,8 +648,8 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               onClick={() => { playClick(); setComputeMode(!computeMode); }}
               className={`py-2 px-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                 computeMode
-                  ? "bg-brand-lime text-black border-brand-lime shadow-lime-sm"
-                  : "bg-[#18181D] text-brand-lime border-brand-lime/40 hover:bg-brand-lime/10"
+                  ? "bg-accent text-black border-accent "
+                  : "bg-surface-raised text-accent border-accent/40 hover:bg-accent/10"
               }`}
             >
               CPT
@@ -658,8 +658,8 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               onClick={() => { playClick(); setActiveSecondary(!activeSecondary); }}
               className={`py-2 px-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                 activeSecondary
-                  ? "bg-[#EAB308] text-black border-[#EAB308]"
-                  : "bg-[#18181D] text-[#FACC15] border-[#EAB308]/40 hover:bg-[#EAB308]/10"
+                  ? "bg-warning text-black border-warning"
+                  : "bg-surface-raised text-warning border-warning/40 hover:bg-warning/10"
               }`}
             >
               2nd
@@ -668,8 +668,8 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               onClick={handleToggleBGN}
               className={`py-2 px-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                 isBgnMode
-                  ? "bg-amber-500/20 text-amber-300 border-amber-500/50"
-                  : "bg-[#18181D] text-zinc-300 border-[#27272A] hover:text-white"
+                  ? "bg-warning/20 text-warning border-warning/50"
+                  : "bg-surface-raised text-muted-strong border-control hover:text-white"
               }`}
               title="Toggle Annuity Timing ([BGN] vs [END])"
             >
@@ -679,8 +679,8 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               onClick={activeSecondary ? handleClearTVM : () => handleOperation("÷")}
               className={`py-2 px-1 rounded-lg text-xs font-mono border transition-all ${
                 activeSecondary
-                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold"
-                  : "bg-[#18181D] text-white border-[#27272A] hover:border-zinc-400"
+                  ? "bg-warning/20 text-warning border-warning/40 font-bold"
+                  : "bg-surface-raised text-white border-control hover:border-control-boundary-hover"
               }`}
               title={activeSecondary ? "Reset All TVM Registers" : "Divide"}
             >
@@ -688,7 +688,7 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
             </button>
             <button
               onClick={handleClear}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40 transition-colors"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-danger/40 text-danger border border-danger/50 hover:bg-danger/40 transition-colors"
             >
               CLR
             </button>
@@ -702,8 +702,8 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
                 onClick={() => handleTVMKey(key)}
                 className={`py-2 px-1 rounded-lg text-xs font-mono font-bold border transition-all active:scale-95 ${
                   computeMode
-                    ? "bg-brand-lime/10 border-brand-lime text-brand-lime animate-pulse"
-                    : "bg-[#141418] text-white border-[#3F3F46] hover:border-brand-lime hover:text-brand-lime"
+                    ? "bg-accent/10 border-accent text-accent animate-pulse"
+                    : "bg-surface-interactive text-white border-control hover:border-accent hover:text-accent"
                 }`}
               >
                 {key}
@@ -715,35 +715,35 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
           <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
             <button
               onClick={() => handleOperation("^")}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#14141A] text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 hover:border-cyan-400 active:scale-95 transition-all"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-surface-interactive text-info border border-info/30 hover:bg-info/10 hover:border-info active:scale-95 transition-all"
               title="Power of: y^x (e.g. 1.084^12)"
             >
               y<sup>x</sup>
             </button>
             <button
               onClick={() => handleUnaryOp(activeSecondary ? "sqr" : "sqrt")}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#14141A] text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 hover:border-cyan-400 active:scale-95 transition-all"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-surface-interactive text-info border border-info/30 hover:bg-info/10 hover:border-info active:scale-95 transition-all"
               title={activeSecondary ? "Square: x²" : "Square Root: √x"}
             >
               {activeSecondary ? "x²" : "√x"}
             </button>
             <button
               onClick={() => handleUnaryOp("sqr")}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#14141A] text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 hover:border-cyan-400 active:scale-95 transition-all"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-surface-interactive text-info border border-info/30 hover:bg-info/10 hover:border-info active:scale-95 transition-all"
               title="Square: x²"
             >
               x²
             </button>
             <button
               onClick={() => handleUnaryOp("recip")}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#14141A] text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 hover:border-cyan-400 active:scale-95 transition-all"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-surface-interactive text-info border border-info/30 hover:bg-info/10 hover:border-info active:scale-95 transition-all"
               title="Reciprocal: 1/x"
             >
               1/x
             </button>
             <button
               onClick={() => handleUnaryOp(activeSecondary ? "exp" : "ln")}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#14141A] text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 hover:border-cyan-400 active:scale-95 transition-all"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-surface-interactive text-info border border-info/30 hover:bg-info/10 hover:border-info active:scale-95 transition-all"
               title={activeSecondary ? "Exponential: e^x" : "Natural Log: LN"}
             >
               {activeSecondary ? "e^x" : "LN"}
@@ -756,8 +756,8 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               onClick={() => handleMemoryKey("STO")}
               className={`py-2 px-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                 pendingMemoryAction === "STO"
-                  ? "bg-cyan-500/30 text-cyan-300 border-cyan-400 animate-pulse"
-                  : "bg-[#141418] text-zinc-300 border-[#27272A] hover:text-white"
+                  ? "bg-info/30 text-info border-info animate-pulse"
+                  : "bg-surface-interactive text-muted-strong border-control hover:text-white"
               }`}
               title="Store to Memory [0-9]"
             >
@@ -767,8 +767,8 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
               onClick={() => handleMemoryKey("RCL")}
               className={`py-2 px-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                 pendingMemoryAction === "RCL"
-                  ? "bg-cyan-500/30 text-cyan-300 border-cyan-400 animate-pulse"
-                  : "bg-[#141418] text-zinc-300 border-[#27272A] hover:text-white"
+                  ? "bg-info/30 text-info border-info animate-pulse"
+                  : "bg-surface-interactive text-muted-strong border-control hover:text-white"
               }`}
               title="Recall from Memory [0-9]"
             >
@@ -776,21 +776,21 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
             </button>
             <button
               onClick={handleOpenParen}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#141418] text-zinc-300 border border-[#27272A] hover:text-white"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-surface-interactive text-muted-strong border border-control hover:text-white"
               title="Open Parenthesis ("
             >
               (
             </button>
             <button
               onClick={handleCloseParen}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#141418] text-zinc-300 border border-[#27272A] hover:text-white"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-surface-interactive text-muted-strong border border-control hover:text-white"
               title="Close Parenthesis )"
             >
               )
             </button>
             <button
               onClick={() => handleUnaryOp("pct")}
-              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-[#141418] text-zinc-300 border border-[#27272A] hover:text-white"
+              className="py-2 px-1 rounded-lg text-xs font-mono font-bold bg-surface-interactive text-muted-strong border border-control hover:text-white"
               title="Percent % (/100)"
             >
               %
@@ -800,58 +800,58 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
           {/* Numeric Keypad Grid 4x4 */}
           <div className="grid grid-cols-4 gap-1.5 sm:gap-2 pt-1">
             {/* 7 8 9 × */}
-            <button onClick={() => handleDigit("7")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">7</button>
-            <button onClick={() => handleDigit("8")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">8</button>
-            <button onClick={() => handleDigit("9")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">9</button>
-            <button onClick={() => handleOperation("×")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#18181D] text-white border border-[#27272A] hover:bg-[#222228] active:scale-95 transition-all">×</button>
+            <button onClick={() => handleDigit("7")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">7</button>
+            <button onClick={() => handleDigit("8")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">8</button>
+            <button onClick={() => handleDigit("9")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">9</button>
+            <button onClick={() => handleOperation("×")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-raised text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">×</button>
 
             {/* 4 5 6 - */}
-            <button onClick={() => handleDigit("4")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">4</button>
-            <button onClick={() => handleDigit("5")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">5</button>
-            <button onClick={() => handleDigit("6")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">6</button>
-            <button onClick={() => handleOperation("-")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#18181D] text-white border border-[#27272A] hover:bg-[#222228] active:scale-95 transition-all">-</button>
+            <button onClick={() => handleDigit("4")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">4</button>
+            <button onClick={() => handleDigit("5")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">5</button>
+            <button onClick={() => handleDigit("6")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">6</button>
+            <button onClick={() => handleOperation("-")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-raised text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">-</button>
 
             {/* 1 2 3 + */}
-            <button onClick={() => handleDigit("1")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">1</button>
-            <button onClick={() => handleDigit("2")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">2</button>
-            <button onClick={() => handleDigit("3")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">3</button>
-            <button onClick={() => handleOperation("+")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#18181D] text-white border border-[#27272A] hover:bg-[#222228] active:scale-95 transition-all">+</button>
+            <button onClick={() => handleDigit("1")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">1</button>
+            <button onClick={() => handleDigit("2")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">2</button>
+            <button onClick={() => handleDigit("3")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">3</button>
+            <button onClick={() => handleOperation("+")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-raised text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">+</button>
 
             {/* 0 . +/- = */}
-            <button onClick={() => handleDigit("0")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">0</button>
-            <button onClick={() => handleDigit(".")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-[#121215] text-white border border-[#27272A] hover:bg-[#1A1A20] active:scale-95 transition-all">.</button>
-            <button onClick={handleToggleSign} className="py-2.5 rounded-lg font-mono text-xs font-bold bg-[#18181D] text-zinc-100 border border-[#27272A] hover:bg-[#222228] active:scale-95 transition-all">+/-</button>
-            <button onClick={handleEquals} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-extrabold bg-brand-lime text-black border border-brand-lime hover:bg-brand-neon active:scale-95 shadow-lime-sm flex items-center justify-center">=</button>
+            <button onClick={() => handleDigit("0")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">0</button>
+            <button onClick={() => handleDigit(".")} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-bold bg-surface-interactive text-white border border-control hover:bg-surface-raised active:scale-95 transition-all">.</button>
+            <button onClick={handleToggleSign} className="py-2.5 rounded-lg font-mono text-xs font-bold bg-surface-raised text-foreground border border-control hover:bg-surface-raised active:scale-95 transition-all">+/-</button>
+            <button onClick={handleEquals} className="py-2.5 rounded-lg font-mono text-sm sm:text-base font-semibold bg-accent text-black border border-accent hover:bg-accent-strong active:scale-95 flex items-center justify-center">=</button>
           </div>
         </div>
 
         {/* Quick Presets Bar */}
-        <div className="mt-3 pt-3 border-t border-[#1F1F23] flex items-center justify-between text-xs font-mono">
-          <span className="text-zinc-400 text-[11px] uppercase font-bold">Presets:</span>
+        <div className="mt-3 pt-3 border-t border-control flex items-center justify-between text-xs font-mono">
+          <span className="text-muted text-[11px] uppercase font-bold">Presets:</span>
           <div className="flex gap-1 flex-wrap justify-end">
             <button
               onClick={() => loadPreset("compound")}
-              className="px-2 py-1 rounded bg-[#18181B] text-cyan-300 hover:text-white border border-cyan-500/30 text-[11px] font-medium"
+              className="px-2 py-1 rounded bg-surface-raised text-info hover:text-white border border-info/30 text-[11px] font-medium"
               title="Calculate 1.084^12"
             >
               y<sup>x</sup> Power
             </button>
             <button
               onClick={() => loadPreset("volatility")}
-              className="px-2 py-1 rounded bg-[#18181B] text-cyan-300 hover:text-white border border-cyan-500/30 text-[11px] font-medium"
+              className="px-2 py-1 rounded bg-surface-raised text-info hover:text-white border border-info/30 text-[11px] font-medium"
               title="Calculate √68.0 Variance"
             >
               √x Root
             </button>
             <button
               onClick={() => loadPreset("bond")}
-              className="px-2 py-1 rounded bg-[#18181B] text-zinc-300 hover:text-white border border-[#27272A] hover:border-brand-lime/40 text-[11px] font-medium"
+              className="px-2 py-1 rounded bg-surface-raised text-muted-strong hover:text-white border border-control hover:border-accent/40 text-[11px] font-medium"
             >
               Bond YTM
             </button>
             <button
               onClick={() => loadPreset("annuity-bgn")}
-              className="px-2 py-1 rounded bg-[#18181B] text-amber-300/90 hover:text-amber-300 border border-[#27272A] hover:border-amber-400/40 text-[11px] font-medium"
+              className="px-2 py-1 rounded bg-surface-raised text-warning/90 hover:text-warning border border-control hover:border-warning/40 text-[11px] font-medium"
             >
               [BGN] Due
             </button>

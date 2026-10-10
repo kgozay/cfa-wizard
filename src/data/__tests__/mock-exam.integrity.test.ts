@@ -17,7 +17,8 @@ describe("Mock Exam Integrity", () => {
   });
 
   it("removes Option A bias in generated mock exam options", () => {
-    const mock = generateMockExamSession("quick_diagnostic_45");
+    // 180 permuted items keep this statistical check stable across runs
+    const mock = generateMockExamSession("full_180");
 
     const counts = { A: 0, B: 0, C: 0 };
     mock.questions.forEach((q) => {
@@ -40,12 +41,12 @@ describe("Mock Exam Integrity", () => {
     expect(pctC).toBeGreaterThan(15);
   });
 
-  it("rejects mock sizes that would require repeated source questions", () => {
-    expect(getMockExamShortages("quick_diagnostic_45")).toEqual([]);
-    expect(getMockExamShortages("half_session_1").length).toBeGreaterThan(0);
-    expect(getMockExamShortages("half_session_2").length).toBeGreaterThan(0);
-    expect(getMockExamShortages("full_180").length).toBeGreaterThan(0);
-    expect(() => generateMockExamSession("full_180")).toThrow(/without repeating questions/);
+  it("assembles every mock size without repeating a source question", () => {
+    (["quick_diagnostic_45", "half_session_1", "half_session_2", "full_180"] as const).forEach((type) => {
+      expect(getMockExamShortages(type)).toEqual([]);
+      const mock = generateMockExamSession(type);
+      expect(new Set(mock.questions.map((q) => q.sourceItemId)).size).toBe(mock.totalQuestions);
+    });
   });
 
   it("ends mock time at the deadline even after a page has been closed", () => {

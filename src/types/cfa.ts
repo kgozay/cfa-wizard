@@ -43,7 +43,7 @@ export interface SubReading {
 
 export interface CFATopic {
   id: string; // "01" through "10"
-  name: string; // Official name, e.g. "Corporate Issuers", "Quantitative Methods"
+  name: string; // Official name, e.g. "Corporate Finance", "Quantitative Methods"
   shortName: string;
   weight: string; // e.g. "11–14%"
   weightCategory: TopicWeightCategory;

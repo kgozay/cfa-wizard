@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
-import { X, Layers, Check, RefreshCw, ChevronRight, Eye, ShieldAlert, Sparkles, Trash2, Cpu } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { X, Layers, Trash2, Calculator, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
-import { LeitnerCard } from "@/types/cfa";
+import { LeitnerCard, OptionKey } from "@/types/cfa";
 import { ERROR_MODE_LABELS } from "@/data/trapTaxonomy";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
+import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
+
+type DeckView = "due" | 1 | 2 | 3;
+
+const BOX_INTERVALS: Record<1 | 2 | 3, string> = { 1: "every day", 2: "every 3 days", 3: "every 7 days" };
+
+const isDue = (card: LeitnerCard, now: number) => new Date(card.nextReviewAt).getTime() <= now;
 
 export const LeitnerTrapDeckModal: React.FC = () => {
   const {
@@ -18,244 +25,261 @@ export const LeitnerTrapDeckModal: React.FC = () => {
     soundEnabled,
   } = useCFAStore();
 
-  const [activeBox, setActiveBox] = useState<1 | 2 | 3>(1);
+  const [view, setView] = useState<DeckView>("due");
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
-  const [isAnswerRevealed, setIsAnswerRevealed] = useState<boolean>(false);
+  const [chosenOption, setChosenOption] = useState<OptionKey | null>(null);
+  const [isRevealed, setIsRevealed] = useState<boolean>(false);
+  const dialogRef = useAccessibleDialog<HTMLDivElement>(isLeitnerDeckOpen, () => setLeitnerDeckOpen(false));
 
-  const filteredCards = leitnerCards.filter((c) => c.box === activeBox);
-  const safeIndex = filteredCards.length > 0 ? Math.min(currentCardIndex, filteredCards.length - 1) : 0;
-  const currentCard: LeitnerCard | undefined = filteredCards[safeIndex];
+  // Re-evaluated whenever the deck changes, so rated cards drop out of "Due now"
+  const now = useMemo(() => Date.now(), [leitnerCards]); // eslint-disable-line react-hooks/exhaustive-deps
+  const dueCards = useMemo(
+    () => leitnerCards.filter((card) => isDue(card, now)).sort((a, b) => a.box - b.box),
+    [leitnerCards, now]
+  );
+  const viewCards = view === "due" ? dueCards : leitnerCards.filter((card) => card.box === view);
+  const safeIndex = viewCards.length > 0 ? Math.min(currentCardIndex, viewCards.length - 1) : 0;
+  const currentCard: LeitnerCard | undefined = viewCards[safeIndex];
 
   if (!isLeitnerDeckOpen) return null;
 
-  const handleNext = (isCorrect: boolean) => {
-    if (!currentCard) return;
+  const resetCardState = () => {
+    setChosenOption(null);
+    setIsRevealed(false);
+  };
+
+  const switchView = (next: DeckView) => {
+    setView(next);
+    setCurrentCardIndex(0);
+    resetCardState();
+  };
+
+  const handleChoose = (option: OptionKey) => {
+    if (isRevealed) return;
+    setChosenOption(option);
+    setIsRevealed(true);
     if (soundEnabled) {
-      if (isCorrect) sound.playSuccessChime();
+      if (currentCard && option === currentCard.correctOption) sound.playSuccessChime();
       else sound.playWarningBuzz();
     }
+  };
 
-    const cardWillLeaveBox = (isCorrect && activeBox < 3) || (!isCorrect && activeBox > 1);
-
+  const handleNext = () => {
+    if (!currentCard) return;
+    const isCorrect = chosenOption === currentCard.correctOption;
+    // A rated card is scheduled into the future, so it leaves "Due now"; in a box
+    // view it leaves the box unless it stays in Box 1 (missed) or Box 3 (mastered).
+    const leavesView =
+      view === "due" || (isCorrect && currentCard.box < 3) || (!isCorrect && currentCard.box > 1);
     updateLeitnerCard(currentCard.id, isCorrect);
-    setIsAnswerRevealed(false);
-
-    if (cardWillLeaveBox) {
-      // The current card left this box view.
-      // If we were at the end of the list, wrap back to 0.
-      if (safeIndex >= filteredCards.length - 1) {
-        setCurrentCardIndex(0);
-      }
+    resetCardState();
+    if (leavesView) {
+      if (safeIndex >= viewCards.length - 1) setCurrentCardIndex(0);
     } else {
-      // Card stays in the same box. Advance to next card in deck.
-      if (filteredCards.length > 1) {
-        setCurrentCardIndex((safeIndex + 1) % filteredCards.length);
-      } else {
-        setCurrentCardIndex(0);
-      }
+      setCurrentCardIndex(viewCards.length > 1 ? (safeIndex + 1) % viewCards.length : 0);
     }
   };
 
   const handleDeleteCurrent = () => {
     if (!currentCard) return;
     deleteLeitnerCard(currentCard.id);
-    setIsAnswerRevealed(false);
-    if (safeIndex >= filteredCards.length - 1) {
-      setCurrentCardIndex(0);
-    }
+    resetCardState();
+    if (safeIndex >= viewCards.length - 1) setCurrentCardIndex(0);
   };
 
+  const tabs: Array<{ id: DeckView; label: string; count: number }> = [
+    { id: "due", label: "Due now", count: dueCards.length },
+    ...([1, 2, 3] as const).map((box) => ({
+      id: box,
+      label: `Box ${box}`,
+      count: leitnerCards.filter((card) => card.box === box).length,
+    })),
+  ];
+
+  const answeredCorrectly = isRevealed && chosenOption === currentCard?.correctOption;
+
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="leitner-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans"
-    >
-      <div className="liquid-glass-card rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-        
-        {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-white/[0.04] bg-white/[0.02] flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="leitner-modal-title"
+        className="liquid-glass-card flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl shadow-2xl"
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-divider p-4 sm:p-5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent">
-              <Layers className="w-4 h-4" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/15 text-accent">
+              <Layers className="h-4 w-4" />
             </div>
             <div>
-              <h2 id="leitner-modal-title" className="text-sm font-mono font-bold text-white tracking-wide uppercase">
-                SPACED REPETITION TRAP VAULT (LEITNER SYSTEM)
+              <h2 id="leitner-modal-title" className="text-base font-semibold text-foreground">
+                Review deck
               </h2>
-              <p className="text-[11px] font-mono text-slate-400">
-                Daily (Box 1) &bull; 3-Day (Box 2) &bull; 7-Day (Box 3) Mastery Progression
+              <p className="text-xs text-muted">
+                Questions you missed come back daily until you get them right, then every 3 and 7 days.
               </p>
             </div>
           </div>
-
           <button
             onClick={() => setLeitnerDeckOpen(false)}
-            aria-label="Close Leitner deck"
-            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl glass-pill-btn text-slate-400 hover:text-white transition-colors"
+            aria-label="Close review deck"
+            className="glass-pill-btn flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted hover:text-foreground"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Box Selector Tabs */}
-        <div className="grid grid-cols-3 border-b border-white/[0.04] bg-white/[0.02] font-mono text-xs">
-          {([1, 2, 3] as const).map((boxNum) => {
-            const count = leitnerCards.filter((c) => c.box === boxNum).length;
-            const isSelected = activeBox === boxNum;
+        <div role="tablist" aria-label="Review deck views" className="grid grid-cols-4 border-b border-divider text-xs sm:text-sm">
+          {tabs.map((tab) => {
+            const isSelected = view === tab.id;
             return (
               <button
-                key={boxNum}
-                onClick={() => {
-                  setActiveBox(boxNum);
-                  setCurrentCardIndex(0);
-                  setIsAnswerRevealed(false);
-                }}
-                className={`py-3 px-4 text-center border-b-2 transition-all flex items-center justify-center gap-2 ${
-                  isSelected
-                    ? "border-brand-lime text-brand-lime bg-brand-lime/5 font-bold"
-                    : "border-transparent text-editorial-dim hover:text-white"
+                key={tab.id}
+                role="tab"
+                aria-selected={isSelected}
+                onClick={() => switchView(tab.id)}
+                className={`flex min-h-11 items-center justify-center gap-1.5 border-b-2 px-2 transition-colors ${
+                  isSelected ? "border-accent font-semibold text-foreground" : "border-transparent text-muted hover:text-foreground"
                 }`}
               >
-                <span>BOX {boxNum}</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-[#18181C] text-[10px] text-white">
-                  {count}
+                <span>{tab.label}</span>
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[11px] tabular-nums ${
+                    tab.id === "due" && tab.count > 0 ? "bg-warning/20 text-warning" : "bg-surface-raised text-muted-strong"
+                  }`}
+                >
+                  {tab.count}
                 </span>
               </button>
             );
           })}
         </div>
 
-        {/* Flashcard Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-5">
-          {filteredCards.length === 0 ? (
-            <div className="py-12 text-center space-y-3">
-              <ShieldAlert className="w-10 h-10 text-editorial-dim mx-auto" />
-              <div className="font-mono text-sm font-bold text-white">
-                NO TRAPS IN BOX {activeBox}
-              </div>
-              <p className="text-xs text-editorial-dim max-w-sm mx-auto">
-                Missed questions and distractor traps from drills will automatically populate into Box 1 for spaced reinforcement.
+        <div className="flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
+          {!currentCard ? (
+            <div className="space-y-2 py-12 text-center">
+              <CheckCircle2 className="mx-auto h-10 w-10 text-muted" />
+              <p className="text-sm font-semibold text-foreground">
+                {view === "due"
+                  ? leitnerCards.length > 0
+                    ? "You're up to date"
+                    : "No review cards yet"
+                  : `Box ${view} is empty`}
+              </p>
+              <p className="mx-auto max-w-sm text-xs text-muted">
+                {view === "due" && leitnerCards.length > 0
+                  ? "Nothing is due right now. Cards come back automatically when they are due."
+                  : "Questions you miss in practice sets, sprints and mock exams are added here automatically."}
               </p>
             </div>
-          ) : currentCard ? (
+          ) : (
             <div className="space-y-4">
-              {/* Card Meta */}
-              <div className="flex items-center justify-between font-mono text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-brand-lime/10 border border-brand-lime/30 text-brand-lime font-bold">
-                    TOPIC {currentCard.topicId}: {currentCard.topicName}
-                  </span>
-                  <span className="text-editorial-dim">
-                    Card {safeIndex + 1} of {filteredCards.length}
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-lg bg-accent/10 px-2 py-0.5 font-medium text-accent">{currentCard.topicName}</span>
+                  <span className="text-muted">
+                    Card {safeIndex + 1} of {viewCards.length} · Box {currentCard.box} ({BOX_INTERVALS[currentCard.box]})
                   </span>
                 </div>
-
                 <div className="flex items-center gap-2">
-                  {currentCard.errorMode && (
-                    <span
-                      className={`px-2 py-0.5 rounded border text-[10px] ${
-                        ERROR_MODE_LABELS[currentCard.errorMode]?.badgeColor || "text-editorial-dim"
-                      }`}
-                    >
+                  {currentCard.errorMode && currentCard.errorMode !== "UNSPECIFIED" && (
+                    <span className="rounded-lg bg-surface-raised px-2 py-0.5 text-muted-strong">
                       {ERROR_MODE_LABELS[currentCard.errorMode]?.label || currentCard.errorMode}
                     </span>
                   )}
                   <button
                     onClick={handleDeleteCurrent}
-                    className="p-1 rounded text-editorial-dim hover:text-red-400 hover:bg-red-950/30 transition-colors"
-                    title="Remove from Spaced Deck"
+                    aria-label="Remove this card from the deck"
+                    title="Remove this card from the deck"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-danger/10 hover:text-danger"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Question Stem */}
-              <div className="p-4 sm:p-5 rounded-xl bg-[#0E0E12] border border-[#1F1F23] text-sm text-zinc-100 leading-relaxed font-sans shadow-inner">
+              <div className="surface-panel rounded-xl p-4 text-sm leading-relaxed text-foreground sm:p-5">
                 <FormattedMathText text={currentCard.questionStem} />
               </div>
 
-              {/* Multiple Choice Options preview if available */}
-              {currentCard.options && (
-                <div className="grid grid-cols-1 gap-2 font-mono text-xs">
-                  {(["A", "B", "C"] as const).map((key) => {
-                    const optText = currentCard.options?.[key];
-                    if (!optText) return null;
-                    const isKeyCorrect = isAnswerRevealed && key === currentCard.correctOption;
-                    return (
-                      <div
-                        key={key}
-                        className={`p-2.5 rounded-lg border transition-all flex items-start gap-2.5 ${
-                          isKeyCorrect
-                            ? "bg-brand-lime/10 border-brand-lime text-brand-lime font-bold"
-                            : "bg-[#121215] border-[#1F1F23] text-zinc-300"
-                        }`}
-                      >
-                        <span className="w-5 h-5 rounded flex items-center justify-center bg-black/40 text-[11px] shrink-0 font-bold">
-                          {key}
-                        </span>
-                        <div className="leading-normal pt-0.5">
-                          <FormattedMathText text={optText} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label="Answer options">
+                {(["A", "B", "C"] as const).map((key) => {
+                  const isCorrectKey = isRevealed && key === currentCard.correctOption;
+                  const isWrongChoice = isRevealed && key === chosenOption && key !== currentCard.correctOption;
+                  return (
+                    <button
+                      key={key}
+                      role="radio"
+                      aria-checked={chosenOption === key}
+                      disabled={isRevealed}
+                      onClick={() => handleChoose(key)}
+                      className={`flex min-h-[44px] items-start gap-3 rounded-xl border p-3 text-left text-sm transition-colors ${
+                        isCorrectKey
+                          ? "border-accent bg-accent/10 text-foreground"
+                          : isWrongChoice
+                            ? "border-danger/60 bg-danger/10 text-foreground"
+                            : "border-control bg-surface-interactive text-muted-strong enabled:hover:bg-surface-raised"
+                      }`}
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-surface-raised text-xs font-bold">
+                        {key}
+                      </span>
+                      <span className="pt-0.5 leading-normal">
+                        <FormattedMathText text={currentCard.options[key]} />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
 
-              {/* Revealable Solution / Distractor Autopsy */}
-              {isAnswerRevealed ? (
-                <div className="space-y-3 animate-in fade-in duration-150">
-                  <div className="p-4 rounded-xl bg-brand-lime/5 border border-brand-lime/40 space-y-2">
-                    <div className="flex items-center gap-2 font-mono text-xs text-brand-lime font-bold">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>CORRECT KEY: [{currentCard.correctOption}] &bull; CANONICAL SOLUTION</span>
-                    </div>
-                    <div className="text-xs text-zinc-200 leading-relaxed font-sans">
+              {isRevealed ? (
+                <div className="space-y-3">
+                  <div
+                    role="status"
+                    className={`flex items-center gap-2 text-sm font-semibold ${answeredCorrectly ? "text-accent" : "text-danger"}`}
+                  >
+                    {answeredCorrectly ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                    {answeredCorrectly
+                      ? `Correct. This card moves to Box ${Math.min(3, currentCard.box + 1)}.`
+                      : chosenOption
+                        ? `Not quite: the answer is ${currentCard.correctOption}. This card goes back to Box 1.`
+                        : `The answer is ${currentCard.correctOption}. This card goes back to Box 1.`}
+                  </div>
+                  <div className="space-y-1.5 rounded-xl bg-surface-interactive p-4">
+                    <p className="text-xs font-semibold text-muted-strong">Solution</p>
+                    <div className="text-sm leading-relaxed text-foreground">
                       <FormattedMathText text={currentCard.solution} />
                     </div>
                   </div>
-
                   {currentCard.keystrokes && (
-                    <div className="p-3 rounded-lg bg-[#121215] border border-[#27272A] flex items-center gap-2 text-xs font-mono text-amber-300/90">
-                      <Cpu className="w-4 h-4 text-amber-400 shrink-0" />
-                      <span className="truncate">TI BA II+: {currentCard.keystrokes}</span>
+                    <div className="flex items-start gap-2 rounded-xl bg-surface-interactive p-3 text-xs text-muted-strong">
+                      <Calculator className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                      <span className="font-mono leading-relaxed">{currentCard.keystrokes}</span>
                     </div>
                   )}
                 </div>
               ) : (
                 <button
-                  onClick={() => setIsAnswerRevealed(true)}
-                  className="w-full py-3.5 rounded-xl border border-[#27272A] bg-[#121215] hover:bg-[#18181C] text-editorial-muted hover:text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md"
+                  onClick={() => setIsRevealed(true)}
+                  className="w-full text-center text-xs text-muted underline-offset-4 hover:text-foreground hover:underline"
                 >
-                  <Eye className="w-4 h-4" />
-                  <span>REVEAL CANONICAL SOLUTION & TRAP AUTOPSY</span>
+                  I don&apos;t know, show me the answer
                 </button>
               )}
             </div>
-          ) : null}
+          )}
         </div>
 
-        {/* Card Footer Controls */}
-        {filteredCards.length > 0 && isAnswerRevealed && (
-          <div className="p-4 border-t border-[#1F1F23] bg-[#0E0E12] flex items-center justify-between font-mono text-xs gap-3">
-            <button
-              onClick={() => handleNext(false)}
-              className="flex-1 py-2.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30 font-bold transition-all"
-            >
-              MISSED (DEMOTE TO BOX 1)
-            </button>
-            <button
-              onClick={() => handleNext(true)}
-              className="flex-1 py-2.5 rounded-lg bg-brand-lime text-black font-extrabold hover:bg-brand-lime/90 shadow-lime-sm transition-all"
-            >
-              MASTERED (PROMOTE TO BOX {Math.min(3, activeBox + 1)})
+        {currentCard && isRevealed && (
+          <div className="flex justify-end border-t border-divider p-4">
+            <button autoFocus onClick={handleNext} className="lime-btn-primary flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm">
+              Next card
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         )}
-
       </div>
     </div>
   );

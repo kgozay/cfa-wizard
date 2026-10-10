@@ -3,12 +3,9 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import {
   ErrorMode,
   LeitnerCard,
-  OptionKey,
   TrapLogEntry,
   VignetteSessionResult,
-  VignetteSet,
-  InterleavedSprintSession
-} from "@/types/cfa";
+  VignetteSet } from "@/types/cfa";
 import { PracticeAttempt, PracticeDraft, PracticeSession } from "@/types/practice";
 import { MockExamDraft } from "@/types/mockExam";
 import { CFA_VIGNETTES } from "@/data/vignettes";
@@ -93,6 +90,11 @@ interface CFAState {
   
   // Reset
   resetProgress: () => void;
+}
+
+/** Largest supported drill size that the set can fill. */
+function toDrillCount(questionCount: number): 2 | 5 | 10 | 15 {
+  return questionCount >= 15 ? 15 : questionCount >= 10 ? 10 : questionCount >= 5 ? 5 : 2;
 }
 
 /**
@@ -181,7 +183,11 @@ export const useCFAStore = create<CFAState>()(
       },
 
       setActiveBriefing: (topicId: string | null) => {
-        set({ activeTopicId: topicId, isBriefingModalOpen: topicId !== null });
+        // Closing the briefing (null) keeps the selected topic
+        set((state) => ({
+          activeTopicId: topicId ?? state.activeTopicId,
+          isBriefingModalOpen: topicId !== null,
+        }));
       },
 
       startVignetteDrill: (vignetteId: string) => {
@@ -339,7 +345,7 @@ export const useCFAStore = create<CFAState>()(
           activeTopicId: vignette.topicId,
           inProgressTopicId: vignette.topicId,
           isAIGeneratorOpen: false,
-          drillQuestionCount: qCount >= 10 ? 10 : qCount >= 5 ? 5 : (state.drillQuestionCount || 5),
+          drillQuestionCount: toDrillCount(qCount),
         }));
       },
 
@@ -358,7 +364,6 @@ export const useCFAStore = create<CFAState>()(
           };
           set({
             customVignettes: updatedCustom,
-            drillQuestionCount: updatedQuestions.length >= 15 ? 15 : updatedQuestions.length >= 10 ? 10 : updatedQuestions.length >= 5 ? 5 : 2,
           });
         } else {
           // Clone base vignette into customVignettes with added questions
@@ -382,7 +387,6 @@ export const useCFAStore = create<CFAState>()(
             set({
               customVignettes: [newVignette, ...customVignettes],
               activeVignetteId: newVignette.id,
-              drillQuestionCount: updatedQuestions.length >= 15 ? 15 : updatedQuestions.length >= 10 ? 10 : updatedQuestions.length >= 5 ? 5 : 2,
             });
           }
         }
@@ -453,6 +457,7 @@ export const useCFAStore = create<CFAState>()(
       partialize: (state) => ({
         completedTopicIds: state.completedTopicIds,
         inProgressTopicId: state.inProgressTopicId,
+        activeTopicId: state.activeTopicId,
         vignetteResults: state.vignetteResults,
         practiceAttempts: state.practiceAttempts,
         practiceSessions: state.practiceSessions,

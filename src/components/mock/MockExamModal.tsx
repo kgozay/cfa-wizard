@@ -6,14 +6,10 @@ import {
   Flag,
   ChevronLeft,
   ChevronRight,
-  Send,
   Calculator,
   Grid,
   X,
   AlertCircle,
-  CheckCircle2,
-  Bookmark,
-  Sparkles,
 } from "lucide-react";
 import { MockExamSession, MockExamType } from "@/types/mockExam";
 import { generateMockExamSession, gradeMockExam, getMockExamShortages } from "@/data/mockExamGenerator";
@@ -41,10 +37,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     savePracticeSession,
     mockExamDraft,
     setMockExamDraft,
-    setCalculatorOpen,
     calculatorMode,
-    setCalculatorMode,
-  } = useCFAStore();
+    setCalculatorMode } = useCFAStore();
 
   const [selectedExamType, setSelectedExamType] = useState<MockExamType>("quick_diagnostic_45");
   const [session, setSession] = useState<MockExamSession | null>(null);
@@ -59,7 +53,17 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   const itemTimesRef = useRef<Record<string, number>>({});
   const questionStartedAtRef = useRef<number>(Date.now());
   const submissionRef = useRef(false);
-  const dialogRef = useAccessibleDialog<HTMLDivElement>(isOpen, onClose);
+  const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState<boolean>(false);
+  // Escape or the close button during a live exam asks first: the clock keeps running
+  const requestClose = useCallback(() => {
+    if (session && !isGraded) {
+      if (isSubmitConfirmOpen) setIsSubmitConfirmOpen(false);
+      else setIsLeaveConfirmOpen((open) => !open);
+      return;
+    }
+    onClose();
+  }, [isGraded, isSubmitConfirmOpen, onClose, session]);
+  const dialogRef = useAccessibleDialog<HTMLDivElement>(isOpen, requestClose);
 
   // Initialize or start new mock exam
   const handleStartExam = useCallback(
@@ -136,6 +140,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
+    // Restart the clock only when a different exam starts, not on every answer
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, session?.id, isGraded]);
 
   // Answer selection handler
@@ -227,7 +233,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
 
   // Keyboard navigation within active mock exam
   useEffect(() => {
-    if (!isOpen || !session || isGraded) return;
+    if (!isOpen || !session || isGraded || isSubmitConfirmOpen || isLeaveConfirmOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (shouldIgnoreShortcut(e)) return;
@@ -258,11 +264,11 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [calculatorMode, changeQuestion, currentIndex, handleSelectAnswer, handleToggleFlag, isGraded, isOpen, session, setCalculatorMode]);
+  }, [calculatorMode, changeQuestion, currentIndex, handleSelectAnswer, handleToggleFlag, isGraded, isLeaveConfirmOpen, isOpen, isSubmitConfirmOpen, session, setCalculatorMode]);
 
   if (!isOpen) return null;
 
-  // Render Setup Screen if no session active
+  // Setup screen when no exam is in progress
   if (!session) {
     return (
       <div
@@ -271,137 +277,100 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
         role="dialog"
         aria-modal="true"
         aria-labelledby="mock-exam-title"
-        className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-md"
       >
-        <div className="liquid-glass-card rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-          <div className="flex items-center justify-between pb-4 border-b border-white/[0.04]">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent font-bold font-mono">
-                CFA
-              </div>
-              <div>
-                <h2 id="mock-exam-title" className="text-lg font-bold text-white tracking-wide font-sans">
-                  Level I Practice Mock
-                </h2>
-                <p className="text-xs text-zinc-400 font-mono">
-                  Standardized Timing • 10-Topic Weighting • 70% Study Target
-                </p>
-              </div>
+        <div className="liquid-glass-card my-auto w-full max-w-2xl space-y-6 rounded-2xl p-6 shadow-2xl sm:p-8">
+          <div className="flex items-start justify-between gap-4 border-b border-divider pb-4">
+            <div>
+              <h2 id="mock-exam-title" className="text-lg font-bold text-foreground">
+                Level I mock exam
+              </h2>
+              <p className="mt-1 text-sm text-muted">
+                Timed at 90 seconds per question and weighted to the February 2027 Level I topic weights.
+              </p>
             </div>
             <button
               onClick={onClose}
-              aria-label="Close mock exam dialog"
-              className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1A1A20] min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Close mock exam"
+              className="glass-pill-btn flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted hover:text-foreground"
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
           </div>
 
-          <div className="space-y-3">
-            <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider block">
-              Select Mock Simulation Tier:
-            </label>
+          {mockExamDraft && (
+            <button
+              onClick={handleResumeExam}
+              className="w-full rounded-xl border border-accent/40 bg-accent/10 p-4 text-left text-sm text-foreground hover:bg-accent/15"
+            >
+              <span className="font-semibold">Resume {mockExamDraft.session.title}</span>
+              <span className="mt-0.5 block text-xs text-muted">
+                {Object.keys(mockExamDraft.session.userAnswers).length} of {mockExamDraft.session.totalQuestions} answered · the clock kept running while you were away
+              </span>
+            </button>
+          )}
 
-            {mockExamDraft && (
-              <button
-                onClick={handleResumeExam}
-                className="w-full rounded-xl border border-brand-lime/50 bg-brand-lime/10 p-4 text-left text-sm text-white"
-              >
-                Resume {mockExamDraft.session.title} ({Object.keys(mockExamDraft.session.userAnswers).length}/{mockExamDraft.session.totalQuestions} answered)
-              </button>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                {
-                  id: "quick_diagnostic_45",
-                  title: "Quick Diagnostic Mock",
-                  badge: "RECOMMENDED (45Q)",
-                  time: "68 Minutes",
-                  desc: "Balanced 10-topic diagnostic with full distractor autopsies & speed scoring.",
-                },
-                {
-                  id: "half_session_1",
-                  title: "Session 1 Half-Mock",
-                  badge: "SESSION 1 (90Q)",
-                  time: "135 Minutes (2h 15m)",
-                  desc: "Ethical Standards, Quantitative Methods, Economics, and FSA.",
-                },
-                {
-                  id: "half_session_2",
-                  title: "Session 2 Half-Mock",
-                  badge: "SESSION 2 (90Q)",
-                  time: "135 Minutes (2h 15m)",
-                  desc: "Corporate Issuers, Equity, Fixed Income, Derivatives, Alternatives, Portfolio.",
-                },
-                {
-                  id: "full_180",
-                  title: "Full 180Q Simulation",
-                  badge: "EXAM DAY (180Q)",
-                  time: "270 Minutes (4.5 hrs)",
-                  desc: "Full two-session stamina simulation mirroring the complete test day.",
-                },
-              ].map((tier) => {
-                const shortages = getMockExamShortages(tier.id as MockExamType);
+          <fieldset className="space-y-3">
+            <legend className="mb-3 text-sm font-semibold text-foreground">Choose a length</legend>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {MOCK_TIERS.map((tier) => {
+                const shortages = getMockExamShortages(tier.id);
                 const unavailable = shortages.length > 0;
+                const isSelected = selectedExamType === tier.id;
                 return (
                   <button
                     key={tier.id}
-                    onClick={() => setSelectedExamType(tier.id as MockExamType)}
+                    onClick={() => setSelectedExamType(tier.id)}
                     disabled={unavailable}
-                    className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between gap-3 ${
+                    aria-pressed={isSelected}
+                    className={`flex flex-col gap-1.5 rounded-xl border p-4 text-left transition-colors ${
                       unavailable
-                        ? "bg-[#121216] border-[#222228] text-zinc-500 cursor-not-allowed"
-                        : selectedExamType === tier.id
-                          ? "bg-brand-lime/10 border-brand-lime text-white shadow-[0_0_15px_rgba(216,255,62,0.12)]"
-                          : "bg-[#121216] border-[#222228] text-zinc-300 hover:border-[#3F3F46]"
+                        ? "cursor-not-allowed border-divider bg-surface-interactive text-muted"
+                        : isSelected
+                          ? "border-accent bg-accent/10 text-foreground"
+                          : "border-control bg-surface-interactive text-muted-strong hover:border-control-boundary-hover"
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-xs font-mono font-bold text-brand-lime">
-                          {tier.badge}
-                        </span>
-                        <span className="text-[11px] font-mono text-zinc-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-zinc-400" />
-                          {tier.time}
-                        </span>
-                      </div>
-                      <div className="font-bold text-sm text-white font-sans">{tier.title}</div>
-                      <p className="text-xs text-zinc-400 font-sans mt-1 leading-relaxed">
-                        {tier.desc}
-                      </p>
-                      {unavailable && (
-                        <p className="mt-2 text-xs text-amber-300">
-                          Unavailable: more approved questions needed in {shortages.length} topic{shortages.length === 1 ? "" : "s"}.
-                        </p>
-                      )}
-                    </div>
+                    <span className="flex items-center justify-between gap-2 text-xs">
+                      <span className={`font-semibold ${isSelected ? "text-accent" : "text-muted-strong"}`}>{tier.badge}</span>
+                      <span className="flex items-center gap-1 text-muted">
+                        <Clock className="h-3 w-3" />
+                        {tier.time}
+                      </span>
+                    </span>
+                    <span className="text-sm font-semibold text-foreground">{tier.title}</span>
+                    <span className="text-xs leading-relaxed text-muted">{tier.desc}</span>
+                    {unavailable && (
+                      <span className="text-xs text-warning">
+                        Unavailable: more reviewed questions are needed in {shortages.length} topic{shortages.length === 1 ? "" : "s"}.
+                      </span>
+                    )}
                   </button>
                 );
               })}
             </div>
-          </div>
+          </fieldset>
 
           {startError && (
-            <div role="alert" className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-100">
+            <div role="alert" className="rounded-xl border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
               {startError}
             </div>
           )}
 
-          <div className="pt-4 border-t border-[#1F1F23] flex items-center justify-between gap-4">
-            <button
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-mono text-zinc-400 hover:text-white"
-            >
-              CANCEL
+          <p className="text-xs leading-relaxed text-muted">
+            Scores are compared with a 70% study target. This is a practice benchmark, not an official CFA Institute passing standard.
+          </p>
+
+          <div className="flex items-center justify-end gap-3 border-t border-divider pt-4">
+            <button onClick={onClose} className="min-h-11 rounded-xl px-4 text-sm font-medium text-muted hover:text-foreground">
+              Cancel
             </button>
             <button
               onClick={() => handleStartExam(selectedExamType)}
-              className="px-6 py-3 rounded-xl bg-brand-lime hover:bg-brand-neon text-black font-mono text-xs font-extrabold shadow-lime-glow transition-all active:scale-[0.99] flex items-center gap-2"
+              className="lime-btn-primary flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm"
             >
-              <span>COMMENCE EXAM SIMULATION</span>
-              <ChevronRight className="w-4 h-4" />
+              Start mock exam
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -409,10 +378,17 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     );
   }
 
-  // Render Post-Grading Scorecard if session submitted
+  // Scorecard after grading
   if (isGraded) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#09090B] overflow-y-auto">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mock exam results"
+        className="fixed inset-0 z-50 overflow-y-auto bg-background"
+      >
         <div className="min-h-screen p-4 sm:p-6">
           <MockScorecardView
             session={session}
@@ -427,17 +403,17 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     );
   }
 
-  // Render Active Exam Session
+  // Active exam
   const currentQuestion = session.questions[currentIndex];
   const remainingSeconds = getMockRemainingSeconds(session, now);
   const remainingHrs = Math.floor(remainingSeconds / 3600);
   const remainingMins = Math.floor((remainingSeconds % 3600) / 60);
   const remainingSecs = remainingSeconds % 60;
   const isTimeExpiring = remainingSeconds < 300; // < 5 mins
-
   const answeredCount = Object.keys(session.userAnswers).length;
   const isCurrentFlagged = session.flaggedQuestionIds.includes(currentQuestion.id);
   const currentChoice = session.userAnswers[currentQuestion.id];
+  const clockLabel = `${remainingHrs > 0 ? `${remainingHrs}:` : ""}${remainingMins.toString().padStart(2, "0")}:${remainingSecs.toString().padStart(2, "0")}`;
 
   return (
     <div
@@ -446,208 +422,183 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
       role="dialog"
       aria-modal="true"
       aria-label={session.title}
-      className="fixed inset-0 z-50 bg-[#09090B] text-white flex flex-col font-sans overflow-hidden"
+      className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background font-sans text-foreground"
     >
-      
-      {/* Top Standardized Exam Navbar */}
-      <header className="h-14 px-4 sm:px-6 bg-[#0E0E12] border-b border-[#1F1F23] flex items-center justify-between select-none shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="hidden sm:inline whitespace-nowrap px-2 py-0.5 rounded bg-brand-lime text-black font-mono text-xs font-extrabold uppercase">
-            CFA LEVEL 1 MOCK
-          </span>
-          <span className="hidden md:inline text-xs font-mono text-zinc-300 font-semibold truncate max-w-xs">
-            {session.title}
-          </span>
+      <header className="flex h-16 shrink-0 select-none items-center justify-between gap-2 border-b border-divider bg-background-elevated px-3 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            onClick={requestClose}
+            aria-label="Leave exam"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted hover:bg-surface-interactive hover:text-foreground"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <span className="hidden truncate text-sm font-semibold text-muted-strong md:inline">{session.title}</span>
         </div>
 
-        {/* Center Countdown Clock */}
         <div
-          className={`flex items-center gap-2 px-3.5 py-1 rounded-lg border font-mono text-xs sm:text-sm font-bold ${
-            isTimeExpiring
-              ? "bg-red-500/20 text-red-400 border-red-500/50 animate-pulse"
-              : "bg-[#141418] text-brand-lime border-[#27272A]"
+          role="timer"
+          aria-label={`Time remaining ${clockLabel}`}
+          className={`flex items-center gap-2 rounded-xl px-3 py-1.5 font-mono text-sm font-semibold tabular-nums ${
+            isTimeExpiring ? "bg-danger/15 text-danger" : "bg-surface-interactive text-foreground"
           }`}
         >
-          <Clock className="w-4 h-4" />
-          <span>
-            {remainingHrs > 0 ? `${remainingHrs}h ` : ""}
-            {remainingMins.toString().padStart(2, "0")}:{remainingSecs.toString().padStart(2, "0")}
-            <span className="hidden sm:inline"> REMAINING</span>
-          </span>
+          <Clock className="h-4 w-4" />
+          <span>{clockLabel}</span>
+          <span className="hidden text-xs font-normal text-muted sm:inline">left</span>
         </div>
 
-        {/* Right Tools: Calculator, Navigator, Finish */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => setCalculatorMode(calculatorMode === "docked" ? "closed" : "docked")}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#141418] hover:bg-[#1A1A20] text-amber-300 border border-[#27272A] text-xs font-mono font-bold"
-            title="Toggle Texas Instruments BA II Plus [Hotkey: K]"
+            aria-label="BA II Plus calculator"
+            aria-pressed={calculatorMode !== "closed"}
+            title="Calculator (K)"
+            className="flex h-10 items-center gap-1.5 rounded-xl bg-surface-interactive px-2.5 text-sm text-muted-strong hover:text-foreground"
           >
-            <Calculator className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">BA II+ [K]</span>
+            <Calculator className="h-4 w-4" />
+            <span className="hidden sm:inline">Calculator</span>
           </button>
-
           <button
             onClick={() => setIsNavigatorOpen(!isNavigatorOpen)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition-all ${
-              isNavigatorOpen
-                ? "bg-brand-lime text-black border-brand-lime"
-                : "bg-[#141418] text-zinc-300 border-[#27272A] hover:text-white"
+            aria-expanded={isNavigatorOpen}
+            aria-label={`Question navigator, ${answeredCount} of ${session.totalQuestions} answered`}
+            className={`flex h-10 items-center gap-1.5 rounded-xl px-2.5 text-sm tabular-nums transition-colors ${
+              isNavigatorOpen ? "bg-accent text-accent-ink" : "bg-surface-interactive text-muted-strong hover:text-foreground"
             }`}
           >
-            <Grid className="w-3.5 h-3.5" />
+            <Grid className="h-4 w-4" />
             <span>
               {answeredCount}/{session.totalQuestions}
             </span>
           </button>
-
           <button
             onClick={() => setIsSubmitConfirmOpen(true)}
-            className="px-3.5 py-1.5 rounded-lg bg-brand-lime/15 hover:bg-brand-lime text-brand-lime hover:text-black border border-brand-lime/40 text-xs font-mono font-bold transition-all"
+            className="h-10 rounded-xl border border-accent/40 bg-accent/10 px-3 text-sm font-semibold text-accent hover:bg-accent hover:text-accent-ink"
           >
-            SUBMIT
+            Submit
           </button>
         </div>
       </header>
 
-      {/* Main Question Viewport */}
-      <div className="relative flex-1 flex overflow-hidden">
-        
-        {/* Left / Center: Question Canvas */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8 flex flex-col justify-between">
-          <div className="max-w-3xl mx-auto w-full space-y-6">
-            
-            {/* Question Info Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#1F1F23] font-mono text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-brand-lime font-bold text-sm">
-                  QUESTION {currentQuestion.globalIndex} OF {session.totalQuestions}
+      <div className="relative flex flex-1 overflow-hidden">
+        <main className="flex flex-1 flex-col justify-between overflow-y-auto p-4 sm:p-8">
+          <div className="mx-auto w-full max-w-3xl space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-divider pb-4 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-semibold text-foreground">
+                  Question {currentQuestion.globalIndex} of {session.totalQuestions}
                 </span>
-                <span className="px-2 py-0.5 rounded bg-[#18181D] text-zinc-300 border border-[#27272A]">
-                  TOPIC {currentQuestion.topicId} {"//"} {currentQuestion.topicName}
+                <span className="rounded-lg bg-surface-interactive px-2 py-0.5 text-muted-strong">
+                  {currentQuestion.topicName}
                 </span>
-                {currentQuestion.losCode && (
-                  <span className="text-editorial-dim text-[11px]">
-                    {currentQuestion.losCode}
-                  </span>
-                )}
+                {currentQuestion.losCode && <span className="text-muted">{currentQuestion.losCode}</span>}
               </div>
-
-              {/* Flag Button */}
               <button
                 onClick={() => handleToggleFlag(currentQuestion.id)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all text-xs font-mono ${
+                aria-pressed={isCurrentFlagged}
+                title="Flag for review (F)"
+                className={`flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-xs transition-colors ${
                   isCurrentFlagged
-                    ? "bg-amber-400/20 text-amber-300 border-amber-400/50"
-                    : "bg-[#121216] text-zinc-400 border-[#27272A] hover:text-white"
+                    ? "bg-warning/15 text-warning"
+                    : "bg-surface-interactive text-muted hover:text-foreground"
                 }`}
-                title="Flag for later review [Hotkey: F]"
               >
-                <Flag className={`w-3.5 h-3.5 ${isCurrentFlagged ? "fill-amber-300" : ""}`} />
-                <span>{isCurrentFlagged ? "FLAGGED" : "FLAG [F]"}</span>
+                <Flag className={`h-3.5 w-3.5 ${isCurrentFlagged ? "fill-current" : ""}`} />
+                <span>{isCurrentFlagged ? "Flagged" : "Flag"}</span>
               </button>
             </div>
 
-            {/* Question Stem */}
-            <div className="p-6 bg-[#0E0E12] border border-[#1F1F23] rounded-2xl text-sm sm:text-base text-zinc-100 font-sans leading-relaxed shadow-md">
+            <div className="surface-panel rounded-2xl p-5 text-sm leading-relaxed sm:p-6 sm:text-base">
               <FormattedMathText text={currentQuestion.stem} />
             </div>
 
-            {/* Answer Options */}
-            <div className="space-y-3 font-mono">
+            <div className="space-y-3" role="radiogroup" aria-label="Answer options">
               {(["A", "B", "C"] as OptionKey[]).map((opt) => {
                 const isSelected = currentChoice === opt;
                 return (
                   <button
                     key={opt}
+                    role="radio"
+                    aria-checked={isSelected}
                     onClick={() => handleSelectAnswer(currentQuestion.id, opt)}
-                    className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 select-none min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
+                    className={`flex min-h-[44px] w-full select-none items-start gap-4 rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                       isSelected
-                        ? "bg-brand-lime/10 border-brand-lime text-white shadow-[0_0_15px_rgba(216,255,62,0.15)]"
-                        : "bg-[#121215] border-[#222226] text-zinc-300 hover:border-[#3F3F46] hover:bg-[#16161A]"
+                        ? "border-accent bg-accent/10 text-foreground"
+                        : "border-control bg-surface-interactive text-muted-strong hover:bg-surface-raised"
                     }`}
                   >
                     <span
-                      className={`inline-flex items-center justify-center w-6 h-6 rounded-lg font-bold text-xs shrink-0 ${
-                        isSelected
-                          ? "bg-brand-lime text-black"
-                          : "bg-[#1C1C22] text-editorial-dim border border-[#27272A]"
+                      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                        isSelected ? "bg-accent text-accent-ink" : "bg-surface-raised text-muted"
                       }`}
                     >
                       {opt}
                     </span>
-                    <div className="text-xs sm:text-sm leading-relaxed flex-1 font-sans">
+                    <span className="flex-1 text-sm leading-relaxed">
                       <FormattedMathText text={currentQuestion.options[opt]} />
-                    </div>
+                    </span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Bottom Step Navigation Bar */}
-          <div className="max-w-3xl mx-auto w-full pt-6 border-t border-[#1F1F23] flex items-center justify-between gap-4 font-mono text-xs">
+          <div className="mx-auto mt-6 flex w-full max-w-3xl items-center justify-between gap-4 border-t border-divider pt-6 text-sm">
             <button
               onClick={() => changeQuestion(Math.max(0, currentIndex - 1))}
               disabled={currentIndex === 0}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#141418] hover:bg-[#1C1C22] text-zinc-300 disabled:opacity-30 border border-[#27272A] transition-all"
+              className="glass-pill-btn flex min-h-11 items-center gap-1.5 rounded-xl px-4 text-muted-strong disabled:opacity-30"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span>PREVIOUS</span>
+              <ChevronLeft className="h-4 w-4" />
+              Previous
             </button>
-
-            <span className="text-zinc-500 hidden sm:inline text-[11px]">
-              KEYS: [1/2/3] SELECT &bull; [F] FLAG &bull; [←/→] NAVIGATE
-            </span>
-
+            <span className="hidden text-xs text-muted sm:inline">Keys: 1/2/3 answer · F flag · ←/→ move · K calculator</span>
             <button
               onClick={() => changeQuestion(Math.min(session.questions.length - 1, currentIndex + 1))}
               disabled={currentIndex === session.questions.length - 1}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-lime hover:bg-brand-neon text-black font-bold disabled:opacity-30 transition-all shadow-lime-sm"
+              className="lime-btn-primary flex min-h-11 items-center gap-1.5 rounded-xl px-5 disabled:opacity-30"
             >
-              <span>NEXT</span>
-              <ChevronRight className="w-4 h-4" />
+              Next
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </main>
 
-        {/* Right Sidebar: Question Navigator Matrix (Collapsible) */}
         {isNavigatorOpen && (
-          <aside className="absolute inset-y-0 right-0 z-10 w-full sm:static sm:w-80 bg-[#0A0A0D] border-l border-[#1F1F23] p-4 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right-4 duration-150 select-none">
+          <aside
+            aria-label="Question navigator"
+            className="absolute inset-y-0 right-0 z-10 flex w-full select-none flex-col justify-between overflow-y-auto border-l border-divider bg-background-elevated p-4 sm:static sm:w-80"
+          >
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#1F1F23]">
-                <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                  Question Navigator
-                </span>
+              <div className="flex items-center justify-between border-b border-divider pb-3">
+                <span className="text-sm font-semibold text-foreground">Questions</span>
                 <button
                   onClick={() => setIsNavigatorOpen(false)}
                   aria-label="Close question navigator"
-                  className="-m-2 flex h-11 w-11 items-center justify-center text-zinc-400 hover:text-white"
+                  className="-m-2 flex h-11 w-11 items-center justify-center text-muted hover:text-foreground"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
-              {/* Status Legend */}
-              <div className="flex items-center gap-3 font-mono text-[10px] text-zinc-400">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded bg-brand-lime" /> Answered
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded bg-accent" /> Answered
                 </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded bg-amber-400" /> Flagged
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded bg-warning" /> Flagged
                 </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded bg-[#27272A]" /> Unanswered
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded bg-surface-raised" /> Unanswered
                 </span>
               </div>
 
-              {/* Grid of question tiles */}
-              <div className="grid grid-cols-5 gap-1.5 font-mono text-xs max-h-[60vh] overflow-y-auto pr-1">
+              <div className="grid max-h-[60vh] grid-cols-5 gap-1.5 overflow-y-auto pr-1 text-xs">
                 {session.questions.map((q, idx) => {
                   const isAnswered = !!session.userAnswers[q.id];
                   const isFlagged = session.flaggedQuestionIds.includes(q.id);
                   const isCurrent = currentIndex === idx;
-
                   return (
                     <button
                       key={q.id}
@@ -659,20 +610,18 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
                       }}
                       aria-label={`Question ${idx + 1}${isAnswered ? ", answered" : ""}${isFlagged ? ", flagged" : ""}`}
                       aria-current={isCurrent ? "step" : undefined}
-                      className={`h-9 rounded-lg border font-bold flex items-center justify-center relative transition-all ${
+                      className={`relative flex h-10 items-center justify-center rounded-lg border font-semibold tabular-nums transition-colors ${
                         isCurrent
-                          ? "ring-2 ring-brand-lime text-white bg-[#1A1A20] border-brand-lime"
+                          ? "border-accent bg-surface-raised text-foreground ring-2 ring-accent"
                           : isFlagged
-                          ? "bg-amber-500/20 text-amber-300 border-amber-400/50"
-                          : isAnswered
-                          ? "bg-brand-lime/20 text-brand-lime border-brand-lime/40"
-                          : "bg-[#121215] text-zinc-400 border-[#222226] hover:bg-[#18181D]"
+                            ? "border-warning/50 bg-warning/15 text-warning"
+                            : isAnswered
+                              ? "border-accent/40 bg-accent/15 text-accent"
+                              : "border-control bg-surface-interactive text-muted hover:bg-surface-raised"
                       }`}
                     >
                       {idx + 1}
-                      {isFlagged && (
-                        <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400" />
-                      )}
+                      {isFlagged && <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-warning" />}
                     </button>
                   );
                 })}
@@ -681,58 +630,83 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
 
             <button
               onClick={() => setIsSubmitConfirmOpen(true)}
-              className="w-full py-3 rounded-xl bg-brand-lime text-black font-mono text-xs font-extrabold uppercase shadow-lime-sm mt-4"
+              className="lime-btn-primary mt-4 min-h-11 w-full rounded-xl text-sm"
             >
-              FINALIZE & SUBMIT EXAM
+              Review and submit
             </button>
           </aside>
         )}
       </div>
 
-      {/* Confirmation Modal before Submit */}
       {isSubmitConfirmOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0E0E12] border border-[#27272A] rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
-            <div className="flex items-center gap-3 text-amber-400">
-              <AlertCircle className="w-5 h-5" />
-              <span className="font-bold text-sm text-white">Confirm Exam Submission</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="mock-submit-title" className="liquid-glass-card w-full max-w-md space-y-5 rounded-2xl p-6 text-sm shadow-2xl">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-warning" />
+              <h3 id="mock-submit-title" className="font-semibold text-foreground">Submit this exam?</h3>
             </div>
-
-            <div className="bg-[#121216] p-4 rounded-xl space-y-2 border border-[#222226]">
-              <div className="flex justify-between text-zinc-300">
-                <span>Total Questions:</span>
-                <span className="font-bold text-white">{session.totalQuestions}</span>
+            <dl className="space-y-2 rounded-xl bg-surface-interactive p-4">
+              <div className="flex justify-between text-muted-strong">
+                <dt>Questions</dt>
+                <dd className="font-semibold tabular-nums text-foreground">{session.totalQuestions}</dd>
               </div>
-              <div className="flex justify-between text-brand-lime">
-                <span>Answered:</span>
-                <span className="font-bold">{answeredCount}</span>
+              <div className="flex justify-between text-muted-strong">
+                <dt>Answered</dt>
+                <dd className="font-semibold tabular-nums text-accent">{answeredCount}</dd>
               </div>
-              <div className="flex justify-between text-red-400">
-                <span>Unanswered:</span>
-                <span className="font-bold">{session.totalQuestions - answeredCount}</span>
+              <div className="flex justify-between text-muted-strong">
+                <dt>Unanswered</dt>
+                <dd className="font-semibold tabular-nums text-danger">{session.totalQuestions - answeredCount}</dd>
               </div>
-              <div className="flex justify-between text-amber-300">
-                <span>Flagged for Review:</span>
-                <span className="font-bold">{session.flaggedQuestionIds.length}</span>
+              <div className="flex justify-between text-muted-strong">
+                <dt>Flagged</dt>
+                <dd className="font-semibold tabular-nums text-warning">{session.flaggedQuestionIds.length}</dd>
               </div>
-            </div>
-
-            <p className="text-zinc-400 font-sans leading-relaxed">
-              Once submitted, this session will be locked and compared with a 70% study target. Missed items will be saved for review. This is not an official CFA Institute passing score.
+            </dl>
+            <p className="leading-relaxed text-muted">
+              After submitting you can&apos;t change answers. Missed questions are added to your review deck.
             </p>
-
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3">
               <button
+                autoFocus
                 onClick={() => setIsSubmitConfirmOpen(false)}
-                className="flex-1 py-2.5 rounded-xl bg-[#18181D] text-zinc-300 hover:text-white border border-[#27272A]"
+                className="glass-pill-btn min-h-11 flex-1 rounded-xl text-muted-strong"
               >
-                RETURN TO EXAM
+                Keep working
+              </button>
+              <button onClick={handleFinalSubmit} className="lime-btn-primary min-h-11 flex-1 rounded-xl">
+                Submit exam
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isLeaveConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="mock-leave-title" className="liquid-glass-card w-full max-w-md space-y-4 rounded-2xl p-6 text-sm shadow-2xl">
+            <h3 id="mock-leave-title" className="font-semibold text-foreground">Leave the exam?</h3>
+            <p className="leading-relaxed text-muted">
+              Your answers are saved and you can resume from the Mock exam button, but the clock keeps running, just as it would on exam day.
+            </p>
+            <div className="flex gap-3">
+              <button
+                autoFocus
+                onClick={() => setIsLeaveConfirmOpen(false)}
+                className="lime-btn-primary min-h-11 flex-1 rounded-xl"
+              >
+                Keep working
               </button>
               <button
-                onClick={handleFinalSubmit}
-                className="flex-1 py-2.5 rounded-xl bg-brand-lime text-black font-extrabold hover:bg-brand-neon shadow-lime-sm"
+                onClick={() => {
+                  setIsLeaveConfirmOpen(false);
+                  setIsNavigatorOpen(false);
+                  setSession(null);
+                  onClose();
+                }}
+                className="glass-pill-btn min-h-11 flex-1 rounded-xl text-muted-strong"
               >
-                EXECUTE GRADING
+                Leave exam
               </button>
             </div>
           </div>
@@ -741,3 +715,34 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     </div>
   );
 };
+
+const MOCK_TIERS: Array<{ id: MockExamType; title: string; badge: string; time: string; desc: string }> = [
+  {
+    id: "quick_diagnostic_45",
+    title: "Quick diagnostic",
+    badge: "45 questions",
+    time: "1 h 8 min",
+    desc: "A short, weighted check across all ten topics. A good place to start.",
+  },
+  {
+    id: "half_session_1",
+    title: "Half mock A",
+    badge: "90 questions",
+    time: "2 h 15 min",
+    desc: "One exam session's length, covering all ten topics at their exam weights.",
+  },
+  {
+    id: "half_session_2",
+    title: "Half mock B",
+    badge: "90 questions",
+    time: "2 h 15 min",
+    desc: "A second session-length mock. Together, A and B make a full exam.",
+  },
+  {
+    id: "full_180",
+    title: "Full mock",
+    badge: "180 questions",
+    time: "4 h 30 min",
+    desc: "Both sessions back to back, for exam-day stamina.",
+  },
+];

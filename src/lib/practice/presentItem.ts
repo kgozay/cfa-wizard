@@ -33,6 +33,20 @@ export function createOptionPermutation(prng: () => number = Math.random): ItemP
   return { authoringToDisplayed, displayedToAuthoring };
 }
 
+const OPTION_REFERENCE_PATTERN = /\b(Distractor|Option|Choice|Answer)\s+([ABC])\b/gi;
+
+/**
+ * Rewrites authored letter references ("Distractor A", "Option C") so they
+ * match the shuffled display order the candidate actually sees.
+ */
+export function remapOptionReferences(text: string, authoringToDisplayed: Record<OptionKey, OptionKey>): string {
+  if (!text) return text;
+  return text.replace(OPTION_REFERENCE_PATTERN, (_match, label: string, letter: string) => {
+    const displayed = authoringToDisplayed[letter.toUpperCase() as OptionKey] || letter;
+    return `${label} ${displayed}`;
+  });
+}
+
 /**
  * Transforms a canonical PracticeItem into a PresentedPracticeItem with remapped options.
  * The source item remains completely immutable.
@@ -72,9 +86,9 @@ export function presentPracticeItem(
 
   // Remap distractor feedback
   const displayedFeedback: Record<OptionKey, string> = {
-    A: item.distractorFeedback[displayedToAuthoring.A] || "",
-    B: item.distractorFeedback[displayedToAuthoring.B] || "",
-    C: item.distractorFeedback[displayedToAuthoring.C] || "",
+    A: remapOptionReferences(item.distractorFeedback[displayedToAuthoring.A] || "", authoringToDisplayed),
+    B: remapOptionReferences(item.distractorFeedback[displayedToAuthoring.B] || "", authoringToDisplayed),
+    C: remapOptionReferences(item.distractorFeedback[displayedToAuthoring.C] || "", authoringToDisplayed),
   };
 
   return {
@@ -90,7 +104,7 @@ export function presentPracticeItem(
     caseStem: item.caseStem,
     options: displayedOptions,
     correctOption: displayedCorrectOption,
-    solution: item.solution,
+    solution: remapOptionReferences(item.solution, authoringToDisplayed),
     calculatorKeystrokes: item.calculatorKeystrokes,
     trapCategory: item.trapCategory,
     errorModeDefault: item.errorModeDefault,

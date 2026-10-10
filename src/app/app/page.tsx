@@ -38,6 +38,7 @@ import { TopicLearningHubModal } from "@/components/learn/TopicLearningHubModal"
 import { AuthSyncModal } from "@/components/auth/AuthSyncModal";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
+import { shouldIgnoreShortcut } from "@/lib/keyboard";
 
 export default function DiagnosticCockpitPage() {
   const {
@@ -53,6 +54,7 @@ export default function DiagnosticCockpitPage() {
     isMockExamOpen,
     isLearnHubOpen,
     isAuthSyncOpen,
+    isBriefingModalOpen,
     setMockExamOpen,
     setLearnHubOpen,
     setAuthSyncOpen,
@@ -91,14 +93,15 @@ export default function DiagnosticCockpitPage() {
   // Global Keyboard Shortcuts Listener for zero-latency ergonomics
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Never intercept when actively typing in input / textarea
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      // Never intercept when actively typing in a field or using a browser shortcut
+      if (shouldIgnoreShortcut(e)) return;
 
       const key = e.key.toUpperCase();
 
       // Escape closes any active top modal
       if (e.key === "Escape") {
-        if (isSettingsOpen) setIsSettingsOpen(false);
+        if (isResetConfirmOpen) setIsResetConfirmOpen(false);
+        else if (isSettingsOpen) setIsSettingsOpen(false);
         else if (isShortcutsOpen) setShortcutsOpen(false);
         else if (isFormulaSheetOpen) setFormulaSheetOpen(false);
         else if (isTrapLogOpen) setTrapLogOpen(false);
@@ -108,6 +111,23 @@ export default function DiagnosticCockpitPage() {
         else if (isCalculatorOpen) setCalculatorOpen(false);
         return;
       }
+
+      // Exams, dialogs and the calculator own single-letter keys while they are open
+      // (e.g. C selects answer C in a drill, F flags a mock question, digits feed the calculator).
+      const isFocusedSurfaceOpen =
+        isMockExamOpen ||
+        isLearnHubOpen ||
+        isAuthSyncOpen ||
+        isBriefingModalOpen ||
+        isSprintModalOpen ||
+        isLeitnerDeckOpen ||
+        isAIGeneratorOpen ||
+        isTrapLogOpen ||
+        isFormulaSheetOpen ||
+        isCalculatorOpen ||
+        isResetConfirmOpen;
+      if (isFocusedSurfaceOpen) return;
+      if (activeVignetteId && !["?", "/", "M", "F"].includes(key)) return;
 
       // Hotkey: ? / Shift+/ -> Keyboard Shortcuts HUD
       if (e.key === "?" || (e.shiftKey && e.key === "/")) {
@@ -162,6 +182,12 @@ export default function DiagnosticCockpitPage() {
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   }, [
+    activeVignetteId,
+    isMockExamOpen,
+    isLearnHubOpen,
+    isAuthSyncOpen,
+    isBriefingModalOpen,
+    isResetConfirmOpen,
     isSettingsOpen,
     isShortcutsOpen,
     isFormulaSheetOpen,
@@ -386,8 +412,8 @@ export default function DiagnosticCockpitPage() {
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="flex-1">
+      {/* Main Content Area (above the opaque background canvas) */}
+      <div className="relative z-10 flex-1">
         {activeVignetteId ? (
           <div className="w-full">
             <VignetteEngine />
@@ -400,9 +426,7 @@ export default function DiagnosticCockpitPage() {
                 onOpenScenarioSimulator={handleOpenScenarioSimulator}
               />
             ) : (
-              <TopicContextBar
-                onStartPractice={() => handleOpenScenarioSimulator(useCFAStore.getState().activeTopicId || "01")}
-              />
+              <TopicContextBar />
             )}
 
             <div
@@ -504,6 +528,7 @@ export default function DiagnosticCockpitPage() {
             </p>
             <div className="flex items-center justify-end gap-2 pt-2 text-sm">
               <button
+                autoFocus
                 onClick={() => setIsResetConfirmOpen(false)}
                 className="min-h-11 rounded-xl bg-surface-interactive px-4 font-medium text-foreground hover:bg-surface-raised"
               >
@@ -541,7 +566,9 @@ export default function DiagnosticCockpitPage() {
       <AuthSyncModal isOpen={isAuthSyncOpen} onClose={() => setAuthSyncOpen(false)} />
 
       {/* Footer */}
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </main>
   );
 }

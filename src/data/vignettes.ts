@@ -635,7 +635,7 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   {
     id: "vignette-03-corpfin",
     topicId: "03",
-    topicName: "Corporate Finance",
+    topicName: "Corporate Issuers",
     subReading: "Governance, Capital Budgeting (NPV/IRR), Working Capital & Leverage",
     difficulty: "High Trap",
     vignetteStem: "An industrial manufacturer with a 25% corporate tax rate is evaluating capital allocations, liquidity cash conversion cycles, target WACC components, and operational/financial leverage structures.",
@@ -2519,7 +2519,7 @@ export const CFA_VIGNETTES: VignetteSet[] = [
   {
     id: "vignette-09-port",
     topicId: "09",
-    topicName: "Portfolio Construction",
+    topicName: "Portfolio Management",
     subReading: "Portfolio Risk & Return, CAPM, SML vs CML, IPS Governance & Performance Ratios",
     difficulty: "High Trap",
     vignetteStem: "An institutional endowment has a risk-free rate R_f = 4.00% and expected market return E(R_m) = 10.00%. An equity fund manager analyzes Stock Delta, which has an expected return of 13.50% and standard deviation of 24.0%. Market volatility is 15.0%, and correlation is 0.75.",

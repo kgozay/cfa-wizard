@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { legacyVignetteToPracticeItems } from "../adapters";
-import { presentPracticeItem } from "../presentItem";
+import { presentPracticeItem, remapOptionReferences } from "../presentItem";
 import { createPracticeSession } from "../createSession";
 import { createPRNG } from "../random";
 import { hasCurrentAnswerKey } from "../eligibility";
@@ -27,6 +27,22 @@ describe("Option Presentation & Answer Permutation", () => {
 
     // Source item remains completely unmodified
     expect(testItem.correctOption).toBe("B");
+  });
+
+  it("rewrites distractor letter references to match the displayed order", () => {
+    for (const item of items) {
+      const presented = presentPracticeItem(item, "session-letters", 1, createPRNG(`letters-${item.id}`));
+      (["A", "B", "C"] as const).forEach((displayed) => {
+        const match = presented.distractorFeedback[displayed].match(/^Distractor ([ABC])\b/);
+        if (match) expect(match[1]).toBe(displayed);
+      });
+    }
+  });
+
+  it("remaps only explicit option references", () => {
+    const mapping = { A: "C", B: "A", C: "B" } as const;
+    expect(remapOptionReferences("Distractor A ignores compounding; Portfolio A is unchanged.", mapping))
+      .toBe("Distractor C ignores compounding; Portfolio A is unchanged.");
   });
 
   it("is deterministic when given the same seed", () => {

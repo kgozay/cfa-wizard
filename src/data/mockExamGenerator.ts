@@ -6,11 +6,13 @@ import { PracticeItem } from "@/types/practice";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPracticeSession } from "@/lib/practice/createSession";
 
-const MOCK_TOPIC_QUOTAS: Record<MockExamType, Record<string, number>> = {
-  quick_diagnostic_45: { "10": 8, "01": 5, "02": 3, "04": 6, "03": 4, "05": 5, "06": 6, "07": 2, "08": 2, "09": 4 },
+export const MOCK_TOPIC_QUOTAS: Record<MockExamType, Record<string, number>> = {
+  // Quotas track the current Level I topic-weight ranges (Ethics 15–20%, FSA/Equity/FI 11–14%,
+  // PM 8–12%, Alts 7–10%, Quant/Econ/Corporate Issuers 6–9%, Derivatives 5–8%).
+  quick_diagnostic_45: { "10": 7, "01": 3, "02": 3, "04": 6, "03": 3, "05": 6, "06": 6, "07": 3, "08": 4, "09": 4 },
   half_session_1: { "10": 26, "01": 20, "02": 16, "04": 28 },
   half_session_2: { "03": 14, "05": 20, "06": 22, "07": 10, "08": 10, "09": 14 },
-  full_180: { "10": 30, "01": 20, "02": 14, "04": 24, "03": 16, "05": 22, "06": 24, "07": 10, "08": 10, "09": 10 },
+  full_180: { "10": 30, "01": 14, "02": 13, "04": 23, "03": 13, "05": 22, "06": 22, "07": 11, "08": 15, "09": 17 },
 };
 
 export function getMockExamShortages(examType: MockExamType): Array<{ topicId: string; requested: number; available: number }> {
@@ -192,6 +194,7 @@ export function gradeMockExam(
         selectedOption: chosen,
         correctOption: q.correctOption,
         autopsyExplanation: chosen ? q.distractorAutopsy[chosen] : q.algebraicSolution,
+        solution: q.algebraicSolution,
         calculatorKeystrokes: q.calculatorKeystrokes,
         timestamp: new Date().toISOString(),
         errorMode: q.errorModeDefault || "UNSPECIFIED",
@@ -215,7 +218,7 @@ export function gradeMockExam(
     return {
       topicId: tId,
       topicName: stat.topicName,
-      weight: cur?.weight || "8–11%",
+      weight: cur?.weight || "8–12%",
       total: stat.total,
       correct: stat.correct,
       accuracy: acc,

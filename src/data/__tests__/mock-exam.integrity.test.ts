@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateMockExamSession, getMockExamShortages } from "../mockExamGenerator";
+import { generateMockExamSession, getMockExamShortages, MOCK_TOPIC_QUOTAS } from "../mockExamGenerator";
 import { getMockElapsedSeconds, getMockRemainingSeconds } from "@/lib/practice/mockTiming";
 
 describe("Mock Exam Integrity", () => {
@@ -57,5 +57,13 @@ describe("Mock Exam Integrity", () => {
     expect(getMockRemainingSeconds(session, Date.parse(session.startedAt) + 60_000)).toBe(4020);
     expect(getMockRemainingSeconds(session, Date.parse(session.startedAt) + 4_080_000)).toBe(0);
     expect(getMockElapsedSeconds(session, Date.parse(session.startedAt) + 8_000_000)).toBe(4080);
+  });
+
+  it("allocates every mock question and matches the exam length", () => {
+    const totals = { quick_diagnostic_45: 45, half_session_1: 90, half_session_2: 90, full_180: 180 } as const;
+    (Object.keys(totals) as Array<keyof typeof totals>).forEach((type) => {
+      const allocated = Object.values(MOCK_TOPIC_QUOTAS[type]).reduce((sum, count) => sum + count, 0);
+      expect(allocated).toBe(totals[type]);
+    });
   });
 });

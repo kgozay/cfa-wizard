@@ -26,6 +26,7 @@ import { gradeAttempt } from "@/lib/practice/gradeAttempt";
 import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
 import { getMockElapsedSeconds, getMockRemainingSeconds } from "@/lib/practice/mockTiming";
 import { hasCurrentAnswerKey } from "@/lib/practice/eligibility";
+import { shouldIgnoreShortcut } from "@/lib/keyboard";
 
 interface MockExamModalProps {
   isOpen: boolean;
@@ -229,7 +230,13 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     if (!isOpen || !session || isGraded) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (shouldIgnoreShortcut(e)) return;
+      if (e.key === "k" || e.key === "K") {
+        setCalculatorMode(calculatorMode === "docked" ? "closed" : "docked");
+        return;
+      }
+      // The calculator owns digit, operator and C keys while it is open
+      if (calculatorMode !== "closed") return;
 
       const currentQ = session.questions[currentIndex];
       if (!currentQ) return;
@@ -246,8 +253,6 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
         changeQuestion(Math.max(0, currentIndex - 1));
       } else if (e.key === "ArrowRight") {
         changeQuestion(Math.min(session.questions.length - 1, currentIndex + 1));
-      } else if (e.key === "k" || e.key === "K") {
-        setCalculatorMode(calculatorMode === "docked" ? "closed" : "docked");
       }
     };
 
@@ -447,7 +452,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
       {/* Top Standardized Exam Navbar */}
       <header className="h-14 px-4 sm:px-6 bg-[#0E0E12] border-b border-[#1F1F23] flex items-center justify-between select-none shrink-0">
         <div className="flex items-center gap-3">
-          <span className="px-2 py-0.5 rounded bg-brand-lime text-black font-mono text-xs font-extrabold uppercase">
+          <span className="hidden sm:inline whitespace-nowrap px-2 py-0.5 rounded bg-brand-lime text-black font-mono text-xs font-extrabold uppercase">
             CFA LEVEL 1 MOCK
           </span>
           <span className="hidden md:inline text-xs font-mono text-zinc-300 font-semibold truncate max-w-xs">
@@ -466,7 +471,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
           <Clock className="w-4 h-4" />
           <span>
             {remainingHrs > 0 ? `${remainingHrs}h ` : ""}
-            {remainingMins.toString().padStart(2, "0")}:{remainingSecs.toString().padStart(2, "0")} REMAINING
+            {remainingMins.toString().padStart(2, "0")}:{remainingSecs.toString().padStart(2, "0")}
+            <span className="hidden sm:inline"> REMAINING</span>
           </span>
         </div>
 
@@ -505,7 +511,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
       </header>
 
       {/* Main Question Viewport */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="relative flex-1 flex overflow-hidden">
         
         {/* Left / Center: Question Canvas */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 flex flex-col justify-between">
@@ -607,7 +613,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
 
         {/* Right Sidebar: Question Navigator Matrix (Collapsible) */}
         {isNavigatorOpen && (
-          <aside className="w-80 bg-[#0A0A0D] border-l border-[#1F1F23] p-4 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right-4 duration-150 select-none">
+          <aside className="absolute inset-y-0 right-0 z-10 w-full sm:static sm:w-80 bg-[#0A0A0D] border-l border-[#1F1F23] p-4 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right-4 duration-150 select-none">
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-[#1F1F23]">
                 <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
@@ -615,7 +621,8 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
                 </span>
                 <button
                   onClick={() => setIsNavigatorOpen(false)}
-                  className="text-zinc-400 hover:text-white"
+                  aria-label="Close question navigator"
+                  className="-m-2 flex h-11 w-11 items-center justify-center text-zinc-400 hover:text-white"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -647,7 +654,11 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
                       onClick={() => {
                         changeQuestion(idx);
                         if (soundEnabled) sound.playKeyClick();
+                        // On phones the navigator covers the question, so return to it
+                        if (window.matchMedia("(max-width: 639px)").matches) setIsNavigatorOpen(false);
                       }}
+                      aria-label={`Question ${idx + 1}${isAnswered ? ", answered" : ""}${isFlagged ? ", flagged" : ""}`}
+                      aria-current={isCurrent ? "step" : undefined}
                       className={`h-9 rounded-lg border font-bold flex items-center justify-center relative transition-all ${
                         isCurrent
                           ? "ring-2 ring-brand-lime text-white bg-[#1A1A20] border-brand-lime"

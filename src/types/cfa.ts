@@ -43,7 +43,7 @@ export interface SubReading {
 
 export interface CFATopic {
   id: string; // "01" through "10"
-  name: string; // Official name, e.g. "Corporate Finance", "Quantitative Methods"
+  name: string; // Official name, e.g. "Corporate Issuers", "Quantitative Methods"
   shortName: string;
   weight: string; // e.g. "11–14%"
   weightCategory: TopicWeightCategory;
@@ -128,6 +128,7 @@ export interface TrapLogEntry {
   userChoice?: OptionKey;
   correctOption: OptionKey;
   autopsyExplanation: string;
+  solution?: string;
   calculatorKeystrokes?: string;
   timestamp: string;
   errorMode?: ErrorMode;
@@ -142,6 +143,7 @@ export interface TrapLogEntry {
 export interface LeitnerCard {
   id: string;
   trapLogId: string;
+  sourceItemId?: string;
   topicId: string;
   topicName: string;
   questionStem: string;

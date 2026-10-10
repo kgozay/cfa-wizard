@@ -962,7 +962,7 @@ function generateProceduralVignette(
     }
 
     case "09": {
-      // Track 09: Portfolio Construction
+      // Track 09: Portfolio Management
       const rf = 4.0;
       const rm = 10.0;
       const beta = 1.25;

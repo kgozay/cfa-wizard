@@ -12,6 +12,7 @@ import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPracticeSession } from "@/lib/practice/createSession";
 import { gradeAttempt } from "@/lib/practice/gradeAttempt";
 import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
+import { shouldIgnoreShortcut } from "@/lib/keyboard";
 
 export interface SprintQuestionItem {
   uniqueKey: string;
@@ -110,7 +111,9 @@ export const InterleavedSprintModal: React.FC = () => {
     if (!isSprintModalOpen || isFinished) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (shouldIgnoreShortcut(e)) return;
+      // The calculator owns digit and C keys while it is open
+      if (useCFAStore.getState().isCalculatorOpen) return;
 
       const key = e.key.toUpperCase();
       if (key === "1" || key === "A") {
@@ -183,6 +186,7 @@ export const InterleavedSprintModal: React.FC = () => {
             trapName: item.question.trapCategory,
             errorMode: item.question.errorModeDefault || "UNSPECIFIED",
             autopsyExplanation: userChoice ? item.question.distractorAutopsy[userChoice] : "Time expired before an answer was selected.",
+            solution: item.question.algebraicSolution,
             calculatorKeystrokes: item.question.calculatorKeystrokes,
             attemptId: attempt.id,
             itemAttemptId: itemAttempt.id,

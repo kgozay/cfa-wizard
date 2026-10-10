@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { CFA_CURRICULUM } from "@/data/curriculum";
+import { CFA_VIGNETTES } from "@/data/vignettes";
 import { ERROR_MODE_LABELS } from "@/data/trapTaxonomy";
 import { sound } from "@/components/common/SoundEffects";
 
@@ -32,7 +33,16 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
     trapLogs,
     leitnerCards,
     soundEnabled,
+    startVignetteDrill,
   } = useCFAStore();
+
+  // Readiness only counts approved authored items, so remediation launches the authored set.
+  const startAuthoredPractice = (topicId: string) => {
+    if (soundEnabled) sound.playNodeSwitch();
+    const authored = CFA_VIGNETTES.find((vignette) => vignette.topicId === topicId);
+    if (authored) startVignetteDrill(authored.id);
+    else onOpenScenarioSimulator(topicId);
+  };
 
   const eligibleAttempts = useMemo(
     () => practiceAttempts.filter((attempt) => !attempt.containsDraftContent),
@@ -69,11 +79,10 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
       : 100;
 
   // Due flashcards count
-  const now = new Date();
-  const dueFlashcardsCount = useMemo(
-    () => leitnerCards.filter((c) => new Date(c.nextReviewAt) <= now).length,
-    [leitnerCards, now]
-  );
+  const dueFlashcardsCount = useMemo(() => {
+    const now = Date.now();
+    return leitnerCards.filter((c) => new Date(c.nextReviewAt).getTime() <= now).length;
+  }, [leitnerCards]);
 
   // Topic-level stats
   const topicAnalytics = useMemo(() => {
@@ -166,10 +175,11 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
             </div>
 
             <button
-              onClick={() => {
-                if (soundEnabled) sound.playNodeSwitch();
-                onOpenScenarioSimulator("01");
-              }}
+              onClick={() =>
+                startAuthoredPractice(
+                  (topicAnalytics.find((t) => t.totalQ < 5) || topicAnalytics[0]).topic.id
+                )
+              }
               className="lime-btn-primary inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] shrink-0"
             >
               <Play className="h-4 w-4 fill-current" />
@@ -328,7 +338,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
             </div>
 
             <button
-              onClick={() => onOpenScenarioSimulator(weakAreas[0].topic.id)}
+              onClick={() => startAuthoredPractice(weakAreas[0].topic.id)}
               className="min-h-[44px] px-4 py-2.5 rounded-xl bg-danger/15 hover:bg-danger/25 text-danger font-semibold text-xs sm:text-sm flex items-center gap-2 shrink-0 transition-all active:scale-[0.98]"
             >
               <Sparkles className="w-4 h-4" />
@@ -385,18 +395,18 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
         {totalQuestionsSolved === 0 ? (
           /* Zero-state compact table */
           <div className="overflow-hidden rounded-xl bg-surface-raised/40 divide-y divide-divider text-xs">
-            <div className="grid grid-cols-12 px-4 py-2.5 bg-surface-raised/60 font-semibold text-muted uppercase tracking-wider">
-              <span className="col-span-2">Topic</span>
-              <span className="col-span-6">Curriculum area</span>
-              <span className="col-span-2 text-right">Exam weight</span>
-              <span className="col-span-2 text-right">Status</span>
+            <div className="grid grid-cols-[2rem_1fr_auto] sm:grid-cols-[4.5rem_1fr_7rem_6rem] gap-x-3 px-4 py-2.5 bg-surface-raised/60 font-semibold text-muted uppercase tracking-wider">
+              <span>#</span>
+              <span>Curriculum area</span>
+              <span className="text-right">Weight</span>
+              <span className="hidden sm:block text-right">Status</span>
             </div>
             {topicAnalytics.map((t) => (
-              <div key={t.topic.id} className="grid grid-cols-12 items-center px-4 py-2.5 text-xs hover:bg-surface-interactive/40 transition-colors">
-                <span className="col-span-2 font-mono font-semibold text-muted">Topic {t.topic.id}</span>
-                <span className="col-span-6 font-medium text-foreground">{t.topic.name}</span>
-                <span className="col-span-2 text-right font-mono text-muted">{t.topic.weight}</span>
-                <span className="col-span-2 text-right text-muted/60">Untested</span>
+              <div key={t.topic.id} className="grid grid-cols-[2rem_1fr_auto] sm:grid-cols-[4.5rem_1fr_7rem_6rem] items-center gap-x-3 px-4 py-2.5 text-xs hover:bg-surface-interactive/40 transition-colors">
+                <span className="font-mono font-semibold text-muted">{t.topic.id}</span>
+                <span className="font-medium text-foreground">{t.topic.name}</span>
+                <span className="text-right font-mono text-muted whitespace-nowrap">{t.topic.weight}</span>
+                <span className="hidden sm:block text-right text-muted/60">Untested</span>
               </div>
             ))}
           </div>

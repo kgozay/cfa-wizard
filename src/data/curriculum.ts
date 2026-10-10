@@ -5,8 +5,8 @@ export const CFA_CURRICULUM: CFATopic[] = [
     id: "01",
     name: "Quantitative Methods",
     shortName: "Quant",
-    weight: "10–12%",
-    weightCategory: "HIGH",
+    weight: "6–9%",
+    weightCategory: "MEDIUM",
     highYieldTrapArea: "EAR compounding periodicity, Annuity Due BGN mode, Hypothesis testing p-values vs critical values",
     executiveSummary: [
       "Effective Annual Rate (EAR): With continuous or periodic compounding, $EAR = (1 + r/m)^m - 1$ and $EAR_{cont} = e^r - 1$. Always verify compounding frequency before inputting into TVM.",
@@ -130,7 +130,7 @@ export const CFA_CURRICULUM: CFATopic[] = [
   },
   {
     id: "03",
-    name: "Corporate Finance",
+    name: "Corporate Issuers",
     shortName: "Corp Fin",
     weight: "6–9%",
     weightCategory: "MEDIUM",
@@ -375,7 +375,7 @@ export const CFA_CURRICULUM: CFATopic[] = [
     id: "08",
     name: "Alternative Investments",
     shortName: "Alts",
-    weight: "5–8%",
+    weight: "7–10%",
     weightCategory: "STANDARD",
     highYieldTrapArea: "Hedge fund fee 2/20 hurdle rate calculations, Real estate NAV vs cap rate capitalization, Private equity waterfalls",
     executiveSummary: [
@@ -423,9 +423,9 @@ export const CFA_CURRICULUM: CFATopic[] = [
   },
   {
     id: "09",
-    name: "Portfolio Construction",
+    name: "Portfolio Management",
     shortName: "Portfolio",
-    weight: "8–11%",
+    weight: "8–12%",
     weightCategory: "HIGH",
     highYieldTrapArea: "SML vs CML risk metric (Beta vs Total Volatility), Treynor vs Sharpe denominator, Calmar & Sortino downside risk",
     executiveSummary: [

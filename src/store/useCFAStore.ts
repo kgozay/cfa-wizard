@@ -95,6 +95,44 @@ interface CFAState {
   resetProgress: () => void;
 }
 
+/**
+ * Routes missed questions into the spaced-review deck. A question that is
+ * missed again resets its existing card to Box 1 instead of duplicating it.
+ */
+export function upsertLeitnerCards(cards: LeitnerCard[], trapEntries: TrapLogEntry[]): LeitnerCard[] {
+  if (trapEntries.length === 0) return cards;
+  const now = new Date().toISOString();
+  const updated = [...cards];
+  trapEntries.forEach((entry) => {
+    if (!entry.options) return;
+    const matchKey = entry.sourceItemId || `${entry.topicId}:${entry.questionStem.trim().toLowerCase()}`;
+    const existingIdx = updated.findIndex(
+      (card) => (card.sourceItemId || `${card.topicId}:${card.questionStem.trim().toLowerCase()}`) === matchKey
+    );
+    const card: LeitnerCard = {
+      id: existingIdx >= 0 ? updated[existingIdx].id : crypto.randomUUID(),
+      trapLogId: entry.id,
+      sourceItemId: entry.sourceItemId,
+      topicId: entry.topicId,
+      topicName: entry.topicName,
+      questionStem: entry.questionStem,
+      options: entry.options,
+      correctOption: entry.correctOption,
+      solution: entry.solution || entry.autopsyExplanation,
+      keystrokes: entry.calculatorKeystrokes || "",
+      trapName: entry.trapName,
+      errorMode: entry.errorMode || "UNSPECIFIED",
+      box: 1,
+      lastReviewedAt: existingIdx >= 0 ? updated[existingIdx].lastReviewedAt : undefined,
+      nextReviewAt: now,
+      reviewCount: existingIdx >= 0 ? updated[existingIdx].reviewCount : 0,
+    };
+    if (existingIdx >= 0) updated[existingIdx] = card;
+    else updated.unshift(card);
+  });
+  return updated;
+}
+
 export const useCFAStore = create<CFAState>()(
   persist(
     (set, get) => ({
@@ -215,6 +253,7 @@ export const useCFAStore = create<CFAState>()(
           practiceAttempts: currentAttempts,
           practiceSessions,
           trapLogs: currentTraps,
+          leitnerCards: upsertLeitnerCards(get().leitnerCards, trapEntries || []),
           completedTopicIds: updatedCompleted,
           practiceDraft: get().practiceDraft?.sessionId === attempt.sessionId ? null : get().practiceDraft,
         });

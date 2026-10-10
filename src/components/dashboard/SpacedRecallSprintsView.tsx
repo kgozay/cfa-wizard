@@ -4,6 +4,8 @@ import React from "react";
 import { Layers, Zap, AlertTriangle, Play, ArrowRight } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
+import { CFA_VIGNETTES } from "@/data/vignettes";
+import { ERROR_MODE_LABELS } from "@/data/trapTaxonomy";
 
 interface SpacedRecallSprintsViewProps {
   onOpenScenarioSimulator: (topicId: string) => void;
@@ -19,6 +21,7 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
     setSprintModalOpen,
     setTrapLogOpen,
     setWeakAreaTargetTopic,
+    startVignetteDrill,
     soundEnabled,
   } = useCFAStore();
 
@@ -41,7 +44,9 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
   const handleTargetTrapDrill = (topicId: string) => {
     if (soundEnabled) sound.playNodeSwitch();
     setWeakAreaTargetTopic(topicId);
-    onOpenScenarioSimulator(topicId);
+    const authored = CFA_VIGNETTES.find((vignette) => vignette.topicId === topicId);
+    if (authored) startVignetteDrill(authored.id);
+    else onOpenScenarioSimulator(topicId);
   };
 
   return (
@@ -192,8 +197,8 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
                     </span>
                     <span className="font-semibold text-foreground">{log.trapCategory || log.trapName}</span>
                     {log.errorMode && (
-                      <span className="text-[11px] px-2 py-0.5 rounded-md bg-danger/10 text-danger font-mono">
-                        {log.errorMode}
+                      <span className="text-[11px] px-2 py-0.5 rounded-md bg-danger/10 text-danger">
+                        {ERROR_MODE_LABELS[log.errorMode]?.label || log.errorMode}
                       </span>
                     )}
                   </div>

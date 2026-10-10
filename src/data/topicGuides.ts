@@ -35,7 +35,7 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   {
     topicId: "01",
     topicName: "Quantitative Methods",
-    weight: "10–12%",
+    weight: "6–9%",
     highYieldTheme: "Time Value of Money, Compounding Frequencies, and Statistical Return Estimators",
     firstPrinciplesSummary:
       "All quantitative finance is built on discounting uncertain future cash flows to the present. The two fundamental dimensions are compounding periodicity (converting nominal rates to Effective Annual Rates) and sample dispersion versus population variance.",
@@ -602,7 +602,7 @@ export const CFA_TOPIC_GUIDES: TopicGuide[] = [
   {
     topicId: "09",
     topicName: "Portfolio Management",
-    weight: "8–11%",
+    weight: "8–12%",
     highYieldTheme: "Two-Asset Portfolio Variance, Capital Asset Pricing Model (CAPM) & SML, and Risk-Adjusted Ratios",
     firstPrinciplesSummary:
       "Portfolio theory formalizes diversification through covariance. Systematic risk (Beta) alone is priced by the market under equilibrium. The Security Market Line (SML) defines required returns, where assets plotting above the SML are undervalued.",

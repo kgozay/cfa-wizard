@@ -33,6 +33,10 @@ import { gradeAttempt } from "@/lib/practice/gradeAttempt";
 import { hasCurrentAnswerKey } from "@/lib/practice/eligibility";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
+import { isActivatableTarget, shouldIgnoreShortcut } from "@/lib/keyboard";
+
+const formatClock = (totalSeconds: number) =>
+  `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toString().padStart(2, "0")}`;
 
 export const VignetteEngine: React.FC = () => {
   const {
@@ -240,6 +244,7 @@ export const VignetteEngine: React.FC = () => {
           selectedOption: chosen || undefined,
           correctOption: item.correctOption,
           autopsyExplanation: chosen ? item.distractorFeedback[chosen] : item.solution,
+          solution: item.solution,
           calculatorKeystrokes: item.calculatorKeystrokes,
           errorMode: item.errorModeDefault || "UNSPECIFIED",
           timestamp: attempt.submittedAt,
@@ -290,7 +295,11 @@ export const VignetteEngine: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't capture when typing in scratchpad or inputs
-      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
+      if (shouldIgnoreShortcut(e)) return;
+      // The calculator owns digit, operator, Enter and C keys while it is open
+      if (useCFAStore.getState().isCalculatorOpen) return;
+      // Another dialog (formula sheet, trap log...) is on top of the drill
+      if (document.querySelector("[role='dialog'][aria-modal='true']")) return;
 
       const key = e.key.toUpperCase();
 
@@ -310,7 +319,7 @@ export const VignetteEngine: React.FC = () => {
           handleSelectOption(targetQ.sessionItemId, "B");
         } else if (key === "3" || key === "C") {
           handleSelectOption(targetQ.sessionItemId, "C");
-        } else if ((e.key === "Enter" || e.key === " ") && isFormComplete) {
+        } else if ((e.key === "Enter" || e.key === " ") && isFormComplete && !isActivatableTarget(e)) {
           e.preventDefault();
           handleSubmitDiagnostic();
         }
@@ -453,9 +462,7 @@ export const VignetteEngine: React.FC = () => {
             <Clock className="w-3.5 h-3.5" />
             <span>
               {isPacingTimerEnabled
-                ? `${Math.floor(elapsedSeconds / 60)}:${(elapsedSeconds % 60)
-                    .toString()
-                    .padStart(2, "0")} / ${Math.floor(targetTimeSeconds / 60)}:00`
+                ? `${formatClock(elapsedSeconds)} / ${formatClock(targetTimeSeconds)}`
                 : "Untimed"}
             </span>
           </button>
@@ -472,6 +479,8 @@ export const VignetteEngine: React.FC = () => {
                 : "bg-surface-interactive hover:bg-surface-raised text-warning"
             }`}
             title="Toggle Texas Instruments BA II Plus Emulator (Hotkey: K)"
+            aria-label="BA II Plus calculator"
+            aria-pressed={calculatorMode !== "closed"}
           >
             <Calculator className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">BA II+ [K]</span>
@@ -480,6 +489,8 @@ export const VignetteEngine: React.FC = () => {
           {/* Scratchpad Toggle */}
           <button
             onClick={() => setIsScratchpadOpen(!isScratchpadOpen)}
+            aria-label="Scratchpad"
+            aria-pressed={isScratchpadOpen}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all min-h-[36px] ${
               isScratchpadOpen
                 ? "bg-accent text-accent-ink font-semibold"
@@ -537,8 +548,8 @@ export const VignetteEngine: React.FC = () => {
             </div>
 
             {/* Hotkey Guide Pill */}
-            <div className="mt-5 pt-3 border-t border-divider flex items-center justify-between text-xs text-muted">
-              <span className="flex items-center gap-1.5">
+            <div className="mt-5 pt-3 border-t border-divider flex items-center justify-between gap-3 text-xs text-muted">
+              <span className="hidden sm:flex items-center gap-1.5">
                 <Keyboard className="w-3.5 h-3.5 text-accent" />
                 <span className="font-mono">Keys: [1/2/3] select · [Space/Enter] submit · [K] BA II+</span>
               </span>

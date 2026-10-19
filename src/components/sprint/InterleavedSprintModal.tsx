@@ -5,7 +5,13 @@ import { X, Zap, Clock, CheckCircle, XCircle, RotateCcw, Award, ChevronDown, Che
 import { useCFAStore } from "@/store/useCFAStore";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { OptionKey, VignetteQuestion, TrapLogEntry } from "@/types/cfa";
-import type { PracticeSession } from "@/types/practice";
+import type { PracticeItem, PracticeSession } from "@/types/practice";
+import { CFA_CURRICULUM } from "@/data/curriculum";
+import { buildExposureIndex, topicAccuracy } from "@/lib/practice/exposure";
+import { allocateByWeakness, selectItems, weightMidpoint } from "@/lib/practice/selectItems";
+import { createPRNG } from "@/lib/practice/random";
+import { dueLeitnerSourceIds } from "@/lib/practice/leitner";
+import { withVariantsForSeen } from "@/lib/practice/variants";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
@@ -13,6 +19,41 @@ import { createPracticeSession } from "@/lib/practice/createSession";
 import { gradeAttempt } from "@/lib/practice/gradeAttempt";
 import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
 import { shouldIgnoreShortcut } from "@/lib/keyboard";
+
+/**
+ * Spreads a sprint across topics by exam weight × weakness, then picks each
+ * topic's items by exposure (due reviews, unseen, missed, least recently seen).
+ */
+function selectSprintItems(allItems: PracticeItem[], length: number): PracticeItem[] {
+  const state = useCFAStore.getState();
+  const prng = createPRNG(`sprint-${Date.now()}-${Math.random()}`);
+  const exposure = buildExposureIndex(state.practiceAttempts);
+  const dueItemIds = dueLeitnerSourceIds(state.leitnerCards);
+  const accuracy = topicAccuracy(state.practiceAttempts);
+  const byTopic = new Map<string, PracticeItem[]>();
+  allItems.forEach((item) => byTopic.set(item.topicId, [...(byTopic.get(item.topicId) || []), item]));
+  const allocation = allocateByWeakness(
+    CFA_CURRICULUM.map((topic) => {
+      const record = accuracy[topic.id];
+      return {
+        topicId: topic.id,
+        examWeight: weightMidpoint(topic.weight),
+        accuracy: record && record.total >= MIN_TOPIC_EVIDENCE ? record.correct / record.total : undefined,
+        available: byTopic.get(topic.id)?.length || 0,
+      };
+    }),
+    length,
+    prng
+  );
+  const picked = Object.entries(allocation).flatMap(([topicId, count]) =>
+    selectItems(byTopic.get(topicId) || [], { count, exposure, dueItemIds, prng })
+  );
+  // Items seen before come back with new numbers where a variant template exists
+  return withVariantsForSeen(picked, (id) => Boolean(exposure[id]), `sprint-${Date.now()}`);
+}
+
+/** Answers needed in a topic before its accuracy steers sprint weighting. */
+const MIN_TOPIC_EVIDENCE = 5;
 
 export interface SprintQuestionItem {
   uniqueKey: string;
@@ -38,9 +79,10 @@ export const InterleavedSprintModal: React.FC = () => {
   // Generate randomized interleaved set
   const initSprint = (length: 5 | 10 | 15 = sprintLength) => {
     const allPracticeItems = CFA_VIGNETTES.flatMap((v) => legacyVignetteToPracticeItems(v));
+    const picked = selectSprintItems(allPracticeItems, length);
     const session = createPracticeSession({
       mode: "sprint",
-      items: allPracticeItems,
+      items: picked,
       requestedCount: length,
       shuffleQuestions: true,
       timerMode: "timed",
@@ -50,7 +92,7 @@ export const InterleavedSprintModal: React.FC = () => {
     setPracticeSession(session);
 
     const items: SprintQuestionItem[] = session.presentedItems.map((pi, index) => {
-      const sourceItem = allPracticeItems.find((item) => item.id === pi.sourceItemId) || allPracticeItems[index];
+      const sourceItem = picked.find((item) => item.id === pi.sourceItemId) || picked[index];
       return {
         uniqueKey: pi.sessionItemId,
         topicId: sourceItem.topicId,
@@ -60,7 +102,7 @@ export const InterleavedSprintModal: React.FC = () => {
           stem: pi.stem,
           options: pi.options,
           correctOption: pi.correctOption,
-          algebraicSolution: sourceItem.solution,
+          algebraicSolution: pi.solution,
           calculatorKeystrokes: sourceItem.calculatorKeystrokes || "",
           trapCategory: sourceItem.trapCategory,
           errorModeDefault: sourceItem.errorModeDefault,

@@ -10,6 +10,7 @@ import { PracticeAttempt, PracticeDraft, PracticeSession } from "@/types/practic
 import { MockExamDraft } from "@/types/mockExam";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { migrateV3ToV4 } from "./migrations";
+import { scheduleLeitnerCard } from "@/lib/practice/leitner";
 
 interface CFAState {
   // Curriculum tracking
@@ -294,30 +295,11 @@ export const useCFAStore = create<CFAState>()(
       },
 
       updateLeitnerCard: (cardId: string, isCorrect: boolean) => {
-        set((state) => {
-          const updated = state.leitnerCards.map((card) => {
-            if (card.id !== cardId) return card;
-            let newBox = card.box;
-            let intervalDays = 1;
-            if (isCorrect) {
-              newBox = Math.min(3, card.box + 1) as 1 | 2 | 3;
-              intervalDays = newBox === 2 ? 3 : 7;
-            } else {
-              newBox = 1;
-              intervalDays = 1;
-            }
-            const nextDate = new Date();
-            nextDate.setDate(nextDate.getDate() + intervalDays);
-            return {
-              ...card,
-              box: newBox,
-              reviewCount: card.reviewCount + 1,
-              lastReviewedAt: new Date().toISOString(),
-              nextReviewAt: nextDate.toISOString(),
-            };
-          });
-          return { leitnerCards: updated };
-        });
+        set((state) => ({
+          leitnerCards: state.leitnerCards.map((card) =>
+            card.id === cardId ? scheduleLeitnerCard(card, isCorrect) : card
+          ),
+        }));
       },
 
       deleteLeitnerCard: (cardId: string) => {

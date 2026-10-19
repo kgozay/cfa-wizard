@@ -49,6 +49,7 @@ export function legacyVignetteToPracticeItems(
       calculatorKeystrokes: q.calculatorKeystrokes,
       trapCategory: q.trapCategory || "General",
       errorModeDefault: q.errorModeDefault,
+      variantKey: q.variantKey,
       distractorFeedback: {
         A: q.distractorAutopsy?.A || "No feedback provided.",
         B: q.distractorAutopsy?.B || "No feedback provided.",

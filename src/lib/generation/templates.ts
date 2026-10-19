@@ -1,4 +1,6 @@
 import { VignetteQuestion } from "@/types/cfa";
+import { between, millions, money, num, pct, pick } from "./format";
+import { VARIANT_TEMPLATES } from "./variants";
 
 /**
  * Parametric question templates used when no AI model is configured. Each build
@@ -13,44 +15,8 @@ export interface QuestionTemplate {
   build: (rand: () => number) => TemplateQuestion;
 }
 
-const pick = <T,>(rand: () => number, values: readonly T[]): T => values[Math.floor(rand() * values.length)];
-const between = (rand: () => number, min: number, max: number, step: number) => {
-  const steps = Math.round((max - min) / step);
-  return Number((min + Math.round(rand() * steps) * step).toFixed(6));
-};
-const money = (value: number, decimals = 0) =>
-  `${value < 0 ? "-" : ""}$${Math.abs(value).toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
-const pct = (value: number, decimals = 2) => `${value.toFixed(decimals)}%`;
-const num = (value: number, decimals = 2) => value.toFixed(decimals);
-const millions = (value: number) => `${money(value, 1)} million`;
-
-export const QUESTION_TEMPLATES: QuestionTemplate[] = [
+const BASE_TEMPLATES: QuestionTemplate[] = [
   // ---------------- 01 Quantitative Methods ----------------
-  {
-    key: "quant-ear",
-    topicId: "01",
-    build: (rand) => {
-      const rate = between(rand, 4, 12, 0.25);
-      const [m, label] = pick(rand, [[4, "quarterly"], [12, "monthly"], [2, "semiannually"]] as const);
-      const ear = (Math.pow(1 + rate / 100 / m, m) - 1) * 100;
-      const continuous = (Math.exp(rate / 100) - 1) * 100;
-      return {
-        losCode: "LOS 1.b",
-        stem: `A deposit pays a stated annual rate of ${pct(rate)} compounded ${label}. Its effective annual rate (EAR) is closest to:`,
-        options: { A: pct(ear, 3), B: pct(rate, 3), C: pct(continuous, 3) },
-        correctOption: "A",
-        algebraicSolution: `EAR = (1 + r_s / m)^m - 1 = (1 + ${num(rate / 100, 4)} / ${m})^${m} - 1 = ${pct(ear, 3)}.`,
-        calculatorKeystrokes: `[2nd][ICONV] NOM = ${rate} [ENTER] [↓][↓] C/Y = ${m} [ENTER] [↑] [CPT] EFF => ${num(ear, 3)}`,
-        trapCategory: "Effective Annual Rate Compounding Periodicity",
-        errorModeDefault: "PERIODICITY_MISMATCH",
-        distractorAutopsy: {
-          A: `Correct. Compounding ${m} times per year raises the effective rate to ${pct(ear, 3)}.`,
-          B: "Distractor B treats the stated rate as the effective rate, ignoring compounding.",
-          C: "Distractor C assumes continuous compounding (e^r - 1).",
-        },
-      };
-    },
-  },
   {
     key: "quant-annuity-pv",
     topicId: "01",
@@ -73,31 +39,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
           A: "Correct. End-of-year payments are an ordinary annuity.",
           B: "Distractor B values the payments as an annuity due ([BGN] mode).",
           C: "Distractor C adds the payments without discounting them.",
-        },
-      };
-    },
-  },
-  {
-    key: "quant-z",
-    topicId: "01",
-    build: (rand) => {
-      const mean = between(rand, 4, 12, 1);
-      const sd = between(rand, 8, 20, 1);
-      const [k, tail] = pick(rand, [[1, 15.87], [2, 2.28], [3, 0.13]] as const);
-      const threshold = mean - k * sd;
-      return {
-        losCode: "LOS 5.c",
-        stem: `Annual returns are normally distributed with a mean of ${pct(mean, 1)} and a standard deviation of ${pct(sd, 1)}. The probability of a return below ${pct(threshold, 1)} is closest to:`,
-        options: { A: pct(tail, 2), B: pct(tail * 2, 2), C: pct(100 - tail, 2) },
-        correctOption: "A",
-        algebraicSolution: `z = (${num(threshold, 1)} - ${num(mean, 1)}) / ${num(sd, 1)} = -${k}. P(Z < -${k}) = ${pct(tail, 2)}.`,
-        calculatorKeystrokes: `(${num(threshold, 1)} [-] ${num(mean, 1)}) [÷] ${num(sd, 1)} [=] -${k} -> z-table`,
-        trapCategory: "One-Tailed vs. Two-Tailed Normal Probability",
-        errorModeDefault: "CONCEPTUAL_CONFUSION",
-        distractorAutopsy: {
-          A: `Correct. The threshold is ${k} standard deviation(s) below the mean, a single lower tail.`,
-          B: "Distractor B counts both tails.",
-          C: "Distractor C gives the probability of a return above the threshold.",
         },
       };
     },
@@ -129,30 +70,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
           A: "Correct. Elasticity divides the percentage change in quantity by the percentage change in price.",
           B: "Distractor B inverts the ratio (%ΔP / %ΔQ).",
           C: "Distractor C drops the negative sign of the demand relationship.",
-        },
-      };
-    },
-  },
-  {
-    key: "econ-cross-rate",
-    topicId: "02",
-    build: (rand) => {
-      const usdEur = between(rand, 1.02, 1.25, 0.005);
-      const jpyUsd = between(rand, 120, 160, 0.5);
-      const jpyEur = usdEur * jpyUsd;
-      return {
-        losCode: "LOS 12.c",
-        stem: `The spot rate is ${num(usdEur, 3)} USD/EUR (USD per EUR) and ${num(jpyUsd, 1)} JPY/USD (JPY per USD). The JPY/EUR cross rate is closest to:`,
-        options: { A: num(jpyEur, 2), B: num(jpyUsd / usdEur, 2), C: num(usdEur / jpyUsd, 5) },
-        correctOption: "A",
-        algebraicSolution: `JPY/EUR = (JPY/USD) * (USD/EUR) = ${num(jpyUsd, 1)} * ${num(usdEur, 3)} = ${num(jpyEur, 2)}.`,
-        calculatorKeystrokes: `${num(jpyUsd, 1)} [×] ${num(usdEur, 3)} [=] ${num(jpyEur, 2)}`,
-        trapCategory: "Cross-Rate Currency Cancellation",
-        errorModeDefault: "FORMULA_SCALAR",
-        distractorAutopsy: {
-          A: "Correct. Multiplying the quotes cancels USD and leaves JPY per EUR.",
-          B: "Distractor B divides the quotes, which does not cancel the USD terms.",
-          C: "Distractor C inverts the relationship and is not a JPY/EUR quote.",
         },
       };
     },
@@ -215,33 +132,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
       };
     },
   },
-  {
-    key: "cf-wacc",
-    topicId: "03",
-    build: (rand) => {
-      const wd = between(rand, 0.2, 0.5, 0.05);
-      const rd = between(rand, 4, 8, 0.25);
-      const re = between(rand, 9, 15, 0.25);
-      const t = between(rand, 20, 30, 1);
-      const wacc = wd * rd * (1 - t / 100) + (1 - wd) * re;
-      const noTax = wd * rd + (1 - wd) * re;
-      return {
-        losCode: "LOS 16.b",
-        stem: `A company's target capital structure is ${Math.round(wd * 100)}% debt and ${Math.round((1 - wd) * 100)}% equity. Its before-tax cost of debt is ${pct(rd)}, cost of equity is ${pct(re)}, and marginal tax rate is ${t}%. Its WACC is closest to:`,
-        options: { A: pct(wacc), B: pct(noTax), C: pct((rd + re) / 2) },
-        correctOption: "A",
-        algebraicSolution: `WACC = w_d * r_d * (1 - t) + w_e * r_e = ${num(wd, 2)} * ${rd} * ${num(1 - t / 100, 2)} + ${num(1 - wd, 2)} * ${re} = ${pct(wacc)}.`,
-        calculatorKeystrokes: `${num(wd, 2)} [×] ${rd} [×] ${num(1 - t / 100, 2)} [+] ${num(1 - wd, 2)} [×] ${re} [=] ${num(wacc, 2)}`,
-        trapCategory: "After-Tax Cost of Debt in WACC",
-        errorModeDefault: "FORMULA_SCALAR",
-        distractorAutopsy: {
-          A: "Correct. Debt is weighted at its after-tax cost.",
-          B: "Distractor B omits the (1 - t) tax shield on debt.",
-          C: "Distractor C takes a simple average of the component costs, ignoring weights and taxes.",
-        },
-      };
-    },
-  },
 
   // ---------------- 04 Financial Statement Analysis ----------------
   {
@@ -299,57 +189,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
   },
 
   // ---------------- 05 Equities ----------------
-  {
-    key: "eq-gordon",
-    topicId: "05",
-    build: (rand) => {
-      const d0 = between(rand, 1, 5, 0.25);
-      const g = between(rand, 2, 6, 0.5);
-      const r = between(rand, g + 3, g + 7, 0.5);
-      const d1 = d0 * (1 + g / 100);
-      const value = d1 / ((r - g) / 100);
-      return {
-        losCode: "LOS 26.e",
-        stem: `A company just paid a dividend of ${money(d0, 2)}. Dividends are expected to grow at ${pct(g, 1)} forever and the required return is ${pct(r, 1)}. The intrinsic value per share is closest to:`,
-        options: { A: money(value, 2), B: money(d0 / ((r - g) / 100), 2), C: money(d1 / (r / 100), 2) },
-        correctOption: "A",
-        algebraicSolution: `D_1 = ${money(d0, 2)} * ${num(1 + g / 100, 3)} = ${money(d1, 4)}. V_0 = D_1 / (r - g) = ${num(d1, 4)} / ${num((r - g) / 100, 3)} = ${money(value, 2)}.`,
-        calculatorKeystrokes: `${d0} [×] ${num(1 + g / 100, 3)} [÷] ${num((r - g) / 100, 3)} [=] ${num(value, 2)}`,
-        trapCategory: "D0 vs. D1 in the Gordon Growth Model",
-        errorModeDefault: "FORMULA_SCALAR",
-        distractorAutopsy: {
-          A: "Correct. Grow the dividend one period (D1) before dividing by (r - g).",
-          B: "Distractor B uses the dividend just paid (D0) instead of next year's dividend.",
-          C: "Distractor C ignores growth in the denominator.",
-        },
-      };
-    },
-  },
-  {
-    key: "eq-margin-call",
-    topicId: "05",
-    build: (rand) => {
-      const price = between(rand, 20, 100, 1);
-      const im = between(rand, 0.4, 0.6, 0.05);
-      const mm = between(rand, 0.25, 0.35, 0.05);
-      const call = (price * (1 - im)) / (1 - mm);
-      return {
-        losCode: "LOS 22.e",
-        stem: `An investor buys shares at ${money(price, 2)} with an initial margin of ${Math.round(im * 100)}%. The maintenance margin is ${Math.round(mm * 100)}%. The price below which the investor receives a margin call is closest to:`,
-        options: { A: money(call, 2), B: money(price * (1 - mm), 2), C: money((price * (1 - im)) / mm, 2) },
-        correctOption: "A",
-        algebraicSolution: `Margin call price = P_0 * (1 - IM) / (1 - MM) = ${num(price, 2)} * ${num(1 - im, 2)} / ${num(1 - mm, 2)} = ${money(call, 2)}.`,
-        calculatorKeystrokes: `${price} [×] ${num(1 - im, 2)} [÷] ${num(1 - mm, 2)} [=] ${num(call, 2)}`,
-        trapCategory: "Margin Call Trigger Price",
-        errorModeDefault: "FORMULA_SCALAR",
-        distractorAutopsy: {
-          A: "Correct. The loan stays fixed; a call occurs when equity falls to the maintenance level.",
-          B: "Distractor B applies the maintenance margin to the purchase price and ignores the loan.",
-          C: "Distractor C divides by the maintenance margin instead of (1 - maintenance margin).",
-        },
-      };
-    },
-  },
 
   // ---------------- 06 Fixed Income ----------------
   {
@@ -377,32 +216,6 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
           A: "Correct. Price moves opposite to yield by about duration times the yield change.",
           B: "Distractor B gets the direction wrong: prices fall when yields rise.",
           C: "Distractor C misplaces the basis-point decimal by a factor of ten.",
-        },
-      };
-    },
-  },
-  {
-    key: "fi-zero-price",
-    topicId: "06",
-    build: (rand) => {
-      const years = between(rand, 2, 10, 1);
-      const y = between(rand, 2, 7, 0.25);
-      const semi = 1000 / Math.pow(1 + y / 200, years * 2);
-      const annual = 1000 / Math.pow(1 + y / 100, years);
-      const wrong = 1000 / Math.pow(1 + y / 100, years * 2);
-      return {
-        losCode: "LOS 30.b",
-        stem: `A zero-coupon bond maturing in ${years} years with a $1,000 par value is priced to yield ${pct(y)} quoted on a semiannual bond basis. Its price is closest to:`,
-        options: { A: money(semi, 2), B: money(annual, 2), C: money(wrong, 2) },
-        correctOption: "A",
-        algebraicSolution: `P = 1,000 / (1 + ${num(y / 200, 5)})^${years * 2} = ${money(semi, 2)}.`,
-        calculatorKeystrokes: `N = ${years * 2}, I/Y = ${num(y / 2, 3)}, PMT = 0, FV = 1,000 -> [CPT] PV => -${num(semi, 2)}`,
-        trapCategory: "Periodicity of Yield Quotation",
-        errorModeDefault: "PERIODICITY_MISMATCH",
-        distractorAutopsy: {
-          A: "Correct. Use semiannual periods and half the quoted yield per period.",
-          B: "Distractor B discounts annually, ignoring the semiannual quotation.",
-          C: "Distractor C doubles the periods but uses the full annual yield per period.",
         },
       };
     },
@@ -581,6 +394,9 @@ export const QUESTION_TEMPLATES: QuestionTemplate[] = [
     },
   },
 ];
+
+/** Fallback-generation templates plus the variant templates for authored items. */
+export const QUESTION_TEMPLATES: QuestionTemplate[] = [...BASE_TEMPLATES, ...VARIANT_TEMPLATES];
 
 export function templatesForTopic(topicId: string): QuestionTemplate[] {
   return QUESTION_TEMPLATES.filter((template) => template.topicId === topicId);

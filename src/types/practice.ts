@@ -37,6 +37,10 @@ export interface PracticeItem {
   errorModeDefault?: ErrorMode;
   distractorFeedback: Record<OptionKey, string>;
   provenance: ContentProvenance;
+  /** Template that can regenerate this item with new numbers. */
+  variantKey?: string;
+  /** Set when the stem and options were generated from the variant template. */
+  variantSeed?: string;
 }
 
 export interface PresentedPracticeItem {
@@ -60,6 +64,7 @@ export interface PresentedPracticeItem {
   optionPermutation: Record<OptionKey, OptionKey>;
   origin: ContentOrigin;
   contentStatus: ContentStatus;
+  variantSeed?: string;
 }
 
 export interface PracticeSession {
@@ -74,6 +79,8 @@ export interface PracticeSession {
   completedAt?: string;
   timerMode: "timed" | "untimed";
   targetSecondsPerItem?: number;
+  /** Set on mock sessions so the two half mocks can avoid each other's items. */
+  mockExamType?: "quick_diagnostic_45" | "half_session_1" | "half_session_2" | "full_180";
 }
 
 export interface PracticeDraft {
@@ -100,6 +107,10 @@ export interface ItemAttempt {
   submittedAt: string;
   trapCategory?: string;
   errorMode?: ErrorMode;
+  /** The chosen option in the item's authoring letters, independent of the shuffle. */
+  selectedSourceOption?: OptionKey | null;
+  /** Present when the candidate saw a generated variant rather than the authored numbers. */
+  variantSeed?: string;
 }
 
 export interface PracticeAttempt {

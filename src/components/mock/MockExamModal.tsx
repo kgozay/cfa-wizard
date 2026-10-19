@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Clock,
   Flag,
@@ -12,7 +12,14 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { MockExamSession, MockExamType } from "@/types/mockExam";
-import { generateMockExamSession, gradeMockExam, getMockExamShortages } from "@/data/mockExamGenerator";
+import {
+  expectedNewQuestions,
+  generateMockExamSession,
+  gradeMockExam,
+  getMockExamShortages,
+  partnerHalfMock,
+} from "@/data/mockExamGenerator";
+import { buildExposureIndex } from "@/lib/practice/exposure";
 import { MockScorecardView } from "./MockScorecardView";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { useCFAStore } from "@/store/useCFAStore";
@@ -37,6 +44,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     savePracticeSession,
     mockExamDraft,
     setMockExamDraft,
+    practiceAttempts,
     calculatorMode,
     setCalculatorMode } = useCFAStore();
 
@@ -64,13 +72,24 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
     onClose();
   }, [isGraded, isSubmitConfirmOpen, onClose, session]);
   const dialogRef = useAccessibleDialog<HTMLDivElement>(isOpen, requestClose);
+  const exposure = useMemo(() => buildExposureIndex(practiceAttempts), [practiceAttempts]);
 
   // Initialize or start new mock exam
   const handleStartExam = useCallback(
     (type: MockExamType) => {
       if (soundEnabled) sound.playNodeSwitch();
       try {
-        const newSession = generateMockExamSession(type, customVignettes);
+        const state = useCFAStore.getState();
+        const partner = partnerHalfMock(type);
+        const partnerSession = partner
+          ? Object.values(state.practiceSessions)
+              .filter((stored) => stored.mockExamType === partner)
+              .sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0]
+          : undefined;
+        const newSession = generateMockExamSession(type, customVignettes, {
+          exposure: buildExposureIndex(state.practiceAttempts),
+          excludeItemIds: new Set(partnerSession?.itemIds || []),
+        });
         savePracticeSession(newSession.practiceSession, false);
         setSession(newSession);
         setCurrentIndex(0);
@@ -316,6 +335,7 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
               {MOCK_TIERS.map((tier) => {
                 const shortages = getMockExamShortages(tier.id);
                 const unavailable = shortages.length > 0;
+                const newCount = unavailable ? 0 : expectedNewQuestions(tier.id, exposure);
                 const isSelected = selectedExamType === tier.id;
                 return (
                   <button
@@ -340,6 +360,13 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
                     </span>
                     <span className="text-sm font-semibold text-foreground">{tier.title}</span>
                     <span className="text-xs leading-relaxed text-muted">{tier.desc}</span>
+                    {!unavailable && (
+                      <span className="text-xs text-muted-strong">
+                        {newCount === tier.questions
+                          ? "All questions are new to you"
+                          : `${newCount} of ${tier.questions} questions are new to you`}
+                      </span>
+                    )}
                     {unavailable && (
                       <span className="text-xs text-warning">
                         Unavailable: more reviewed questions are needed in {shortages.length} topic{shortages.length === 1 ? "" : "s"}.
@@ -716,11 +743,12 @@ export const MockExamModal: React.FC<MockExamModalProps> = ({ isOpen, onClose })
   );
 };
 
-const MOCK_TIERS: Array<{ id: MockExamType; title: string; badge: string; time: string; desc: string }> = [
+const MOCK_TIERS: Array<{ id: MockExamType; title: string; badge: string; questions: number; time: string; desc: string }> = [
   {
     id: "quick_diagnostic_45",
     title: "Quick diagnostic",
     badge: "45 questions",
+    questions: 45,
     time: "1 h 8 min",
     desc: "A short, weighted check across all ten topics. A good place to start.",
   },
@@ -728,6 +756,7 @@ const MOCK_TIERS: Array<{ id: MockExamType; title: string; badge: string; time: 
     id: "half_session_1",
     title: "Half mock A",
     badge: "90 questions",
+    questions: 90,
     time: "2 h 15 min",
     desc: "One exam session's length, covering all ten topics at their exam weights.",
   },
@@ -735,13 +764,15 @@ const MOCK_TIERS: Array<{ id: MockExamType; title: string; badge: string; time: 
     id: "half_session_2",
     title: "Half mock B",
     badge: "90 questions",
+    questions: 90,
     time: "2 h 15 min",
-    desc: "A second session-length mock. Together, A and B make a full exam.",
+    desc: "A second session-length mock that avoids the questions in your latest Half mock A. Together, A and B make a full exam.",
   },
   {
     id: "full_180",
     title: "Full mock",
     badge: "180 questions",
+    questions: 180,
     time: "4 h 30 min",
     desc: "Both sessions back to back, for exam-day stamina.",
   },

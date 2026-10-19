@@ -10,6 +10,12 @@ export interface GradeAttemptOptions {
   errorModes?: Record<string, import("@/types/cfa").ErrorMode>; // sessionItemId -> errorMode
 }
 
+/** Maps a displayed letter back to the authoring letter it showed. */
+function sourceLetter(authoringToDisplayed: Record<OptionKey, OptionKey>, displayed: OptionKey): OptionKey {
+  const match = (Object.keys(authoringToDisplayed) as OptionKey[]).find((key) => authoringToDisplayed[key] === displayed);
+  return match ?? displayed;
+}
+
 /**
  * Pure function to grade a PracticeSession and produce an append-only PracticeAttempt record.
  */
@@ -45,6 +51,8 @@ export function gradeAttempt(options: GradeAttemptOptions): PracticeAttempt {
       submittedAt,
       trapCategory: options.trapCategories?.[presented.sessionItemId],
       errorMode: options.errorModes?.[presented.sessionItemId],
+      selectedSourceOption: selectedOption ? sourceLetter(presented.optionPermutation, selectedOption) : null,
+      ...(presented.variantSeed ? { variantSeed: presented.variantSeed } : {}),
     };
   });
 

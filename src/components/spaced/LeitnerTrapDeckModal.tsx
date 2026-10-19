@@ -4,16 +4,14 @@ import React, { useMemo, useState } from "react";
 import { X, Layers, Trash2, Calculator, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { LeitnerCard, OptionKey } from "@/types/cfa";
+import { isDue, isRetired, LEITNER_BOX_LABELS, LEITNER_BOXES, LeitnerBox } from "@/lib/practice/leitner";
+import { presentReviewCard } from "@/lib/practice/variants";
 import { ERROR_MODE_LABELS } from "@/data/trapTaxonomy";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
 import { useAccessibleDialog } from "@/hooks/useAccessibleDialog";
 
-type DeckView = "due" | 1 | 2 | 3;
-
-const BOX_INTERVALS: Record<1 | 2 | 3, string> = { 1: "every day", 2: "every 3 days", 3: "every 7 days" };
-
-const isDue = (card: LeitnerCard, now: number) => new Date(card.nextReviewAt).getTime() <= now;
+type DeckView = "due" | LeitnerBox;
 
 export const LeitnerTrapDeckModal: React.FC = () => {
   const {
@@ -37,9 +35,17 @@ export const LeitnerTrapDeckModal: React.FC = () => {
     () => leitnerCards.filter((card) => isDue(card, now)).sort((a, b) => a.box - b.box),
     [leitnerCards, now]
   );
-  const viewCards = view === "due" ? dueCards : leitnerCards.filter((card) => card.box === view);
+  const activeCards = useMemo(() => leitnerCards.filter((card) => !isRetired(card)), [leitnerCards]);
+  const retiredCount = leitnerCards.length - activeCards.length;
+  const viewCards = view === "due" ? dueCards : activeCards.filter((card) => card.box === view);
   const safeIndex = viewCards.length > 0 ? Math.min(currentCardIndex, viewCards.length - 1) : 0;
   const currentCard: LeitnerCard | undefined = viewCards[safeIndex];
+  // Each review shows new numbers (or at least a new option order), keyed by the
+  // review count so the question stays stable while the card is on screen
+  const presented = useMemo(
+    () => (currentCard ? presentReviewCard(currentCard, `review-${currentCard.reviewCount}`) : null),
+    [currentCard]
+  );
 
   if (!isLeitnerDeckOpen) return null;
 
@@ -59,18 +65,17 @@ export const LeitnerTrapDeckModal: React.FC = () => {
     setChosenOption(option);
     setIsRevealed(true);
     if (soundEnabled) {
-      if (currentCard && option === currentCard.correctOption) sound.playSuccessChime();
+      if (presented && option === presented.correctOption) sound.playSuccessChime();
       else sound.playWarningBuzz();
     }
   };
 
   const handleNext = () => {
-    if (!currentCard) return;
-    const isCorrect = chosenOption === currentCard.correctOption;
+    if (!currentCard || !presented) return;
+    const isCorrect = chosenOption === presented.correctOption;
     // A rated card is scheduled into the future, so it leaves "Due now"; in a box
-    // view it leaves the box unless it stays in Box 1 (missed) or Box 3 (mastered).
-    const leavesView =
-      view === "due" || (isCorrect && currentCard.box < 3) || (!isCorrect && currentCard.box > 1);
+    // view a correct card moves up (or retires) and a missed one returns to Box 1.
+    const leavesView = view === "due" || isCorrect || currentCard.box > 1;
     updateLeitnerCard(currentCard.id, isCorrect);
     resetCardState();
     if (leavesView) {
@@ -89,14 +94,14 @@ export const LeitnerTrapDeckModal: React.FC = () => {
 
   const tabs: Array<{ id: DeckView; label: string; count: number }> = [
     { id: "due", label: "Due now", count: dueCards.length },
-    ...([1, 2, 3] as const).map((box) => ({
+    ...LEITNER_BOXES.map((box) => ({
       id: box,
       label: `Box ${box}`,
-      count: leitnerCards.filter((card) => card.box === box).length,
+      count: activeCards.filter((card) => card.box === box).length,
     })),
   ];
 
-  const answeredCorrectly = isRevealed && chosenOption === currentCard?.correctOption;
+  const answeredCorrectly = isRevealed && chosenOption === presented?.correctOption;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
@@ -118,7 +123,7 @@ export const LeitnerTrapDeckModal: React.FC = () => {
                 Review deck
               </h2>
               <p className="text-xs text-muted">
-                Questions you missed come back daily until you get them right, then every 3 and 7 days.
+                Missed questions come back with new numbers: daily until you get them right, then after 3, 7, 14 and 30 days. A card retires after a correct answer in Box 5.
               </p>
             </div>
           </div>
@@ -131,7 +136,7 @@ export const LeitnerTrapDeckModal: React.FC = () => {
           </button>
         </div>
 
-        <div role="tablist" aria-label="Review deck views" className="grid grid-cols-4 border-b border-divider text-xs sm:text-sm">
+        <div role="tablist" aria-label="Review deck views" className="grid grid-cols-3 border-b border-divider text-xs sm:grid-cols-6 sm:text-sm">
           {tabs.map((tab) => {
             const isSelected = view === tab.id;
             return (
@@ -165,13 +170,16 @@ export const LeitnerTrapDeckModal: React.FC = () => {
                 {view === "due"
                   ? leitnerCards.length > 0
                     ? "You're up to date"
-                    : "No review cards yet"
+                    : retiredCount > 0
+                      ? "Every card is retired"
+                      : "No review cards yet"
                   : `Box ${view} is empty`}
               </p>
               <p className="mx-auto max-w-sm text-xs text-muted">
                 {view === "due" && leitnerCards.length > 0
                   ? "Nothing is due right now. Cards come back automatically when they are due."
                   : "Questions you miss in practice sets, sprints and mock exams are added here automatically."}
+                {retiredCount > 0 && ` ${retiredCount} card${retiredCount === 1 ? " has" : "s have"} been retired after a correct monthly review.`}
               </p>
             </div>
           ) : (
@@ -180,7 +188,7 @@ export const LeitnerTrapDeckModal: React.FC = () => {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-lg bg-accent/10 px-2 py-0.5 font-medium text-accent">{currentCard.topicName}</span>
                   <span className="text-muted">
-                    Card {safeIndex + 1} of {viewCards.length} · Box {currentCard.box} ({BOX_INTERVALS[currentCard.box]})
+                    Card {safeIndex + 1} of {viewCards.length} · Box {currentCard.box} ({LEITNER_BOX_LABELS[currentCard.box]})
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -201,13 +209,13 @@ export const LeitnerTrapDeckModal: React.FC = () => {
               </div>
 
               <div className="surface-panel rounded-xl p-4 text-sm leading-relaxed text-foreground sm:p-5">
-                <FormattedMathText text={currentCard.questionStem} />
+                <FormattedMathText text={presented?.stem ?? currentCard.questionStem} />
               </div>
 
               <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label="Answer options">
                 {(["A", "B", "C"] as const).map((key) => {
-                  const isCorrectKey = isRevealed && key === currentCard.correctOption;
-                  const isWrongChoice = isRevealed && key === chosenOption && key !== currentCard.correctOption;
+                  const isCorrectKey = isRevealed && key === presented?.correctOption;
+                  const isWrongChoice = isRevealed && key === chosenOption && key !== presented?.correctOption;
                   return (
                     <button
                       key={key}
@@ -227,7 +235,7 @@ export const LeitnerTrapDeckModal: React.FC = () => {
                         {key}
                       </span>
                       <span className="pt-0.5 leading-normal">
-                        <FormattedMathText text={currentCard.options[key]} />
+                        <FormattedMathText text={presented?.options[key] ?? currentCard.options[key]} />
                       </span>
                     </button>
                   );
@@ -242,21 +250,31 @@ export const LeitnerTrapDeckModal: React.FC = () => {
                   >
                     {answeredCorrectly ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                     {answeredCorrectly
-                      ? `Correct. This card moves to Box ${Math.min(3, currentCard.box + 1)}.`
+                      ? currentCard.box === 5
+                        ? "Correct. This card is retired from the deck."
+                        : `Correct. This card moves to Box ${currentCard.box + 1}.`
                       : chosenOption
-                        ? `Not quite: the answer is ${currentCard.correctOption}. This card goes back to Box 1.`
-                        : `The answer is ${currentCard.correctOption}. This card goes back to Box 1.`}
+                        ? `Not quite: the answer is ${presented?.correctOption}. This card goes back to Box 1.`
+                        : `The answer is ${presented?.correctOption}. This card goes back to Box 1.`}
                   </div>
+                  {chosenOption && !answeredCorrectly && presented && (
+                    <div className="space-y-1.5 rounded-xl bg-danger/5 p-4">
+                      <p className="text-xs font-semibold text-muted-strong">Why {chosenOption} is wrong</p>
+                      <div className="text-sm leading-relaxed text-foreground">
+                        <FormattedMathText text={presented.distractorFeedback[chosenOption]} />
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-1.5 rounded-xl bg-surface-interactive p-4">
                     <p className="text-xs font-semibold text-muted-strong">Solution</p>
                     <div className="text-sm leading-relaxed text-foreground">
-                      <FormattedMathText text={currentCard.solution} />
+                      <FormattedMathText text={presented?.solution ?? currentCard.solution} />
                     </div>
                   </div>
-                  {currentCard.keystrokes && (
+                  {(presented?.calculatorKeystrokes ?? currentCard.keystrokes) && (
                     <div className="flex items-start gap-2 rounded-xl bg-surface-interactive p-3 text-xs text-muted-strong">
                       <Calculator className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-                      <span className="font-mono leading-relaxed">{currentCard.keystrokes}</span>
+                      <span className="font-mono leading-relaxed">{presented?.calculatorKeystrokes ?? currentCard.keystrokes}</span>
                     </div>
                   )}
                 </div>

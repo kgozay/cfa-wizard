@@ -2,9 +2,12 @@ import { CFA_VIGNETTES } from "./vignettes";
 import { CFA_CURRICULUM } from "./curriculum";
 import { MockExamSession, MockExamType, MockQuestionItem, MockTopicScore } from "@/types/mockExam";
 import { TrapLogEntry } from "@/types/cfa";
-import { PracticeItem } from "@/types/practice";
+import { PracticeItem, PracticeSession } from "@/types/practice";
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { createPracticeSession } from "@/lib/practice/createSession";
+import { ExposureIndex } from "@/lib/practice/exposure";
+import { selectItems } from "@/lib/practice/selectItems";
+import { createPRNG } from "@/lib/practice/random";
 
 // Quotas follow the February 2027 Level I topic weights: Quant, FSA, Equities, Fixed Income
 // 11–14%; Ethics 10–15%; Portfolio Construction 8–12%; Economics, Corporate Finance,
@@ -26,14 +29,39 @@ export function getMockExamShortages(examType: MockExamType): Array<{ topicId: s
     .filter(({ requested, available }) => available < requested);
 }
 
-// Fisher-Yates in-place shuffle helper
-export function shuffleArray<T>(array: T[]): T[] {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
+export interface MockSelectionOptions {
+  /** Candidate history; unseen items are preferred, then the least recently seen. */
+  exposure?: ExposureIndex;
+  /** Items to leave out, e.g. the partner half mock, unless a topic runs short. */
+  excludeItemIds?: ReadonlySet<string>;
+  seed?: string;
+}
+
+/** The other half of the two-part full mock, if any. */
+export function partnerHalfMock(examType: MockExamType): MockExamType | null {
+  if (examType === "half_session_1") return "half_session_2";
+  if (examType === "half_session_2") return "half_session_1";
+  return null;
+}
+
+function authoredPoolByTopic(): Record<string, PracticeItem[]> {
+  const pool: Record<string, PracticeItem[]> = {};
+  CFA_VIGNETTES.forEach((vig) => {
+    pool[vig.topicId] = [...(pool[vig.topicId] || []), ...legacyVignetteToPracticeItems(vig)];
+  });
+  return pool;
+}
+
+/**
+ * How many of a mock's questions will be new to the candidate: per topic, the
+ * selector takes unseen items first, so new = min(quota, unseen in topic).
+ */
+export function expectedNewQuestions(examType: MockExamType, exposure: ExposureIndex): number {
+  const pool = authoredPoolByTopic();
+  return Object.entries(MOCK_TOPIC_QUOTAS[examType]).reduce((sum, [topicId, quota]) => {
+    const unseen = (pool[topicId] || []).filter((item) => !exposure[item.id]).length;
+    return sum + Math.min(quota, unseen);
+  }, 0);
 }
 
 /**
@@ -41,20 +69,11 @@ export function shuffleArray<T>(array: T[]): T[] {
  */
 export function generateMockExamSession(
   examType: MockExamType,
-  _customVignettes: import("@/types/cfa").VignetteSet[] = []
+  _customVignettes: import("@/types/cfa").VignetteSet[] = [],
+  selection: MockSelectionOptions = {}
 ): MockExamSession {
   // Approved authored content only for mock exams (quarantine unapproved generated drafts)
-  const allVignettes = CFA_VIGNETTES;
-  
-  // Topic Pools
-  const topicQuestionPool: Record<string, PracticeItem[]> = {};
-
-  allVignettes.forEach((vig) => {
-    if (!topicQuestionPool[vig.topicId]) {
-      topicQuestionPool[vig.topicId] = [];
-    }
-    topicQuestionPool[vig.topicId].push(...legacyVignetteToPracticeItems(vig));
-  });
+  const topicQuestionPool = authoredPoolByTopic();
 
   // Target questions per topic based on mock type and CFA official weights
   const targetCounts = MOCK_TOPIC_QUOTAS[examType];
@@ -90,21 +109,33 @@ export function generateMockExamSession(
     throw new Error(`This mock cannot be assembled without repeating questions (${details}). Choose a smaller mock while the authored bank is expanded.`);
   }
 
+  const seed = selection.seed || `${examType}-${Date.now()}-${Math.random()}`;
+  const prng = createPRNG(seed);
   const selectedItems: PracticeItem[] = [];
 
   Object.entries(targetCounts).forEach(([topicId, count]) => {
-    const pool = topicQuestionPool[topicId] || [];
-    const shuffledPool = shuffleArray(pool);
-    selectedItems.push(...shuffledPool.slice(0, count));
+    selectedItems.push(
+      ...selectItems(topicQuestionPool[topicId] || [], {
+        count,
+        exposure: selection.exposure || {},
+        excludeItemIds: selection.excludeItemIds,
+        policy: "fresh",
+        prng,
+      })
+    );
   });
 
-  const practiceSession = createPracticeSession({
-    mode: "mock",
-    items: selectedItems,
-    requestedCount: totalTarget,
-    shuffleQuestions: true,
-    timerMode: "timed",
-  });
+  const practiceSession: PracticeSession = {
+    ...createPracticeSession({
+      mode: "mock",
+      items: selectedItems,
+      seed: `${seed}:present`,
+      requestedCount: totalTarget,
+      shuffleQuestions: true,
+      timerMode: "timed",
+    }),
+    mockExamType: examType,
+  };
 
   const mockQuestions: MockQuestionItem[] = practiceSession.presentedItems.map((item, index) => {
     return {

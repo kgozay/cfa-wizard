@@ -6,6 +6,7 @@ import { useCFAStore } from "@/store/useCFAStore";
 import { sound } from "@/components/common/SoundEffects";
 import { CFA_VIGNETTES } from "@/data/vignettes";
 import { ERROR_MODE_LABELS } from "@/data/trapTaxonomy";
+import { isDue, isRetired, LEITNER_BOXES, LEITNER_INTERVAL_DAYS } from "@/lib/practice/leitner";
 
 interface SpacedRecallSprintsViewProps {
   onOpenScenarioSimulator: (topicId: string) => void;
@@ -26,10 +27,9 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
   } = useCFAStore();
 
   const now = Date.now();
-  const box1Cards = leitnerCards.filter((c) => c.box === 1);
-  const box2Cards = leitnerCards.filter((c) => c.box === 2);
-  const box3Cards = leitnerCards.filter((c) => c.box === 3);
-  const dueCards = leitnerCards.filter((c) => new Date(c.nextReviewAt).getTime() <= now);
+  const activeCards = leitnerCards.filter((card) => !isRetired(card));
+  const retiredCount = leitnerCards.length - activeCards.length;
+  const dueCards = leitnerCards.filter((card) => isDue(card, now));
 
   const handleLaunchSprint = () => {
     if (soundEnabled) sound.playNodeSwitch();
@@ -71,40 +71,32 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
             </div>
 
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Questions you miss during practice sets are automatically routed to your spaced review deck.
+              Questions you miss are routed to your review deck and come back with new numbers at growing intervals.
             </p>
 
             {/* Stepped Retention Model */}
             <div className="space-y-2 text-xs">
-              <div className="p-3.5 rounded-xl bg-white/[0.03] flex items-center justify-between">
-                <div>
-                  <span className="text-white font-semibold block">Box 1: Daily review</span>
-                  <span className="text-xs text-slate-400 font-mono">Interval: 1 day</span>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-slate-400 font-mono font-semibold text-xs">
-                  {box1Cards.length} cards
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/[0.03] flex items-center justify-between">
-                <div>
-                  <span className="text-white font-semibold block">Box 2: Intermediate retention</span>
-                  <span className="text-xs text-slate-400 font-mono">Interval: 3 days</span>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-slate-400 font-mono font-semibold text-xs">
-                  {box2Cards.length} cards
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/[0.03] flex items-center justify-between">
-                <div>
-                  <span className="text-white font-semibold block">Box 3: Long-term mastery</span>
-                  <span className="text-xs text-slate-400 font-mono">Interval: 7 days</span>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg bg-accent/15 text-accent font-mono font-semibold text-xs">
-                  {box3Cards.length} mastered
-                </span>
-              </div>
+              {LEITNER_BOXES.map((box) => {
+                const count = activeCards.filter((card) => card.box === box).length;
+                return (
+                  <div key={box} className="p-3 rounded-xl bg-white/[0.03] flex items-center justify-between">
+                    <div>
+                      <span className="text-white font-semibold block">Box {box}</span>
+                      <span className="text-xs text-slate-400 font-mono">
+                        Interval: {LEITNER_INTERVAL_DAYS[box]} day{LEITNER_INTERVAL_DAYS[box] === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-slate-400 font-mono font-semibold text-xs">
+                      {count} card{count === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                );
+              })}
+              {retiredCount > 0 && (
+                <p className="px-1 text-slate-400">
+                  {retiredCount} card{retiredCount === 1 ? "" : "s"} retired after a correct monthly review.
+                </p>
+              )}
             </div>
           </div>
 
@@ -116,7 +108,7 @@ export const SpacedRecallSprintsView: React.FC<SpacedRecallSprintsViewProps> = (
             <span>
               {dueCards.length > 0
                 ? `Review ${dueCards.length} due card${dueCards.length === 1 ? "" : "s"}`
-                : `Open review deck (${leitnerCards.length} card${leitnerCards.length === 1 ? "" : "s"})`}
+                : `Open review deck (${activeCards.length} card${activeCards.length === 1 ? "" : "s"})`}
             </span>
           </button>
         </div>

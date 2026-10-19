@@ -108,6 +108,8 @@ export const ItemAttemptSchema = z.object({
   submittedAt: z.string(),
   trapCategory: z.string().optional(),
   errorMode: ErrorModeSchema.optional(),
+  selectedSourceOption: OptionKeySchema.nullable().optional(),
+  variantSeed: z.string().max(200).optional(),
 });
 
 export const PracticeAttemptSchema = z.object({
@@ -146,6 +148,7 @@ export const PresentedPracticeItemSchema = z.object({
   optionPermutation: z.record(OptionKeySchema, OptionKeySchema),
   origin: ContentOriginSchema,
   contentStatus: ContentStatusSchema,
+  variantSeed: z.string().max(200).optional(),
 });
 
 export const PracticeSessionSchema = z.object({
@@ -160,4 +163,5 @@ export const PracticeSessionSchema = z.object({
   completedAt: z.string().optional(),
   timerMode: z.enum(["timed", "untimed"]),
   targetSecondsPerItem: z.number().positive().optional(),
+  mockExamType: z.enum(["quick_diagnostic_45", "half_session_1", "half_session_2", "full_180"]).optional(),
 });

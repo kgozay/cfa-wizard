@@ -12,10 +12,14 @@ import {
   BarChart2,
   PieChart,
   Play,
+  Flag,
 } from "lucide-react";
 import { useCFAStore } from "@/store/useCFAStore";
 import { CFA_CURRICULUM } from "@/data/curriculum";
 import { CFA_VIGNETTES } from "@/data/vignettes";
+import { isDue } from "@/lib/practice/leitner";
+import { buildItemStats, flagItems, ITEM_FLAG_THRESHOLDS } from "@/lib/practice/itemStats";
+import { authoredItem } from "@/lib/practice/variants";
 import { ERROR_MODE_LABELS } from "@/data/trapTaxonomy";
 import { sound } from "@/components/common/SoundEffects";
 
@@ -77,7 +81,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
   // Due flashcards count
   const dueFlashcardsCount = useMemo(() => {
     const now = Date.now();
-    return leitnerCards.filter((c) => new Date(c.nextReviewAt).getTime() <= now).length;
+    return leitnerCards.filter((card) => isDue(card, now)).length;
   }, [leitnerCards]);
 
   // Topic-level stats
@@ -141,6 +145,12 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
       .sort((a, b) => a.accuracy - b.accuracy)
       .slice(0, 3);
   }, [topicAnalytics]);
+
+  // Items whose answer history suggests a wrong key or no discrimination
+  const itemFlags = useMemo(
+    () => flagItems(buildItemStats(eligibleAttempts), (id) => authoredItem(id)?.correctOption),
+    [eligibleAttempts]
+  );
 
   // Error Mode distribution
   const errorModeStats = useMemo(() => {
@@ -492,6 +502,55 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Questions to double-check */}
+      {itemFlags.length > 0 && (
+        <div className="surface-panel rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-divider pb-3 gap-3">
+            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+              <Flag className="w-4 h-4 text-warning" />
+              <span>Questions to double-check</span>
+            </h2>
+            <span className="font-mono text-xs text-muted">{itemFlags.length} flagged</span>
+          </div>
+          <p className="text-xs text-muted leading-relaxed">
+            Based on your own answers to the original numbers. A wrong answer that is picked more often than the key
+            may mean a wrong key or unclear wording. A question answered correctly more than{" "}
+            {Math.round(ITEM_FLAG_THRESHOLDS.easySuccessRate * 100)}% of the time no longer tests much.
+          </p>
+          <ul className="space-y-2">
+            {itemFlags.slice(0, 12).map((flag) => {
+              const item = authoredItem(flag.sourceItemId);
+              const topic = CFA_CURRICULUM.find((t) => t.id === flag.topicId);
+              return (
+                <li key={`${flag.kind}:${flag.sourceItemId}`} className="p-3 bg-surface-raised rounded-xl text-xs space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`px-2 py-0.5 rounded-md font-semibold ${
+                        flag.kind === "distractor-beats-key" ? "bg-warning/15 text-warning" : "bg-info/15 text-info"
+                      }`}
+                    >
+                      {flag.kind === "distractor-beats-key" ? "Possible wrong key" : "Too easy"}
+                    </span>
+                    <span className="text-muted">{topic?.name ?? flag.topicId}</span>
+                    <span className="font-mono text-muted ml-auto">{flag.attempts} attempts</span>
+                  </div>
+                  {item && <p className="text-foreground leading-relaxed line-clamp-2">{item.stem}</p>}
+                  <p className="text-muted-strong">
+                    {flag.kind === "distractor-beats-key"
+                      ? `Option ${flag.distractor}${item ? ` (${item.options[flag.distractor]})` : ""} chosen ${Math.round(
+                          flag.distractorRate * 100
+                        )}% of the time vs. ${Math.round(flag.keyRate * 100)}% for the key${
+                          item ? ` (${item.correctOption}: ${item.options[item.correctOption]})` : ""
+                        }.`
+                      : `Answered correctly ${Math.round(flag.successRate * 100)}% of the time.`}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {/* Error Taxonomy Breakdown */}
       {eligibleTrapLogs.length > 0 && (

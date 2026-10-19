@@ -112,5 +112,6 @@ export function presentPracticeItem(
     optionPermutation: authoringToDisplayed,
     origin: item.provenance.origin,
     contentStatus: item.provenance.status,
+    ...(item.variantSeed ? { variantSeed: item.variantSeed } : {}),
   };
 }

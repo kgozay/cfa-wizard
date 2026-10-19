@@ -20,6 +20,49 @@ Every item was read, and the calculations were re-run where something looked wro
 | Randomised enough? | **Partly** | Option order and question order are shuffled properly. Item selection does not know what the candidate has already seen. Numbers never change, and the two half mocks overlap by about 45%. |
 | Gets to the root? | **Not yet** | Each distractor is written around one specific error, but the app records the item's single default error mode whichever distractor was chosen. Most items take one step, and the Ethics items test rule recall, not judgement. |
 
+## Implementation update
+
+Everything in the summary list has been implemented except item 5 (an error mode per distractor, confidence before reveal, and a reason after a miss), which is deferred. The P3 AI-generation items have not been started. The original review follows unchanged below this section.
+
+**Content and integrity**
+- Every error in section 1 is fixed, including the 119 key and the 102 annuity values. The calculator presets now match 102.
+- The items that relied on case text now stand alone, and the set stems contain no data.
+- `src/data/__tests__/numeric-verification.test.ts` recomputes the key and both distractors of every item with numeric options, to the displayed precision.
+- `question-bank.integrity.test.ts` checks:
+  - LOS codes stay inside the declared ranges.
+  - Set stems contain no data.
+  - IDs and stems are unique.
+  - No topic has more than 50% of its keys on one authoring letter.
+  - The longest-option cue is limited (clear cues now 4%).
+  - Each topic has at least 20 trap categories.
+  - Every variant key points at a template.
+
+**Bank**
+- There are now 620 items, 62 per topic, up from 200.
+- Ethics is rewritten as scenarios.
+- Every topic has multi-step items and "least likely" items.
+
+**Selection and exposure**
+- Exposure per item is derived from the attempt log (`src/lib/practice/exposure.ts`). One selector, `selectItems`, orders items as: due, unseen, missed, stale, then mastered.
+- Practice drills use the selector. Sprints use it too, with draws weighted by exam weight × weakness.
+- Mocks use it with a "fresh" policy.
+- Half Mock B excludes the items in the latest Half A, and the reverse.
+- Each mock tier shows how many of its questions are new to the candidate.
+
+**Variants and Leitner**
+- 230 numeric families (`src/lib/generation/variants/`) cover 233 authored items in topics 1–9. Each family is checked in CI:
+  - Its example inputs must reproduce the authored item and its key.
+  - 300 random draws must give well-formed items with distinct options.
+- Retakes, sprints and Leitner reviews use fresh numbers for items the candidate has already seen.
+- Leitner has five boxes (1, 3, 7, 14 and 30 days). Each review reshuffles the options, and a card retires after a correct answer in box 5.
+
+**Item statistics**
+- `src/lib/practice/itemStats.ts` records, for each authored item, the success rate and how often each option is chosen, in authoring letters.
+  - Attempts on variants are excluded, because their numbers differ from the authored item.
+- The analytics page lists "Questions to double-check" in two cases:
+  - A distractor is chosen more often than the key, after at least 5 attempts.
+  - The success rate is above 95%, after at least 10 attempts.
+
 ---
 
 ## 1. Content errors to fix first

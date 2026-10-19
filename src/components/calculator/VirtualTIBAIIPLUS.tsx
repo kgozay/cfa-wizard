@@ -493,18 +493,18 @@ export const VirtualTIBAIIPLUS: React.FC = () => {
       setTvmIY(6.5);
       setTvmPMT(50000);
       setTvmFV(0);
-      setTvmPV(-241986.08);
-      setDisplayValue("-241986.08");
-      setStatusLine("LOADED: 6-Yr $50k [END] PV = $241,986.08");
+      setTvmPV(-242050.68);
+      setDisplayValue("-242050.68");
+      setStatusLine("LOADED: 6-Yr $50k [END] PV = $242,050.68");
     } else if (type === "annuity-bgn") {
       setIsBgnMode(true);
       setTvmN(6);
       setTvmIY(6.5);
       setTvmPMT(50000);
       setTvmFV(0);
-      setTvmPV(-257715.18);
-      setDisplayValue("-257715.18");
-      setStatusLine("LOADED: 6-Yr $50k [BGN] PV = $257,715.18");
+      setTvmPV(-257783.97);
+      setDisplayValue("-257783.97");
+      setStatusLine("LOADED: 6-Yr $50k [BGN] PV = $257,783.97");
     } else if (type === "compound") {
       setStoredOperand(1.084);
       setLastOperator("^");

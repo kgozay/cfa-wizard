@@ -75,6 +75,8 @@ export interface VignetteQuestion {
   trapCategory: string;
   errorModeDefault?: ErrorMode;
   losCode?: string;
+  /** Template key that generates fresh-number versions of this item for retries and review. */
+  variantKey?: string;
   distractorAutopsy: DistractorAutopsyMap;
 }
 
@@ -153,10 +155,13 @@ export interface LeitnerCard {
   keystrokes: string;
   trapName: string;
   errorMode: ErrorMode;
-  box: 1 | 2 | 3;
+  /** 1 = daily, 2 = 3-day, 3 = weekly, 4 = 2-week, 5 = monthly */
+  box: 1 | 2 | 3 | 4 | 5;
   lastReviewedAt?: string;
   nextReviewAt: string;
   reviewCount: number;
+  /** Set when a card is recalled correctly from Box 5; it leaves the review schedule. */
+  retiredAt?: string;
 }
 
 export interface SprintQuestionResult {

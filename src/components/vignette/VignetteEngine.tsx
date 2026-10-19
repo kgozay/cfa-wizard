@@ -23,6 +23,11 @@ import { DiagnosticAutopsyView } from "@/components/diagnostic/DiagnosticAutopsy
 import { legacyVignetteToPracticeItems } from "@/lib/practice/adapters";
 import { appendItemsToSession, createPracticeSession } from "@/lib/practice/createSession";
 import { gradeAttempt } from "@/lib/practice/gradeAttempt";
+import { buildExposureIndex } from "@/lib/practice/exposure";
+import { selectItems } from "@/lib/practice/selectItems";
+import { variantOf, withVariantsForSeen } from "@/lib/practice/variants";
+import { createPRNG } from "@/lib/practice/random";
+import { dueLeitnerSourceIds } from "@/lib/practice/leitner";
 import { hasCurrentAnswerKey } from "@/lib/practice/eligibility";
 import { FormattedMathText } from "@/components/common/KaTeXRenderer";
 import { sound } from "@/components/common/SoundEffects";
@@ -82,9 +87,20 @@ export const VignetteEngine: React.FC = () => {
 
   const startNewSession = useCallback((count: number = drillQuestionCount, avoidItemIds: string[] = []) => {
     const allItems = legacyVignetteToPracticeItems(vignette);
-    // Prefer questions the candidate has not just seen, when the set is deep enough
-    const unseen = allItems.filter((item) => !avoidItemIds.includes(item.id));
-    const items = unseen.length >= Math.min(count, allItems.length) ? unseen : allItems;
+    // Due reviews first, then unseen, missed, and least recently seen items;
+    // the set just answered is only reused when the pool runs out
+    const state = useCFAStore.getState();
+    const exposure = buildExposureIndex(state.practiceAttempts);
+    const seed = `${Date.now()}-${Math.random()}`;
+    const picked = selectItems(allItems, {
+      count,
+      exposure,
+      dueItemIds: dueLeitnerSourceIds(state.leitnerCards),
+      excludeItemIds: new Set(avoidItemIds),
+      prng: createPRNG(seed),
+    });
+    // Items seen before come back with new numbers where a variant template exists
+    const items = withVariantsForSeen(picked, (id) => Boolean(exposure[id]), seed);
     const session = createPracticeSession({
       mode: "practice",
       items,
@@ -349,8 +365,40 @@ export const VignetteEngine: React.FC = () => {
   // Changing the count rebuilds the set, so it is only allowed before answering
   const isCountLocked = hasSubmitted || answeredCount > 0;
 
+  // A retake asks the same questions again: new numbers where a variant
+  // template exists, and always a new question and option order
   const handleResetForRetake = () => {
-    startNewSession();
+    if (!practiceSession) {
+      startNewSession();
+      return;
+    }
+    const byId = new Map(legacyVignetteToPracticeItems(vignette).map((item) => [item.id, item]));
+    const seed = `retake-${Date.now()}`;
+    const items = practiceSession.itemIds
+      .map((id) => byId.get(id))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .map((item) => variantOf(item, seed));
+    if (items.length === 0) {
+      startNewSession();
+      return;
+    }
+    const session = createPracticeSession({
+      mode: "practice",
+      items,
+      timerMode: isPacingTimerEnabled ? "timed" : "untimed",
+      shuffleQuestions: true });
+    savePracticeSession(session, true);
+    setPracticeDraft(null);
+    setPracticeSession(session);
+    setSelectedAnswers({});
+    setItemTimes({});
+    itemTimesRef.current = {};
+    lastAnswerAtRef.current = Date.now();
+    setHasSubmitted(false);
+    setReviewResult(null);
+    setElapsedSeconds(0);
+    setScratchpadText("");
+    setActiveQuestionIndex(0);
   };
 
   const handleInjectAIQuestions = async () => {
